@@ -1,0 +1,3 @@
+- [Nathanael Demacon](https://github.com/quantumsheep)
+- [Antonin Texier](https://github.com/NenetteGit)
+- [Simon Halimi](https://github.com/Simonpo95)
