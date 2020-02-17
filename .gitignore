@@ -49,3 +49,7 @@ _deps
 build/
 test/
 dist/
+
+# IDEs config
+.vscode/
+.idea/
