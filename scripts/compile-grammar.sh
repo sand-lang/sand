@@ -7,6 +7,6 @@ grammar_directory="$script_directory/../src/grammar"
 
 cd $grammar_directory
 
-antlr -Dlanguage=Cpp SanLexer.g4 SanParser.g4
+antlr -Dlanguage=Cpp -no-listener -visitor -o runtime SanLexer.g4 SanParser.g4
 
 cd $origin_directory
