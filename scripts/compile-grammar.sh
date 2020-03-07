@@ -1,7 +1,9 @@
 #!/bin/bash
 
 origin_directory=$PWD
-grammar_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+script_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+grammar_directory="$script_directory/../src/grammar"
 
 cd $grammar_directory
 
