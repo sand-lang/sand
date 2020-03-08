@@ -22,5 +22,6 @@ set(INCLUDES
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
+llvm_map_components_to_libnames(llvm_libs Core Remarks Support BinaryFormat Demangle)
 
-target_link_libraries(${PROJECT_NAME} antlr4_static)
+target_link_libraries(${PROJECT_NAME} antlr4_static ${llvm_libs})
