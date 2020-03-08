@@ -9,8 +9,8 @@ instructions: statement* eos;
 statement: expression;
 
 expression:
-	expression operatorStatement expression
-	| literal;
+	expression operatorStatement expression	# BinaryOperation
+	| literal								# LiteralDeclaration;
 
 operatorStatement: Add;
 

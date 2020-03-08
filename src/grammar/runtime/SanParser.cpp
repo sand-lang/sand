@@ -148,35 +148,53 @@ SanParser::ExpressionContext::ExpressionContext(ParserRuleContext *parent, size_
   : ParserRuleContext(parent, invokingState) {
 }
 
-SanParser::LiteralContext* SanParser::ExpressionContext::literal() {
-  return getRuleContext<SanParser::LiteralContext>(0);
-}
-
-std::vector<SanParser::ExpressionContext *> SanParser::ExpressionContext::expression() {
-  return getRuleContexts<SanParser::ExpressionContext>();
-}
-
-SanParser::ExpressionContext* SanParser::ExpressionContext::expression(size_t i) {
-  return getRuleContext<SanParser::ExpressionContext>(i);
-}
-
-SanParser::OperatorStatementContext* SanParser::ExpressionContext::operatorStatement() {
-  return getRuleContext<SanParser::OperatorStatementContext>(0);
-}
-
 
 size_t SanParser::ExpressionContext::getRuleIndex() const {
   return SanParser::RuleExpression;
 }
 
+void SanParser::ExpressionContext::copyFrom(ExpressionContext *ctx) {
+  ParserRuleContext::copyFrom(ctx);
+}
 
-antlrcpp::Any SanParser::ExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+//----------------- BinaryOperationContext ------------------------------------------------------------------
+
+std::vector<SanParser::ExpressionContext *> SanParser::BinaryOperationContext::expression() {
+  return getRuleContexts<SanParser::ExpressionContext>();
+}
+
+SanParser::ExpressionContext* SanParser::BinaryOperationContext::expression(size_t i) {
+  return getRuleContext<SanParser::ExpressionContext>(i);
+}
+
+SanParser::OperatorStatementContext* SanParser::BinaryOperationContext::operatorStatement() {
+  return getRuleContext<SanParser::OperatorStatementContext>(0);
+}
+
+SanParser::BinaryOperationContext::BinaryOperationContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+
+antlrcpp::Any SanParser::BinaryOperationContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
-    return parserVisitor->visitExpression(this);
+    return parserVisitor->visitBinaryOperation(this);
   else
     return visitor->visitChildren(this);
 }
+//----------------- LiteralDeclarationContext ------------------------------------------------------------------
 
+SanParser::LiteralContext* SanParser::LiteralDeclarationContext::literal() {
+  return getRuleContext<SanParser::LiteralContext>(0);
+}
+
+SanParser::LiteralDeclarationContext::LiteralDeclarationContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+
+antlrcpp::Any SanParser::LiteralDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
+    return parserVisitor->visitLiteralDeclaration(this);
+  else
+    return visitor->visitChildren(this);
+}
 
 SanParser::ExpressionContext* SanParser::expression() {
    return expression(0);
@@ -199,6 +217,10 @@ SanParser::ExpressionContext* SanParser::expression(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
+    _localctx = _tracker.createInstance<LiteralDeclarationContext>(_localctx);
+    _ctx = _localctx;
+    previousContext = _localctx;
+
     setState(23);
     literal();
     _ctx->stop = _input->LT(-1);
@@ -210,8 +232,9 @@ SanParser::ExpressionContext* SanParser::expression(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        _localctx = _tracker.createInstance<ExpressionContext>(parentContext, parentState);
-        pushNewRecursionContext(_localctx, startState, RuleExpression);
+        auto newContext = _tracker.createInstance<BinaryOperationContext>(_tracker.createInstance<ExpressionContext>(parentContext, parentState));
+        _localctx = newContext;
+        pushNewRecursionContext(newContext, startState, RuleExpression);
         setState(25);
 
         if (!(precpred(_ctx, 2))) throw FailedPredicateException(this, "precpred(_ctx, 2)");

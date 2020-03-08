@@ -71,15 +71,34 @@ public:
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:
     ExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    ExpressionContext() = default;
+    void copyFrom(ExpressionContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
-    LiteralContext *literal();
+
+   
+  };
+
+  class  BinaryOperationContext : public ExpressionContext {
+  public:
+    BinaryOperationContext(ExpressionContext *ctx);
+
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
     OperatorStatementContext *operatorStatement();
 
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  LiteralDeclarationContext : public ExpressionContext {
+  public:
+    LiteralDeclarationContext(ExpressionContext *ctx);
+
+    LiteralContext *literal();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
   };
 
   ExpressionContext* expression();
