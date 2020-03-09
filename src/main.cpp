@@ -11,7 +11,7 @@
 
 int main(int argc, char **argv)
 {
-    std::string pwd = std::filesystem::current_path().c_str();
+    std::string pwd = std::filesystem::current_path().string();
     std::string path = argc > 1 ? argv[1] : "test.sn";
 
     std::ifstream stream;
