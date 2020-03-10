@@ -4,6 +4,9 @@ set(LLVM_INCLUDE_EXAMPLES OFF)
 set(LLVM_INCLUDE_TESTS OFF)
 set(LLVM_INCLUDE_BENCHMARKS OFF)
 
+add_definitions(-DANTLR4CPP_STATIC)
+set(ANTLR4_WITH_STATIC_CRT OFF)
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/llvm")
 
@@ -13,6 +16,8 @@ set(DEPENDENCIES_HEADERS
   ${LLVM_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/llvm/include"
   "${CMAKE_BINARY_DIR}/libs/llvm/include"
+
+  ${ANTLR4_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp/runtime/src"
 
   PARENT_SCOPE
