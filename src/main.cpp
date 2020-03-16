@@ -4,6 +4,8 @@
 #include <Lexer.h>
 #include <Parser.h>
 
+#include <san/Compiler.hpp>
+
 #include "grammar/runtime/SanLexer.h"
 #include "grammar/runtime/SanParser.h"
 
@@ -25,7 +27,19 @@ int main(int argc, char **argv)
     SanParser::InstructionsContext *tree = parser.instructions();
     San::Visitor visitor;
     antlrcpp::Any program = visitor.visitInstructions(tree);
-    std::cout << tree->toStringTree() << std::endl;
+
+    std::string bytecode = "";
+    llvm::raw_string_ostream out_stream(bytecode);
+    out_stream << *visitor.module;
+    out_stream.flush();
+
+    std::cout << out_stream.str() << std::endl;
+
+    // San::Compiler compiler(visitor.module);
+    // auto objects = compiler.generate_objects();
+
+    // for (const auto &object : objects)
+    //     std::cout << object << std::endl;
 
     return 0;
 }
