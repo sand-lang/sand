@@ -23,6 +23,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *ctx) override {
     return visitChildren(ctx);
   }

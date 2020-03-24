@@ -9,7 +9,8 @@ instructions: statement* eos;
 statement: expression;
 
 expression:
-	expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
+	'(' expression ')'										# InParenExpression
+	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| literal												# LiteralDeclaration;
 

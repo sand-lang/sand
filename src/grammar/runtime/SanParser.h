@@ -83,6 +83,17 @@ public:
    
   };
 
+  class  InParenExpressionContext : public ExpressionContext {
+  public:
+    InParenExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *OpeningParen();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *ClosingParen();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  BinaryOperationContext : public ExpressionContext {
   public:
     BinaryOperationContext(ExpressionContext *ctx);

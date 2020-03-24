@@ -23,6 +23,8 @@ public:
 
     virtual antlrcpp::Any visitStatement(SanParser::StatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
