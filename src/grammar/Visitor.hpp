@@ -43,13 +43,71 @@ public:
 
     antlrcpp::Any visitExpression(SanParser::ExpressionContext *context)
     {
-        if (const auto binary_operation_context = dynamic_cast<SanParser::BinaryOperationContext *>(context))
+        if (const auto in_paren_expression_context = dynamic_cast<SanParser::InParenExpressionContext *>(context))
+        {
+            return visitInParenExpression(in_paren_expression_context);
+        }
+        else if (const auto binary_operation_context = dynamic_cast<SanParser::BinaryOperationContext *>(context))
         {
             return visitBinaryOperation(binary_operation_context);
+        }
+        else if (const auto binary_multiplicative_operation_context = dynamic_cast<SanParser::BinaryMultiplicativeOperationContext *>(context))
+        {
+            return visitBinaryMultiplicativeOperation(binary_multiplicative_operation_context);
         }
         else if (const auto literal_declaration_context = dynamic_cast<SanParser::LiteralDeclarationContext *>(context))
         {
             return visitLiteralDeclaration(literal_declaration_context);
+        }
+
+        return 0;
+    }
+
+    antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) override
+    {
+        return visitExpression(context->expression());
+    }
+
+    antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) override
+    {
+        const auto opt = context->multiplicativeOperatorStatement();
+        const auto lexpr_context = context->expression(0);
+        const auto rexpr_context = context->expression(1);
+
+        const auto lexpr = visitExpression(lexpr_context);
+        const auto rexpr = visitExpression(rexpr_context);
+
+        const auto lvar = lexpr.as<Variable *>();
+        const auto rvar = rexpr.as<Variable *>();
+
+        lvar->value->print(llvm::outs());
+        std::cout << std::endl;
+        rvar->value->print(llvm::outs());
+        std::cout << std::endl;
+
+        if (opt->Mul())
+        {
+            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            {
+                const auto value = builder.CreateNSWMul(lvar->value, rvar->value);
+                return new Variable(value);
+            }
+        }
+        else if (opt->Div())
+        {
+            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            {
+                const auto value = builder.CreateSDiv(lvar->value, rvar->value);
+                return new Variable(value);
+            }
+        }
+        else if (opt->Mod())
+        {
+            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            {
+                const auto value = builder.CreateSRem(lvar->value, rvar->value);
+                return new Variable(value);
+            }
         }
 
         return 0;
@@ -67,15 +125,24 @@ public:
         const auto lvar = lexpr.as<Variable *>();
         const auto rvar = rexpr.as<Variable *>();
 
+        lvar->value->print(llvm::outs());
+        std::cout << std::endl;
+        rvar->value->print(llvm::outs());
+        std::cout << std::endl;
+
         if (opt->Add())
         {
             if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
             {
-                lvar->value->print(llvm::outs());
-                std::cout << std::endl;
-                rvar->value->print(llvm::outs());
-                std::cout << std::endl;
                 const auto value = builder.CreateAdd(lvar->value, rvar->value);
+                return new Variable(value);
+            }
+        }
+        else if (opt->Sub())
+        {
+            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            {
+                const auto value = builder.CreateSub(lvar->value, rvar->value);
                 return new Variable(value);
             }
         }
