@@ -1,5 +1,5 @@
 
-// Generated from SanParser.g4 by ANTLR 4.7.2
+// Generated from SanParser.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -27,7 +27,15 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *ctx) override {
     return visitChildren(ctx);
   }
 

@@ -1,5 +1,5 @@
 
-// Generated from SanParser.g4 by ANTLR 4.7.2
+// Generated from SanParser.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -25,7 +25,11 @@ public:
 
     virtual antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
+
     virtual antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) = 0;
+
+    virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
 

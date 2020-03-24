@@ -1,5 +1,5 @@
 
-// Generated from SanParser.g4 by ANTLR 4.7.2
+// Generated from SanParser.g4 by ANTLR 4.8
 
 
 #include "SanParserVisitor.h"
@@ -72,19 +72,19 @@ SanParser::InstructionsContext* SanParser::instructions() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(15);
+    setState(17);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == SanParser::StringLiteral
 
     || _la == SanParser::IntegerLiteral) {
-      setState(12);
+      setState(14);
       statement();
-      setState(17);
+      setState(19);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(18);
+    setState(20);
     eos();
    
   }
@@ -129,7 +129,7 @@ SanParser::StatementContext* SanParser::statement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(20);
+    setState(22);
     expression(0);
    
   }
@@ -180,6 +180,29 @@ antlrcpp::Any SanParser::BinaryOperationContext::accept(tree::ParseTreeVisitor *
   else
     return visitor->visitChildren(this);
 }
+//----------------- BinaryMultiplicativeOperationContext ------------------------------------------------------------------
+
+std::vector<SanParser::ExpressionContext *> SanParser::BinaryMultiplicativeOperationContext::expression() {
+  return getRuleContexts<SanParser::ExpressionContext>();
+}
+
+SanParser::ExpressionContext* SanParser::BinaryMultiplicativeOperationContext::expression(size_t i) {
+  return getRuleContext<SanParser::ExpressionContext>(i);
+}
+
+SanParser::MultiplicativeOperatorStatementContext* SanParser::BinaryMultiplicativeOperationContext::multiplicativeOperatorStatement() {
+  return getRuleContext<SanParser::MultiplicativeOperatorStatementContext>(0);
+}
+
+SanParser::BinaryMultiplicativeOperationContext::BinaryMultiplicativeOperationContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+
+antlrcpp::Any SanParser::BinaryMultiplicativeOperationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
+    return parserVisitor->visitBinaryMultiplicativeOperation(this);
+  else
+    return visitor->visitChildren(this);
+}
 //----------------- LiteralDeclarationContext ------------------------------------------------------------------
 
 SanParser::LiteralContext* SanParser::LiteralDeclarationContext::literal() {
@@ -221,31 +244,53 @@ SanParser::ExpressionContext* SanParser::expression(int precedence) {
     _ctx = _localctx;
     previousContext = _localctx;
 
-    setState(23);
+    setState(25);
     literal();
     _ctx->stop = _input->LT(-1);
-    setState(31);
+    setState(37);
     _errHandler->sync(this);
-    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 1, _ctx);
+    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 2, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        auto newContext = _tracker.createInstance<BinaryOperationContext>(_tracker.createInstance<ExpressionContext>(parentContext, parentState));
-        _localctx = newContext;
-        pushNewRecursionContext(newContext, startState, RuleExpression);
-        setState(25);
+        setState(35);
+        _errHandler->sync(this);
+        switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 1, _ctx)) {
+        case 1: {
+          auto newContext = _tracker.createInstance<BinaryMultiplicativeOperationContext>(_tracker.createInstance<ExpressionContext>(parentContext, parentState));
+          _localctx = newContext;
+          pushNewRecursionContext(newContext, startState, RuleExpression);
+          setState(27);
 
-        if (!(precpred(_ctx, 2))) throw FailedPredicateException(this, "precpred(_ctx, 2)");
-        setState(26);
-        operatorStatement();
-        setState(27);
-        expression(3); 
+          if (!(precpred(_ctx, 3))) throw FailedPredicateException(this, "precpred(_ctx, 3)");
+          setState(28);
+          multiplicativeOperatorStatement();
+          setState(29);
+          expression(4);
+          break;
+        }
+
+        case 2: {
+          auto newContext = _tracker.createInstance<BinaryOperationContext>(_tracker.createInstance<ExpressionContext>(parentContext, parentState));
+          _localctx = newContext;
+          pushNewRecursionContext(newContext, startState, RuleExpression);
+          setState(31);
+
+          if (!(precpred(_ctx, 2))) throw FailedPredicateException(this, "precpred(_ctx, 2)");
+          setState(32);
+          operatorStatement();
+          setState(33);
+          expression(3);
+          break;
+        }
+
+        } 
       }
-      setState(33);
+      setState(39);
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 1, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 2, _ctx);
     }
   }
   catch (RecognitionException &e) {
@@ -253,6 +298,70 @@ SanParser::ExpressionContext* SanParser::expression(int precedence) {
     _localctx->exception = std::current_exception();
     _errHandler->recover(this, _localctx->exception);
   }
+  return _localctx;
+}
+
+//----------------- MultiplicativeOperatorStatementContext ------------------------------------------------------------------
+
+SanParser::MultiplicativeOperatorStatementContext::MultiplicativeOperatorStatementContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* SanParser::MultiplicativeOperatorStatementContext::Mul() {
+  return getToken(SanParser::Mul, 0);
+}
+
+tree::TerminalNode* SanParser::MultiplicativeOperatorStatementContext::Div() {
+  return getToken(SanParser::Div, 0);
+}
+
+tree::TerminalNode* SanParser::MultiplicativeOperatorStatementContext::Mod() {
+  return getToken(SanParser::Mod, 0);
+}
+
+
+size_t SanParser::MultiplicativeOperatorStatementContext::getRuleIndex() const {
+  return SanParser::RuleMultiplicativeOperatorStatement;
+}
+
+
+antlrcpp::Any SanParser::MultiplicativeOperatorStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
+    return parserVisitor->visitMultiplicativeOperatorStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+SanParser::MultiplicativeOperatorStatementContext* SanParser::multiplicativeOperatorStatement() {
+  MultiplicativeOperatorStatementContext *_localctx = _tracker.createInstance<MultiplicativeOperatorStatementContext>(_ctx, getState());
+  enterRule(_localctx, 6, SanParser::RuleMultiplicativeOperatorStatement);
+  size_t _la = 0;
+
+  auto onExit = finally([=] {
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(40);
+    _la = _input->LA(1);
+    if (!((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & ((1ULL << SanParser::Mul)
+      | (1ULL << SanParser::Div)
+      | (1ULL << SanParser::Mod))) != 0))) {
+    _errHandler->recoverInline(this);
+    }
+    else {
+      _errHandler->reportMatch(this);
+      consume();
+    }
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
   return _localctx;
 }
 
@@ -264,6 +373,10 @@ SanParser::OperatorStatementContext::OperatorStatementContext(ParserRuleContext 
 
 tree::TerminalNode* SanParser::OperatorStatementContext::Add() {
   return getToken(SanParser::Add, 0);
+}
+
+tree::TerminalNode* SanParser::OperatorStatementContext::Sub() {
+  return getToken(SanParser::Sub, 0);
 }
 
 
@@ -281,15 +394,25 @@ antlrcpp::Any SanParser::OperatorStatementContext::accept(tree::ParseTreeVisitor
 
 SanParser::OperatorStatementContext* SanParser::operatorStatement() {
   OperatorStatementContext *_localctx = _tracker.createInstance<OperatorStatementContext>(_ctx, getState());
-  enterRule(_localctx, 6, SanParser::RuleOperatorStatement);
+  enterRule(_localctx, 8, SanParser::RuleOperatorStatement);
+  size_t _la = 0;
 
   auto onExit = finally([=] {
     exitRule();
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(34);
-    match(SanParser::Add);
+    setState(42);
+    _la = _input->LA(1);
+    if (!(_la == SanParser::Add
+
+    || _la == SanParser::Sub)) {
+    _errHandler->recoverInline(this);
+    }
+    else {
+      _errHandler->reportMatch(this);
+      consume();
+    }
    
   }
   catch (RecognitionException &e) {
@@ -330,7 +453,7 @@ antlrcpp::Any SanParser::LiteralContext::accept(tree::ParseTreeVisitor *visitor)
 
 SanParser::LiteralContext* SanParser::literal() {
   LiteralContext *_localctx = _tracker.createInstance<LiteralContext>(_ctx, getState());
-  enterRule(_localctx, 8, SanParser::RuleLiteral);
+  enterRule(_localctx, 10, SanParser::RuleLiteral);
   size_t _la = 0;
 
   auto onExit = finally([=] {
@@ -338,7 +461,7 @@ SanParser::LiteralContext* SanParser::literal() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(36);
+    setState(44);
     _la = _input->LA(1);
     if (!(_la == SanParser::StringLiteral
 
@@ -389,7 +512,7 @@ antlrcpp::Any SanParser::EosContext::accept(tree::ParseTreeVisitor *visitor) {
 
 SanParser::EosContext* SanParser::eos() {
   EosContext *_localctx = _tracker.createInstance<EosContext>(_ctx, getState());
-  enterRule(_localctx, 10, SanParser::RuleEos);
+  enterRule(_localctx, 12, SanParser::RuleEos);
   size_t _la = 0;
 
   auto onExit = finally([=] {
@@ -397,7 +520,7 @@ SanParser::EosContext* SanParser::eos() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(38);
+    setState(46);
     _la = _input->LA(1);
     if (!(_la == SanParser::EOF
 
@@ -431,7 +554,8 @@ bool SanParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicate
 
 bool SanParser::expressionSempred(ExpressionContext *_localctx, size_t predicateIndex) {
   switch (predicateIndex) {
-    case 0: return precpred(_ctx, 2);
+    case 0: return precpred(_ctx, 3);
+    case 1: return precpred(_ctx, 2);
 
   default:
     break;
@@ -448,19 +572,20 @@ atn::ATN SanParser::_atn;
 std::vector<uint16_t> SanParser::_serializedATN;
 
 std::vector<std::string> SanParser::_ruleNames = {
-  "instructions", "statement", "expression", "operatorStatement", "literal", 
-  "eos"
+  "instructions", "statement", "expression", "multiplicativeOperatorStatement", 
+  "operatorStatement", "literal", "eos"
 };
 
 std::vector<std::string> SanParser::_literalNames = {
-  "", "'+'", "'('", "')'", "'{'", "'}'", "'['", "']'", "", "", "", "", "'0'"
+  "", "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'{'", "'}'", "'['", 
+  "']'", "", "", "", "", "'0'"
 };
 
 std::vector<std::string> SanParser::_symbolicNames = {
-  "", "Add", "OpeningParen", "ClosingParen", "OpeningBrace", "ClosingBrace", 
-  "OpeningBracket", "ClosingBracket", "StringLiteral", "CharLiteral", "IntegerLiteral", 
-  "DecimalLiteral", "ZeroLiteral", "HexadecimalLiteral", "BinaryLiteral", 
-  "WhiteSpace", "LineTerminator"
+  "", "Add", "Sub", "Mul", "Div", "Mod", "OpeningParen", "ClosingParen", 
+  "OpeningBrace", "ClosingBrace", "OpeningBracket", "ClosingBracket", "StringLiteral", 
+  "CharLiteral", "IntegerLiteral", "DecimalLiteral", "ZeroLiteral", "HexadecimalLiteral", 
+  "BinaryLiteral", "WhiteSpace", "LineTerminator"
 };
 
 dfa::Vocabulary SanParser::_vocabulary(_literalNames, _symbolicNames);
@@ -483,31 +608,37 @@ SanParser::Initializer::Initializer() {
 
   _serializedATN = {
     0x3, 0x608b, 0xa72a, 0x8133, 0xb9ed, 0x417c, 0x3be7, 0x7786, 0x5964, 
-    0x3, 0x12, 0x2b, 0x4, 0x2, 0x9, 0x2, 0x4, 0x3, 0x9, 0x3, 0x4, 0x4, 0x9, 
-    0x4, 0x4, 0x5, 0x9, 0x5, 0x4, 0x6, 0x9, 0x6, 0x4, 0x7, 0x9, 0x7, 0x3, 
-    0x2, 0x7, 0x2, 0x10, 0xa, 0x2, 0xc, 0x2, 0xe, 0x2, 0x13, 0xb, 0x2, 0x3, 
-    0x2, 0x3, 0x2, 0x3, 0x3, 0x3, 0x3, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 
-    0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x7, 0x4, 0x20, 0xa, 0x4, 0xc, 0x4, 
-    0xe, 0x4, 0x23, 0xb, 0x4, 0x3, 0x5, 0x3, 0x5, 0x3, 0x6, 0x3, 0x6, 0x3, 
-    0x7, 0x3, 0x7, 0x3, 0x7, 0x2, 0x3, 0x6, 0x8, 0x2, 0x4, 0x6, 0x8, 0xa, 
-    0xc, 0x2, 0x4, 0x4, 0x2, 0xa, 0xa, 0xc, 0xc, 0x3, 0x3, 0x12, 0x12, 0x2, 
-    0x26, 0x2, 0x11, 0x3, 0x2, 0x2, 0x2, 0x4, 0x16, 0x3, 0x2, 0x2, 0x2, 
-    0x6, 0x18, 0x3, 0x2, 0x2, 0x2, 0x8, 0x24, 0x3, 0x2, 0x2, 0x2, 0xa, 0x26, 
-    0x3, 0x2, 0x2, 0x2, 0xc, 0x28, 0x3, 0x2, 0x2, 0x2, 0xe, 0x10, 0x5, 0x4, 
-    0x3, 0x2, 0xf, 0xe, 0x3, 0x2, 0x2, 0x2, 0x10, 0x13, 0x3, 0x2, 0x2, 0x2, 
-    0x11, 0xf, 0x3, 0x2, 0x2, 0x2, 0x11, 0x12, 0x3, 0x2, 0x2, 0x2, 0x12, 
-    0x14, 0x3, 0x2, 0x2, 0x2, 0x13, 0x11, 0x3, 0x2, 0x2, 0x2, 0x14, 0x15, 
-    0x5, 0xc, 0x7, 0x2, 0x15, 0x3, 0x3, 0x2, 0x2, 0x2, 0x16, 0x17, 0x5, 
-    0x6, 0x4, 0x2, 0x17, 0x5, 0x3, 0x2, 0x2, 0x2, 0x18, 0x19, 0x8, 0x4, 
-    0x1, 0x2, 0x19, 0x1a, 0x5, 0xa, 0x6, 0x2, 0x1a, 0x21, 0x3, 0x2, 0x2, 
-    0x2, 0x1b, 0x1c, 0xc, 0x4, 0x2, 0x2, 0x1c, 0x1d, 0x5, 0x8, 0x5, 0x2, 
-    0x1d, 0x1e, 0x5, 0x6, 0x4, 0x5, 0x1e, 0x20, 0x3, 0x2, 0x2, 0x2, 0x1f, 
-    0x1b, 0x3, 0x2, 0x2, 0x2, 0x20, 0x23, 0x3, 0x2, 0x2, 0x2, 0x21, 0x1f, 
-    0x3, 0x2, 0x2, 0x2, 0x21, 0x22, 0x3, 0x2, 0x2, 0x2, 0x22, 0x7, 0x3, 
-    0x2, 0x2, 0x2, 0x23, 0x21, 0x3, 0x2, 0x2, 0x2, 0x24, 0x25, 0x7, 0x3, 
-    0x2, 0x2, 0x25, 0x9, 0x3, 0x2, 0x2, 0x2, 0x26, 0x27, 0x9, 0x2, 0x2, 
-    0x2, 0x27, 0xb, 0x3, 0x2, 0x2, 0x2, 0x28, 0x29, 0x9, 0x3, 0x2, 0x2, 
-    0x29, 0xd, 0x3, 0x2, 0x2, 0x2, 0x4, 0x11, 0x21, 
+    0x3, 0x16, 0x33, 0x4, 0x2, 0x9, 0x2, 0x4, 0x3, 0x9, 0x3, 0x4, 0x4, 0x9, 
+    0x4, 0x4, 0x5, 0x9, 0x5, 0x4, 0x6, 0x9, 0x6, 0x4, 0x7, 0x9, 0x7, 0x4, 
+    0x8, 0x9, 0x8, 0x3, 0x2, 0x7, 0x2, 0x12, 0xa, 0x2, 0xc, 0x2, 0xe, 0x2, 
+    0x15, 0xb, 0x2, 0x3, 0x2, 0x3, 0x2, 0x3, 0x3, 0x3, 0x3, 0x3, 0x4, 0x3, 
+    0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 
+    0x4, 0x3, 0x4, 0x3, 0x4, 0x7, 0x4, 0x26, 0xa, 0x4, 0xc, 0x4, 0xe, 0x4, 
+    0x29, 0xb, 0x4, 0x3, 0x5, 0x3, 0x5, 0x3, 0x6, 0x3, 0x6, 0x3, 0x7, 0x3, 
+    0x7, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x2, 0x3, 0x6, 0x9, 0x2, 0x4, 0x6, 
+    0x8, 0xa, 0xc, 0xe, 0x2, 0x6, 0x3, 0x2, 0x5, 0x7, 0x3, 0x2, 0x3, 0x4, 
+    0x4, 0x2, 0xe, 0xe, 0x10, 0x10, 0x3, 0x3, 0x16, 0x16, 0x2, 0x2e, 0x2, 
+    0x13, 0x3, 0x2, 0x2, 0x2, 0x4, 0x18, 0x3, 0x2, 0x2, 0x2, 0x6, 0x1a, 
+    0x3, 0x2, 0x2, 0x2, 0x8, 0x2a, 0x3, 0x2, 0x2, 0x2, 0xa, 0x2c, 0x3, 0x2, 
+    0x2, 0x2, 0xc, 0x2e, 0x3, 0x2, 0x2, 0x2, 0xe, 0x30, 0x3, 0x2, 0x2, 0x2, 
+    0x10, 0x12, 0x5, 0x4, 0x3, 0x2, 0x11, 0x10, 0x3, 0x2, 0x2, 0x2, 0x12, 
+    0x15, 0x3, 0x2, 0x2, 0x2, 0x13, 0x11, 0x3, 0x2, 0x2, 0x2, 0x13, 0x14, 
+    0x3, 0x2, 0x2, 0x2, 0x14, 0x16, 0x3, 0x2, 0x2, 0x2, 0x15, 0x13, 0x3, 
+    0x2, 0x2, 0x2, 0x16, 0x17, 0x5, 0xe, 0x8, 0x2, 0x17, 0x3, 0x3, 0x2, 
+    0x2, 0x2, 0x18, 0x19, 0x5, 0x6, 0x4, 0x2, 0x19, 0x5, 0x3, 0x2, 0x2, 
+    0x2, 0x1a, 0x1b, 0x8, 0x4, 0x1, 0x2, 0x1b, 0x1c, 0x5, 0xc, 0x7, 0x2, 
+    0x1c, 0x27, 0x3, 0x2, 0x2, 0x2, 0x1d, 0x1e, 0xc, 0x5, 0x2, 0x2, 0x1e, 
+    0x1f, 0x5, 0x8, 0x5, 0x2, 0x1f, 0x20, 0x5, 0x6, 0x4, 0x6, 0x20, 0x26, 
+    0x3, 0x2, 0x2, 0x2, 0x21, 0x22, 0xc, 0x4, 0x2, 0x2, 0x22, 0x23, 0x5, 
+    0xa, 0x6, 0x2, 0x23, 0x24, 0x5, 0x6, 0x4, 0x5, 0x24, 0x26, 0x3, 0x2, 
+    0x2, 0x2, 0x25, 0x1d, 0x3, 0x2, 0x2, 0x2, 0x25, 0x21, 0x3, 0x2, 0x2, 
+    0x2, 0x26, 0x29, 0x3, 0x2, 0x2, 0x2, 0x27, 0x25, 0x3, 0x2, 0x2, 0x2, 
+    0x27, 0x28, 0x3, 0x2, 0x2, 0x2, 0x28, 0x7, 0x3, 0x2, 0x2, 0x2, 0x29, 
+    0x27, 0x3, 0x2, 0x2, 0x2, 0x2a, 0x2b, 0x9, 0x2, 0x2, 0x2, 0x2b, 0x9, 
+    0x3, 0x2, 0x2, 0x2, 0x2c, 0x2d, 0x9, 0x3, 0x2, 0x2, 0x2d, 0xb, 0x3, 
+    0x2, 0x2, 0x2, 0x2e, 0x2f, 0x9, 0x4, 0x2, 0x2, 0x2f, 0xd, 0x3, 0x2, 
+    0x2, 0x2, 0x30, 0x31, 0x9, 0x5, 0x2, 0x2, 0x31, 0xf, 0x3, 0x2, 0x2, 
+    0x2, 0x5, 0x13, 0x25, 0x27, 
   };
 
   atn::ATNDeserializer deserializer;

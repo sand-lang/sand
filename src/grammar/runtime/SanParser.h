@@ -1,5 +1,5 @@
 
-// Generated from SanParser.g4 by ANTLR 4.7.2
+// Generated from SanParser.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -12,15 +12,16 @@
 class  SanParser : public antlr4::Parser {
 public:
   enum {
-    Add = 1, OpeningParen = 2, ClosingParen = 3, OpeningBrace = 4, ClosingBrace = 5, 
-    OpeningBracket = 6, ClosingBracket = 7, StringLiteral = 8, CharLiteral = 9, 
-    IntegerLiteral = 10, DecimalLiteral = 11, ZeroLiteral = 12, HexadecimalLiteral = 13, 
-    BinaryLiteral = 14, WhiteSpace = 15, LineTerminator = 16
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
+    OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
+    StringLiteral = 12, CharLiteral = 13, IntegerLiteral = 14, DecimalLiteral = 15, 
+    ZeroLiteral = 16, HexadecimalLiteral = 17, BinaryLiteral = 18, WhiteSpace = 19, 
+    LineTerminator = 20
   };
 
   enum {
-    RuleInstructions = 0, RuleStatement = 1, RuleExpression = 2, RuleOperatorStatement = 3, 
-    RuleLiteral = 4, RuleEos = 5
+    RuleInstructions = 0, RuleStatement = 1, RuleExpression = 2, RuleMultiplicativeOperatorStatement = 3, 
+    RuleOperatorStatement = 4, RuleLiteral = 5, RuleEos = 6
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -36,6 +37,7 @@ public:
   class InstructionsContext;
   class StatementContext;
   class ExpressionContext;
+  class MultiplicativeOperatorStatementContext;
   class OperatorStatementContext;
   class LiteralContext;
   class EosContext; 
@@ -92,6 +94,17 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  BinaryMultiplicativeOperationContext : public ExpressionContext {
+  public:
+    BinaryMultiplicativeOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    MultiplicativeOperatorStatementContext *multiplicativeOperatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LiteralDeclarationContext : public ExpressionContext {
   public:
     LiteralDeclarationContext(ExpressionContext *ctx);
@@ -103,11 +116,27 @@ public:
 
   ExpressionContext* expression();
   ExpressionContext* expression(int precedence);
+  class  MultiplicativeOperatorStatementContext : public antlr4::ParserRuleContext {
+  public:
+    MultiplicativeOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Mul();
+    antlr4::tree::TerminalNode *Div();
+    antlr4::tree::TerminalNode *Mod();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  MultiplicativeOperatorStatementContext* multiplicativeOperatorStatement();
+
   class  OperatorStatementContext : public antlr4::ParserRuleContext {
   public:
     OperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Add();
+    antlr4::tree::TerminalNode *Sub();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

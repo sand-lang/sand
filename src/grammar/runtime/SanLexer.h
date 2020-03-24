@@ -1,5 +1,5 @@
 
-// Generated from SanLexer.g4 by ANTLR 4.7.2
+// Generated from SanLexer.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -12,10 +12,11 @@
 class  SanLexer : public antlr4::Lexer {
 public:
   enum {
-    Add = 1, OpeningParen = 2, ClosingParen = 3, OpeningBrace = 4, ClosingBrace = 5, 
-    OpeningBracket = 6, ClosingBracket = 7, StringLiteral = 8, CharLiteral = 9, 
-    IntegerLiteral = 10, DecimalLiteral = 11, ZeroLiteral = 12, HexadecimalLiteral = 13, 
-    BinaryLiteral = 14, WhiteSpace = 15, LineTerminator = 16
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
+    OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
+    StringLiteral = 12, CharLiteral = 13, IntegerLiteral = 14, DecimalLiteral = 15, 
+    ZeroLiteral = 16, HexadecimalLiteral = 17, BinaryLiteral = 18, WhiteSpace = 19, 
+    LineTerminator = 20
   };
 
   SanLexer(antlr4::CharStream *input);
