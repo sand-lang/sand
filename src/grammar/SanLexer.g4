@@ -2,6 +2,10 @@ lexer grammar SanLexer;
 
 // Operators
 Add: '+';
+Sub: '-';
+Mul: '*';
+Div: '/';
+Mod: '%';
 
 // Pairs
 OpeningParen: '(';

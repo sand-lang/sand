@@ -9,10 +9,12 @@ instructions: statement* eos;
 statement: expression;
 
 expression:
-	expression operatorStatement expression	# BinaryOperation
-	| literal								# LiteralDeclaration;
+	expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
+	| expression operatorStatement expression				# BinaryOperation
+	| literal												# LiteralDeclaration;
 
-operatorStatement: Add;
+multiplicativeOperatorStatement: Mul | Div | Mod;
+operatorStatement: Add | Sub;
 
 literal: IntegerLiteral | StringLiteral;
 
