@@ -15,6 +15,28 @@ ClosingBrace: '}';
 OpeningBracket: '[';
 ClosingBracket: ']';
 
+// Types
+Int8: 'i8';
+Int16: 'i16';
+Int32: 'i32';
+Int64: 'i64';
+
+UInt8: 'u8';
+UInt16: 'u16';
+UInt32: 'u32';
+UInt64: 'u64';
+
+Float32: 'f32';
+Float64: 'f64';
+
+// Others
+Function: 'fn';
+Comma: ',';
+Colon: ':';
+
+VariableName: Name;
+fragment Name: [a-zA-Z] [a-zA-Z0-9]*;
+
 // Literals
 StringLiteral: '"' StringChar* '"';
 CharLiteral: '\'' StringChar+ '\'';

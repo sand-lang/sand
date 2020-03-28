@@ -21,6 +21,8 @@ public:
    */
     virtual antlrcpp::Any visitInstructions(SanParser::InstructionsContext *context) = 0;
 
+    virtual antlrcpp::Any visitBody(SanParser::BodyContext *context) = 0;
+
     virtual antlrcpp::Any visitStatement(SanParser::StatementContext *context) = 0;
 
     virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) = 0;
@@ -36,6 +38,20 @@ public:
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunction(SanParser::FunctionContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) = 0;
+
+    virtual antlrcpp::Any visitType(SanParser::TypeContext *context) = 0;
+
+    virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;
+
+    virtual antlrcpp::Any visitPrimaryType(SanParser::PrimaryTypeContext *context) = 0;
 
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 

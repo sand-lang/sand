@@ -14,14 +14,19 @@ public:
   enum {
     Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
     OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
-    StringLiteral = 12, CharLiteral = 13, IntegerLiteral = 14, DecimalLiteral = 15, 
-    ZeroLiteral = 16, HexadecimalLiteral = 17, BinaryLiteral = 18, WhiteSpace = 19, 
-    LineTerminator = 20
+    Int8 = 12, Int16 = 13, Int32 = 14, Int64 = 15, UInt8 = 16, UInt16 = 17, 
+    UInt32 = 18, UInt64 = 19, Float32 = 20, Float64 = 21, Function = 22, 
+    Comma = 23, Colon = 24, VariableName = 25, StringLiteral = 26, CharLiteral = 27, 
+    IntegerLiteral = 28, DecimalLiteral = 29, ZeroLiteral = 30, HexadecimalLiteral = 31, 
+    BinaryLiteral = 32, WhiteSpace = 33, LineTerminator = 34
   };
 
   enum {
-    RuleInstructions = 0, RuleStatement = 1, RuleExpression = 2, RuleMultiplicativeOperatorStatement = 3, 
-    RuleOperatorStatement = 4, RuleLiteral = 5, RuleEos = 6
+    RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
+    RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
+    RuleLiteral = 6, RuleFunction = 7, RuleFunctionDeclaration = 8, RuleFunctionArguments = 9, 
+    RuleFunctionArgument = 10, RuleType = 11, RuleTypeDimensions = 12, RulePrimaryType = 13, 
+    RuleEos = 14
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -35,11 +40,19 @@ public:
 
 
   class InstructionsContext;
+  class BodyContext;
   class StatementContext;
   class ExpressionContext;
   class MultiplicativeOperatorStatementContext;
   class OperatorStatementContext;
   class LiteralContext;
+  class FunctionContext;
+  class FunctionDeclarationContext;
+  class FunctionArgumentsContext;
+  class FunctionArgumentContext;
+  class TypeContext;
+  class TypeDimensionsContext;
+  class PrimaryTypeContext;
   class EosContext; 
 
   class  InstructionsContext : public antlr4::ParserRuleContext {
@@ -57,11 +70,29 @@ public:
 
   InstructionsContext* instructions();
 
+  class  BodyContext : public antlr4::ParserRuleContext {
+  public:
+    BodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *OpeningBrace();
+    antlr4::tree::TerminalNode *ClosingBrace();
+    std::vector<StatementContext *> statement();
+    StatementContext* statement(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  BodyContext* body();
+
   class  StatementContext : public antlr4::ParserRuleContext {
   public:
     StatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    FunctionContext *function();
     ExpressionContext *expression();
+    BodyContext *body();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -169,6 +200,122 @@ public:
   };
 
   LiteralContext* literal();
+
+  class  FunctionContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    FunctionDeclarationContext *functionDeclaration();
+    BodyContext *body();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionContext* function();
+
+  class  FunctionDeclarationContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Function();
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *OpeningParen();
+    antlr4::tree::TerminalNode *ClosingParen();
+    FunctionArgumentsContext *functionArguments();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionDeclarationContext* functionDeclaration();
+
+  class  FunctionArgumentsContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionArgumentsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    FunctionArgumentContext *functionArgument();
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+    std::vector<FunctionArgumentsContext *> functionArguments();
+    FunctionArgumentsContext* functionArguments(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionArgumentsContext* functionArguments();
+
+  class  FunctionArgumentContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionArgumentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionArgumentContext* functionArgument();
+
+  class  TypeContext : public antlr4::ParserRuleContext {
+  public:
+    TypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    PrimaryTypeContext *primaryType();
+    std::vector<TypeDimensionsContext *> typeDimensions();
+    TypeDimensionsContext* typeDimensions(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeContext* type();
+
+  class  TypeDimensionsContext : public antlr4::ParserRuleContext {
+  public:
+    TypeDimensionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *OpeningBracket();
+    antlr4::tree::TerminalNode *ClosingBracket();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeDimensionsContext* typeDimensions();
+
+  class  PrimaryTypeContext : public antlr4::ParserRuleContext {
+  public:
+    PrimaryTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Int8();
+    antlr4::tree::TerminalNode *Int16();
+    antlr4::tree::TerminalNode *Int32();
+    antlr4::tree::TerminalNode *Int64();
+    antlr4::tree::TerminalNode *UInt8();
+    antlr4::tree::TerminalNode *UInt16();
+    antlr4::tree::TerminalNode *UInt32();
+    antlr4::tree::TerminalNode *UInt64();
+    antlr4::tree::TerminalNode *Float32();
+    antlr4::tree::TerminalNode *Float64();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  PrimaryTypeContext* primaryType();
 
   class  EosContext : public antlr4::ParserRuleContext {
   public:
