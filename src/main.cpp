@@ -35,11 +35,19 @@ int main(int argc, char **argv)
 
     std::cout << out_stream.str() << std::endl;
 
-    // San::Compiler compiler(visitor.module);
-    // auto objects = compiler.generate_objects();
+    San::Compiler compiler(visitor.env.module);
+    auto objects = compiler.generate_objects();
 
-    // for (const auto &object : objects)
-    //     std::cout << object << std::endl;
+    for (const auto &object : objects)
+        std::cout << object << std::endl;
+
+    std::string objects_str(" ");
+    for (const auto &object : objects)
+    {
+        objects_str += object + " ";
+    }
+
+    std::system(("/usr/bin/ld " + objects_str + "-lSystem -o output").c_str());
 
     return 0;
 }
