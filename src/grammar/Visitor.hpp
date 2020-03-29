@@ -125,6 +125,8 @@ public:
 
     antlrcpp::Any visitBody(SanParser::BodyContext *context, Function *function = nullptr)
     {
+        this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
+
         auto block = new Block(this->scopes.top(), function->ref);
         env.builder.SetInsertPoint(block->bb);
 
@@ -152,6 +154,8 @@ public:
             const auto var = visitStatement(statement).as<Variable *>();
             env.builder.CreateRet(var->value);
         }
+
+        this->scopes.pop();
 
         return block;
     }
