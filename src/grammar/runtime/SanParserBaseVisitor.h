@@ -79,7 +79,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitPrimaryType(SanParser::PrimaryTypeContext *ctx) override {
+  virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *ctx) override {
     return visitChildren(ctx);
   }
 

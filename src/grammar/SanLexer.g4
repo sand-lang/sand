@@ -16,6 +16,9 @@ OpeningBracket: '[';
 ClosingBracket: ']';
 
 // Types
+Void: 'void';
+Bool: 'bool' | 'i1';
+
 Int8: 'i8';
 Int16: 'i16';
 Int32: 'i32';

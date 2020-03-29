@@ -14,11 +14,11 @@ public:
   enum {
     Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
     OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
-    Int8 = 12, Int16 = 13, Int32 = 14, Int64 = 15, UInt8 = 16, UInt16 = 17, 
-    UInt32 = 18, UInt64 = 19, Float32 = 20, Float64 = 21, Function = 22, 
-    Comma = 23, Colon = 24, VariableName = 25, StringLiteral = 26, CharLiteral = 27, 
-    IntegerLiteral = 28, DecimalLiteral = 29, ZeroLiteral = 30, HexadecimalLiteral = 31, 
-    BinaryLiteral = 32, WhiteSpace = 33, LineTerminator = 34
+    Void = 12, Bool = 13, Int8 = 14, Int16 = 15, Int32 = 16, Int64 = 17, 
+    UInt8 = 18, UInt16 = 19, UInt32 = 20, UInt64 = 21, Float32 = 22, Float64 = 23, 
+    Function = 24, Comma = 25, Colon = 26, VariableName = 27, StringLiteral = 28, 
+    CharLiteral = 29, IntegerLiteral = 30, DecimalLiteral = 31, ZeroLiteral = 32, 
+    HexadecimalLiteral = 33, BinaryLiteral = 34, WhiteSpace = 35, LineTerminator = 36
   };
 
   SanLexer(antlr4::CharStream *input);

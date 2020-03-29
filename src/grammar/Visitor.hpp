@@ -7,6 +7,9 @@
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <string>
+#include <unordered_map>
+
 namespace San
 {
 class Visitor : public SanParserBaseVisitor
@@ -66,24 +69,83 @@ public:
     {
         const auto name = context->VariableName()->getText();
 
-        std::vector<llvm::Type *> args;
+        const auto arguments = context->functionArguments();
 
-        auto return_type = llvm::Type::getInt32Ty(this->env.llvm_context);
+        std::unordered_map<std::string, Type *> args;
+
+        if (arguments)
+        {
+            args = this->visitFunctionArguments(arguments).as<std::unordered_map<std::string, Type *>>();
+        }
+
+        auto type = context->type();
+        Type *return_type = nullptr;
+
+        if (type)
+        {
+            return_type = this->visitType(type).as<Type *>();
+        }
+        else
+        {
+            return_type = this->scopes.top()->get_type("void");
+        }
 
         auto function = new Function(this->scopes.top(), return_type, args, name);
         return this->scopes.top()->add(function, name);
     }
 
+    antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) override
+    {
+        const auto arguments = context->functionArgument();
+        std::unordered_map<std::string, Type *> args;
+
+        for (const auto &arg : arguments)
+        {
+            auto pair = this->visitFunctionArgument(arg).as<std::pair<std::string, Type *>>();
+            args.insert(pair);
+        }
+
+        return args;
+    }
+
+    antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) override
+    {
+        const auto name = context->VariableName()->getText();
+        const auto type = this->visitType(context->type()).as<Type *>();
+
+        return std::pair<std::string, Type *>(name, type);
+    }
+
+    antlrcpp::Any visitType(SanParser::TypeContext *context) override
+    {
+        const auto name = context->typeName()->getText();
+
+        return this->scopes.top()->get_type(name);
+    }
+
     antlrcpp::Any visitBody(SanParser::BodyContext *context, Function *function = nullptr)
     {
         auto block = new Block(this->scopes.top(), function->ref);
+        env.builder.SetInsertPoint(block->bb);
 
         if (function != nullptr)
         {
             function->entry = block;
-        }
 
-        env.builder.SetInsertPoint(block->bb);
+            auto it = function->ref->arg_begin();
+            auto fa = function->args.begin();
+
+            while (it != function->ref->arg_end())
+            {
+                it->setName(fa->first);
+
+                llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
+                this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
+
+                it++;
+                fa++;
+            }
+        }
 
         for (const auto &statement : context->statement())
         {
@@ -135,26 +197,26 @@ public:
 
         if (opt->Mul())
         {
-            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateNSWMul(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(value));
+                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Div())
         {
-            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSDiv(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(value));
+                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Mod())
         {
-            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSRem(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(value));
+                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
             }
         }
 
@@ -180,18 +242,18 @@ public:
 
         if (opt->Add())
         {
-            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateAdd(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(value));
+                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Sub())
         {
-            if (lvar->type->isIntegerTy() && lvar->type->isIntegerTy())
+            if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSub(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(value));
+                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
             }
         }
 
@@ -210,7 +272,7 @@ public:
             const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
             const auto value = llvm::ConstantInt::get(type, std::stoi(literal->getText()), true);
 
-            return this->scopes.top()->add(new Variable(value));
+            return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
         }
         else if (const auto literal = context->IntegerLiteral())
         {
@@ -224,7 +286,7 @@ public:
             };
 
             const auto value = this->env.builder.CreateGEP(global, idxs);
-            return this->scopes.top()->add(new Variable(value));
+            return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
         }
 
         return nullptr;

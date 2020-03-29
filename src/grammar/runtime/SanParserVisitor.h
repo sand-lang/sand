@@ -51,7 +51,7 @@ public:
 
     virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;
 
-    virtual antlrcpp::Any visitPrimaryType(SanParser::PrimaryTypeContext *context) = 0;
+    virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 

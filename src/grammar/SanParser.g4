@@ -25,14 +25,13 @@ function: functionDeclaration body?;
 functionDeclaration:
 	Function VariableName '(' functionArguments? ')' (':' type)?;
 
-functionArguments: functionArgument (',' functionArguments)*;
+functionArguments: functionArgument (',' functionArgument)*;
 functionArgument: VariableName ':' type;
 
-// fn main(a: i8[][][][], b: i32[][]) : f64[][][][][][][]
-type: primaryType typeDimensions*;
+type: typeName typeDimensions*;
 typeDimensions: '[' ']';
 
-primaryType:
+typeName:
 	Int8
 	| Int16
 	| Int32
@@ -42,6 +41,7 @@ primaryType:
 	| UInt32
 	| UInt64
 	| Float32
-	| Float64;
+	| Float64
+	| VariableName;
 
 eos: (EOF | LineTerminator);
