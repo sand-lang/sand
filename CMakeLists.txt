@@ -9,6 +9,31 @@ project(san
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(TARGET_WebAssembly WebAssemblyCodeGen WebAssemblyAsmParser WebAssemblyDesc WebAssemblyInfo)
+set(TARGET_XCore XCoreCodeGen XCoreDesc XCoreInfo)
+set(TARGET_SystemZ SystemZCodeGen SystemZAsmParser SystemZDesc SystemZInfo) 
+set(TARGET_Sparc SparcCodeGen SparcAsmParser SparcDesc SparcInfo) 
+set(TARGET_RISCV RISCVCodeGen RISCVAsmParser RISCVDesc RISCVUtils RISCVInfo) 
+set(TARGET_PowerPC PowerPCCodeGen PowerPCAsmParser PowerPCDesc PowerPCInfo) 
+set(TARGET_NVPTX NVPTXCodeGen NVPTXDesc NVPTXInfo) 
+set(TARGET_MSP430 MSP430CodeGen MSP430AsmParser MSP430Desc MSP430Info) 
+set(TARGET_Mips MipsCodeGen MipsAsmParser MipsDesc MipsInfo) 
+set(TARGET_Lanai LanaiCodeGen LanaiAsmParser LanaiDesc LanaiInfo) 
+set(TARGET_Hexagon HexagonCodeGen HexagonAsmParser HexagonDesc HexagonInfo) 
+set(TARGET_BPF BPFCodeGen BPFAsmParser BPFDesc BPFInfo) 
+set(TARGET_ARM ARMCodeGen ARMAsmParser ARMDesc ARMUtils ARMInfo) 
+set(TARGET_AMDGPU AMDGPUCodeGen AMDGPUAsmParser AMDGPUDesc AMDGPUUtils AMDGPUInfo)
+set(TARGET_X86 X86CodeGen X86AsmParser X86Desc X86Utils X86Info)
+set(TARGET_AARCH64 AArch64CodeGen AArch64AsmParser AArch64Desc AArch64Utils AArch64Info)
+
+set(TARGETS_TO_BUILD "X86")
+
+set(LLVM_TARGETS)
+foreach (target IN ITEMS ${TARGETS_TO_BUILD})
+    list(APPEND LLVM_TARGETS "${TARGET_${target}}")
+endforeach(target)
+
+list(JOIN TARGETS_TO_BUILD ";" LLVM_TARGETS_TO_BUILD)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -22,6 +47,66 @@ set(INCLUDES
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-llvm_map_components_to_libnames(llvm_libs TextAPI OrcJIT JITLink ObjectYAML WindowsManifest Coverage TableGen LTO Passes ObjCARCOpts Coroutines LibDriver XRay XCoreDisassembler XCoreCodeGen XCoreDesc XCoreInfo WebAssemblyDisassembler WebAssemblyCodeGen WebAssemblyDesc WebAssemblyAsmParser WebAssemblyInfo SystemZDisassembler SystemZCodeGen SystemZAsmParser SystemZDesc SystemZInfo SparcDisassembler SparcCodeGen SparcAsmParser SparcDesc SparcInfo RISCVDisassembler RISCVCodeGen RISCVAsmParser RISCVDesc RISCVUtils RISCVInfo PowerPCDisassembler PowerPCCodeGen PowerPCAsmParser PowerPCDesc PowerPCInfo NVPTXCodeGen NVPTXDesc NVPTXInfo MSP430Disassembler MSP430CodeGen MSP430AsmParser MSP430Desc MSP430Info MipsDisassembler MipsCodeGen MipsAsmParser MipsDesc MipsInfo LanaiDisassembler LanaiCodeGen LanaiAsmParser LanaiDesc LanaiInfo HexagonDisassembler HexagonCodeGen HexagonAsmParser HexagonDesc HexagonInfo BPFDisassembler BPFCodeGen BPFAsmParser BPFDesc BPFInfo ARMDisassembler ARMCodeGen ARMAsmParser ARMDesc ARMUtils ARMInfo AMDGPUDisassembler AMDGPUCodeGen MIRParser ipo Instrumentation Vectorize Linker IRReader AsmParser AMDGPUAsmParser AMDGPUDesc AMDGPUUtils AMDGPUInfo AArch64Disassembler AArch64CodeGen AArch64AsmParser AArch64Desc AArch64Utils AArch64Info Symbolize DebugInfoPDB FuzzMutate LineEditor MCA DebugInfoGSYM X86Disassembler X86AsmParser X86CodeGen GlobalISel SelectionDAG AsmPrinter DebugInfoDWARF X86Desc MCDisassembler X86Utils X86Info MCJIT Interpreter ExecutionEngine RuntimeDyld CodeGen Target ScalarOpts InstCombine AggressiveInstCombine TransformUtils BitWriter Analysis ProfileData DlltoolDriver Option Object MCParser MC DebugInfoCodeView DebugInfoMSF BitReader Core Remarks BinaryFormat BitstreamReader Support Demangle)
+
+llvm_map_components_to_libnames(llvm_libs 
+    TextAPI
+    OrcJIT
+    JITLink
+    ObjectYAML
+    WindowsManifest
+    Coverage
+    TableGen
+    LTO
+    Passes
+    ObjCARCOpts
+    Coroutines
+    LibDriver
+    XRay
+    ${LLVM_TARGETS}
+    MIRParser
+    ipo
+    Instrumentation
+    Vectorize
+    Linker
+    IRReader
+    AsmParser
+    Symbolize
+    DebugInfoPDB
+    FuzzMutate
+    LineEditor
+    MCA
+    DebugInfoGSYM
+    GlobalISel
+    SelectionDAG
+    AsmPrinter
+    DebugInfoDWARF
+    MCJIT
+    Interpreter
+    ExecutionEngine
+    RuntimeDyld
+    CodeGen
+    Target
+    ScalarOpts
+    InstCombine
+    AggressiveInstCombine
+    TransformUtils
+    BitWriter
+    Analysis
+    ProfileData
+    DlltoolDriver
+    Option
+    Object
+    MCParser
+    MC
+    DebugInfoCodeView
+    DebugInfoMSF
+    BitReader
+    Core
+    Remarks
+    BinaryFormat
+    BitstreamReader
+    Support
+    Demangle
+)
 
 target_link_libraries(${PROJECT_NAME} antlr4_static ${llvm_libs})
