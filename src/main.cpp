@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
     std::string bytecode = "";
     llvm::raw_string_ostream out_stream(bytecode);
-    out_stream << *visitor.module;
+    out_stream << *visitor.env.module;
     out_stream.flush();
 
     std::cout << out_stream.str() << std::endl;
