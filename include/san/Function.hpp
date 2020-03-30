@@ -21,6 +21,9 @@ public:
 
     Block *entry = nullptr;
 
+    llvm::BasicBlock *return_label = nullptr;
+    llvm::AllocaInst *return_value = nullptr;
+
     Function(std::shared_ptr<Scope> &scope,
              Type *return_type_,
              const std::unordered_map<std::string, Type *> &args_,

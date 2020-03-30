@@ -1,7 +1,3 @@
-fn test(a: i32) : i8 {
-    0
-}
-
 fn main() : i32 {
-    1 + 2
+    return 0
 }

@@ -10,6 +10,8 @@
 
 namespace San
 {
+class Function;
+
 class Scope
 {
 public:
@@ -22,14 +24,21 @@ public:
     std::unordered_map<std::string, Variable *> variables;
     std::unordered_map<std::string, Type *> types;
 
+    Function *function = nullptr;
+
     Scope(llvm::LLVMContext &llvm_context_,
           llvm::IRBuilder<> &builder_,
-          std::unique_ptr<llvm::Module> &module_)
+          std::unique_ptr<llvm::Module> &module_,
+          Function *function_ = nullptr)
         : llvm_context(llvm_context_),
           builder(builder_),
-          module(module_) {}
+          module(module_),
+          function(function_) {}
 
-    Scope(std::shared_ptr<Scope> parent_) : Scope(parent_->llvm_context, parent_->builder, parent_->module)
+    Scope(std::shared_ptr<Scope> parent_, Function *function = nullptr) : Scope(parent_->llvm_context,
+                                                                                parent_->builder,
+                                                                                parent_->module,
+                                                                                (function != nullptr ? function : parent_->function))
     {
         this->parent = parent_;
     }

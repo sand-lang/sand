@@ -25,12 +25,32 @@ public:
 
     antlrcpp::Any visitInstructions(SanParser::InstructionsContext *context) override
     {
-        for (const auto &statement : context->statement())
-        {
-            visitStatement(statement);
-        }
+        visitStatements(context->statement());
 
         return 0;
+    }
+
+    bool visitStatements(const std::vector<SanParser::StatementContext *> &statements)
+    {
+        for (const auto &statement : statements)
+        {
+            auto value = visitStatement(statement);
+
+            if (statement->returnStatement())
+            {
+                return true;
+            }
+            else if (value.is<Block *>())
+            {
+                const auto block = value.as<Block *>();
+                if (block->has_returned)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     antlrcpp::Any visitStatement(SanParser::StatementContext *context) override
@@ -46,6 +66,10 @@ public:
         else if (auto body = context->body())
         {
             return visitBody(body);
+        }
+        else if (auto return_statement = context->returnStatement())
+        {
+            return visitReturnStatement(return_statement);
         }
 
         return 0;
@@ -129,14 +153,28 @@ public:
 
     antlrcpp::Any visitBody(SanParser::BodyContext *context, Function *function = nullptr)
     {
-        this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
+        this->scopes.push(std::make_shared<Scope>(this->scopes.top(), function));
 
-        auto block = new Block(this->scopes.top(), function->ref);
+        auto block = new Block(this->scopes.top(), function != nullptr ? function->ref : nullptr, function != nullptr);
+
+        if (function == nullptr)
+        {
+            this->scopes.top()->builder.CreateBr(block->bb);
+            block->bb->insertInto(this->scopes.top()->function->ref);
+        }
+
         env.builder.SetInsertPoint(block->bb);
 
         if (function != nullptr)
         {
             function->entry = block;
+            function->return_label = llvm::BasicBlock::Create(this->scopes.top()->llvm_context, "return_label");
+
+            const auto return_type = function->ref->getReturnType();
+            if (!return_type->isVoidTy())
+            {
+                function->return_value = this->scopes.top()->builder.CreateAlloca(return_type, nullptr, "return_value");
+            }
 
             auto it = function->ref->arg_begin();
             auto fa = function->args.begin();
@@ -151,17 +189,61 @@ public:
                 it++;
                 fa++;
             }
+
+            if (function->return_value != nullptr)
+            {
+                const auto type = function->return_value->getAllocatedType();
+
+                if (type->isIntegerTy())
+                {
+                    this->scopes.top()->builder.CreateStore(llvm::ConstantInt::get(type, 0), function->return_value);
+                }
+                else if (type->isPointerTy())
+                {
+                    this->scopes.top()->builder.CreateStore(llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(type)), function->return_value);
+                }
+            }
         }
 
-        for (const auto &statement : context->statement())
+        block->has_returned = visitStatements(context->statement());
+
+        if (function != nullptr)
         {
-            const auto var = visitStatement(statement).as<Variable *>();
-            env.builder.CreateRet(var->value);
+            function->return_label->insertInto(function->ref);
+            this->scopes.top()->builder.SetInsertPoint(function->return_label);
+
+            const auto return_type = function->ref->getReturnType();
+
+            if (return_type->isVoidTy())
+            {
+                this->scopes.top()->builder.CreateRetVoid();
+            }
+            else
+            {
+                const auto return_value = this->scopes.top()->builder.CreateLoad(function->return_value);
+                this->scopes.top()->builder.CreateRet(return_value);
+            }
         }
 
         this->scopes.pop();
 
         return block;
+    }
+
+    antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) override
+    {
+        auto scope = this->scopes.top();
+        auto expression = context->expression();
+
+        if (expression)
+        {
+            auto value = visitExpression(expression).as<Variable *>();
+            scope->builder.CreateStore(value->value, scope->function->return_value);
+        }
+
+        scope->builder.CreateBr(scope->function->return_label);
+
+        return nullptr;
     }
 
     antlrcpp::Any visitExpression(SanParser::ExpressionContext *context)
@@ -183,7 +265,7 @@ public:
             return visitLiteralDeclaration(literal_declaration_context);
         }
 
-        return 0;
+        return nullptr;
     }
 
     antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) override
