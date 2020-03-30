@@ -85,6 +85,10 @@ public:
         {
             return_type = this->visitType(type).as<Type *>();
         }
+        else if (name == "main")
+        {
+            return_type = this->scopes.top()->get_type("i32");
+        }
         else
         {
             return_type = this->scopes.top()->get_type("void");
