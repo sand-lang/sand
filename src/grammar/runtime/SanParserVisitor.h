@@ -47,6 +47,8 @@ public:
 
     virtual antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) = 0;
 
+    virtual antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) = 0;
+
     virtual antlrcpp::Any visitType(SanParser::TypeContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;

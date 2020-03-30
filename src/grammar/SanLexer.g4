@@ -34,6 +34,7 @@ Float64: 'f64';
 
 // Others
 Function: 'fn';
+Return: 'return';
 Comma: ',';
 Colon: ':';
 

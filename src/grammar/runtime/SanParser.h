@@ -16,17 +16,18 @@ public:
     OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
     Void = 12, Bool = 13, Int8 = 14, Int16 = 15, Int32 = 16, Int64 = 17, 
     UInt8 = 18, UInt16 = 19, UInt32 = 20, UInt64 = 21, Float32 = 22, Float64 = 23, 
-    Function = 24, Comma = 25, Colon = 26, VariableName = 27, StringLiteral = 28, 
-    CharLiteral = 29, IntegerLiteral = 30, DecimalLiteral = 31, ZeroLiteral = 32, 
-    HexadecimalLiteral = 33, BinaryLiteral = 34, WhiteSpace = 35, LineTerminator = 36
+    Function = 24, Return = 25, Comma = 26, Colon = 27, VariableName = 28, 
+    StringLiteral = 29, CharLiteral = 30, IntegerLiteral = 31, DecimalLiteral = 32, 
+    ZeroLiteral = 33, HexadecimalLiteral = 34, BinaryLiteral = 35, WhiteSpace = 36, 
+    LineTerminator = 37
   };
 
   enum {
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
     RuleLiteral = 6, RuleFunction = 7, RuleFunctionDeclaration = 8, RuleFunctionArguments = 9, 
-    RuleFunctionArgument = 10, RuleType = 11, RuleTypeDimensions = 12, RuleTypeName = 13, 
-    RuleEos = 14
+    RuleFunctionArgument = 10, RuleReturnStatement = 11, RuleType = 12, 
+    RuleTypeDimensions = 13, RuleTypeName = 14, RuleEos = 15
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -50,6 +51,7 @@ public:
   class FunctionDeclarationContext;
   class FunctionArgumentsContext;
   class FunctionArgumentContext;
+  class ReturnStatementContext;
   class TypeContext;
   class TypeDimensionsContext;
   class TypeNameContext;
@@ -93,6 +95,7 @@ public:
     FunctionContext *function();
     ExpressionContext *expression();
     BodyContext *body();
+    ReturnStatementContext *returnStatement();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -264,6 +267,20 @@ public:
   };
 
   FunctionArgumentContext* functionArgument();
+
+  class  ReturnStatementContext : public antlr4::ParserRuleContext {
+  public:
+    ReturnStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Return();
+    ExpressionContext *expression();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ReturnStatementContext* returnStatement();
 
   class  TypeContext : public antlr4::ParserRuleContext {
   public:

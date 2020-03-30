@@ -16,9 +16,10 @@ public:
     OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
     Void = 12, Bool = 13, Int8 = 14, Int16 = 15, Int32 = 16, Int64 = 17, 
     UInt8 = 18, UInt16 = 19, UInt32 = 20, UInt64 = 21, Float32 = 22, Float64 = 23, 
-    Function = 24, Comma = 25, Colon = 26, VariableName = 27, StringLiteral = 28, 
-    CharLiteral = 29, IntegerLiteral = 30, DecimalLiteral = 31, ZeroLiteral = 32, 
-    HexadecimalLiteral = 33, BinaryLiteral = 34, WhiteSpace = 35, LineTerminator = 36
+    Function = 24, Return = 25, Comma = 26, Colon = 27, VariableName = 28, 
+    StringLiteral = 29, CharLiteral = 30, IntegerLiteral = 31, DecimalLiteral = 32, 
+    ZeroLiteral = 33, HexadecimalLiteral = 34, BinaryLiteral = 35, WhiteSpace = 36, 
+    LineTerminator = 37
   };
 
   SanLexer(antlr4::CharStream *input);

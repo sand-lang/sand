@@ -8,7 +8,7 @@ instructions: statement* eos;
 
 body: '{' statement* '}';
 
-statement: function | expression | body;
+statement: function | expression | body | returnStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
@@ -27,6 +27,8 @@ functionDeclaration:
 
 functionArguments: functionArgument (',' functionArgument)*;
 functionArgument: VariableName ':' type;
+
+returnStatement: 'return' expression?;
 
 type: typeName typeDimensions*;
 typeDimensions: '[' ']';

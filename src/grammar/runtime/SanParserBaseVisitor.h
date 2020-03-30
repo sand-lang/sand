@@ -71,6 +71,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitType(SanParser::TypeContext *ctx) override {
     return visitChildren(ctx);
   }
