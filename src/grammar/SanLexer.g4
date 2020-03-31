@@ -7,6 +7,8 @@ Mul: '*';
 Div: '/';
 Mod: '%';
 
+Equal: '=';
+
 // Pairs
 OpeningParen: '(';
 ClosingParen: ')';
@@ -31,6 +33,10 @@ UInt64: 'u64';
 
 Float32: 'f32';
 Float64: 'f64';
+
+// Variable
+ConstQualifier: 'const';
+LetQualifier: 'let';
 
 // Others
 Function: 'fn';

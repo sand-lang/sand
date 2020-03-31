@@ -12,22 +12,23 @@
 class  SanParser : public antlr4::Parser {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
-    OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
-    Void = 12, Bool = 13, Int8 = 14, Int16 = 15, Int32 = 16, Int64 = 17, 
-    UInt8 = 18, UInt16 = 19, UInt32 = 20, UInt64 = 21, Float32 = 22, Float64 = 23, 
-    Function = 24, Return = 25, Comma = 26, Colon = 27, VariableName = 28, 
-    StringLiteral = 29, CharLiteral = 30, IntegerLiteral = 31, DecimalLiteral = 32, 
-    ZeroLiteral = 33, HexadecimalLiteral = 34, BinaryLiteral = 35, WhiteSpace = 36, 
-    LineTerminator = 37
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Equal = 6, OpeningParen = 7, 
+    ClosingParen = 8, OpeningBrace = 9, ClosingBrace = 10, OpeningBracket = 11, 
+    ClosingBracket = 12, Void = 13, Bool = 14, Int8 = 15, Int16 = 16, Int32 = 17, 
+    Int64 = 18, UInt8 = 19, UInt16 = 20, UInt32 = 21, UInt64 = 22, Float32 = 23, 
+    Float64 = 24, ConstQualifier = 25, LetQualifier = 26, Function = 27, 
+    Return = 28, Comma = 29, Colon = 30, VariableName = 31, StringLiteral = 32, 
+    CharLiteral = 33, IntegerLiteral = 34, DecimalLiteral = 35, ZeroLiteral = 36, 
+    HexadecimalLiteral = 37, BinaryLiteral = 38, WhiteSpace = 39, LineTerminator = 40
   };
 
   enum {
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
-    RuleLiteral = 6, RuleFunction = 7, RuleFunctionDeclaration = 8, RuleFunctionArguments = 9, 
-    RuleFunctionArgument = 10, RuleReturnStatement = 11, RuleType = 12, 
-    RuleTypeDimensions = 13, RuleTypeName = 14, RuleEos = 15
+    RuleLiteral = 6, RuleVariableDeclaration = 7, RuleVariableQualifier = 8, 
+    RuleFunction = 9, RuleFunctionDeclaration = 10, RuleFunctionArguments = 11, 
+    RuleFunctionArgument = 12, RuleReturnStatement = 13, RuleType = 14, 
+    RuleTypeDimensions = 15, RuleTypeName = 16, RuleEos = 17
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -47,6 +48,8 @@ public:
   class MultiplicativeOperatorStatementContext;
   class OperatorStatementContext;
   class LiteralContext;
+  class VariableDeclarationContext;
+  class VariableQualifierContext;
   class FunctionContext;
   class FunctionDeclarationContext;
   class FunctionArgumentsContext;
@@ -95,6 +98,7 @@ public:
     FunctionContext *function();
     ExpressionContext *expression();
     BodyContext *body();
+    VariableDeclarationContext *variableDeclaration();
     ReturnStatementContext *returnStatement();
 
 
@@ -135,6 +139,15 @@ public:
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
     OperatorStatementContext *operatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  VariableExpressionContext : public ExpressionContext {
+  public:
+    VariableExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *VariableName();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -203,6 +216,38 @@ public:
   };
 
   LiteralContext* literal();
+
+  class  VariableDeclarationContext : public antlr4::ParserRuleContext {
+  public:
+    VariableDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    VariableQualifierContext *variableQualifier();
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+    antlr4::tree::TerminalNode *Equal();
+    ExpressionContext *expression();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  VariableDeclarationContext* variableDeclaration();
+
+  class  VariableQualifierContext : public antlr4::ParserRuleContext {
+  public:
+    VariableQualifierContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *ConstQualifier();
+    antlr4::tree::TerminalNode *LetQualifier();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  VariableQualifierContext* variableQualifier();
 
   class  FunctionContext : public antlr4::ParserRuleContext {
   public:

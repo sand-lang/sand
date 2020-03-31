@@ -8,18 +8,28 @@ instructions: statement* eos;
 
 body: '{' statement* '}';
 
-statement: function | expression | body | returnStatement;
+statement:
+	function
+	| expression
+	| body
+	| variableDeclaration
+	| returnStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
+	| VariableName											# VariableExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
 operatorStatement: Add | Sub;
 
 literal: IntegerLiteral | StringLiteral;
+
+variableDeclaration:
+	variableQualifier VariableName ':' type ('=' expression)?;
+variableQualifier: ConstQualifier | LetQualifier;
 
 function: functionDeclaration body?;
 functionDeclaration:

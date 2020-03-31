@@ -35,6 +35,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -52,6 +56,14 @@ public:
   }
 
   virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitVariableQualifier(SanParser::VariableQualifierContext *ctx) override {
     return visitChildren(ctx);
   }
 

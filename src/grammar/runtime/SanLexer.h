@@ -12,14 +12,14 @@
 class  SanLexer : public antlr4::Lexer {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, OpeningParen = 6, ClosingParen = 7, 
-    OpeningBrace = 8, ClosingBrace = 9, OpeningBracket = 10, ClosingBracket = 11, 
-    Void = 12, Bool = 13, Int8 = 14, Int16 = 15, Int32 = 16, Int64 = 17, 
-    UInt8 = 18, UInt16 = 19, UInt32 = 20, UInt64 = 21, Float32 = 22, Float64 = 23, 
-    Function = 24, Return = 25, Comma = 26, Colon = 27, VariableName = 28, 
-    StringLiteral = 29, CharLiteral = 30, IntegerLiteral = 31, DecimalLiteral = 32, 
-    ZeroLiteral = 33, HexadecimalLiteral = 34, BinaryLiteral = 35, WhiteSpace = 36, 
-    LineTerminator = 37
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Equal = 6, OpeningParen = 7, 
+    ClosingParen = 8, OpeningBrace = 9, ClosingBrace = 10, OpeningBracket = 11, 
+    ClosingBracket = 12, Void = 13, Bool = 14, Int8 = 15, Int16 = 16, Int32 = 17, 
+    Int64 = 18, UInt8 = 19, UInt16 = 20, UInt32 = 21, UInt64 = 22, Float32 = 23, 
+    Float64 = 24, ConstQualifier = 25, LetQualifier = 26, Function = 27, 
+    Return = 28, Comma = 29, Colon = 30, VariableName = 31, StringLiteral = 32, 
+    CharLiteral = 33, IntegerLiteral = 34, DecimalLiteral = 35, ZeroLiteral = 36, 
+    HexadecimalLiteral = 37, BinaryLiteral = 38, WhiteSpace = 39, LineTerminator = 40
   };
 
   SanLexer(antlr4::CharStream *input);

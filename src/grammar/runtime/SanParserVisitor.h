@@ -29,6 +29,8 @@ public:
 
     virtual antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) = 0;
@@ -38,6 +40,10 @@ public:
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *context) = 0;
+
+    virtual antlrcpp::Any visitVariableQualifier(SanParser::VariableQualifierContext *context) = 0;
 
     virtual antlrcpp::Any visitFunction(SanParser::FunctionContext *context) = 0;
 
