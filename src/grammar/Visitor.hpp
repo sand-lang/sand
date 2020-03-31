@@ -190,6 +190,8 @@ public:
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
                 this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
 
+                this->scopes.top()->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), true), fa->first);
+
                 it++;
                 fa++;
             }
@@ -290,6 +292,10 @@ public:
         {
             return visitVariableExpression(variable_expression_context);
         }
+        else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
+        {
+            return visitFunctionCallExpression(function_call_expression_context);
+        }
         else if (const auto literal_declaration_context = dynamic_cast<SanParser::LiteralDeclarationContext *>(context))
         {
             return visitLiteralDeclaration(literal_declaration_context);
@@ -388,6 +394,48 @@ public:
         auto var = scope->get_var(context->VariableName()->getText());
 
         return var->load(scope->builder);
+    }
+
+    antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto expression = visitExpression(context->expression()).as<Variable *>();
+
+        if (expression->type->is_function())
+        {
+            std::vector<llvm::Value *> args;
+
+            if (auto arguments = context->functionCallArguments())
+            {
+                args = visitFunctionCallArguments(context->functionCallArguments()).as<std::vector<llvm::Value *>>();
+            }
+
+            auto ret = scope->builder.CreateCall(expression->value, args);
+            return new Variable(new Type(ret->getType()), reinterpret_cast<llvm::Value *>(ret));
+        }
+
+        std::cerr << "Expression is not a function" << std::endl;
+
+        return nullptr;
+    }
+
+    antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        std::vector<llvm::Value *> args;
+
+        for (auto arg : context->functionCallArgument())
+        {
+            auto var = visitFunctionCallArgument(arg).as<Variable *>();
+            args.push_back(var->get(scope->builder));
+        }
+
+        return args;
+    }
+
+    antlrcpp::Any visitFunctionCallArgument(SanParser::FunctionCallArgumentContext *context) override
+    {
+        return visitExpression(context->expression());
     }
 
     antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) override

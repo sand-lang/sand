@@ -46,5 +46,7 @@ public:
         this->ref = llvm::Function::Create(function_type, linkage, name_.c_str(), scope->module.get());
         this->value = this->ref;
     }
+
+    virtual ~Function() {}
 };
 } // namespace San

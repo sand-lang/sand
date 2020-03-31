@@ -22,5 +22,10 @@ public:
     {
         return this->ref->isIntegerTy();
     }
+
+    inline bool is_function() const
+    {
+        return this->ref->isFunctionTy();
+    }
 };
 } // namespace San
