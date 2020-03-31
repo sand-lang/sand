@@ -67,6 +67,10 @@ public:
         {
             return visitBody(body);
         }
+        else if (auto variable_declaration = context->variableDeclaration())
+        {
+            return visitVariableDeclaration(variable_declaration);
+        }
         else if (auto return_statement = context->returnStatement())
         {
             return visitReturnStatement(return_statement);
@@ -230,6 +234,28 @@ public:
         return block;
     }
 
+    antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *context) override
+    {
+        auto scope = this->scopes.top();
+
+        auto qualifier = context->variableQualifier();
+        auto is_constant = qualifier->ConstQualifier() != nullptr;
+
+        auto name = context->VariableName()->getText();
+        auto type = visitType(context->type()).as<Type *>();
+
+        auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
+        Variable *var = new Variable(type, alloca, true, is_constant);
+
+        if (auto expression = context->expression())
+        {
+            auto rvar = visitExpression(expression).as<Variable *>();
+            scope->builder.CreateStore(rvar->value, alloca);
+        }
+
+        return scope->add(var, name);
+    }
+
     antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) override
     {
         auto scope = this->scopes.top();
@@ -260,6 +286,10 @@ public:
         {
             return visitBinaryMultiplicativeOperation(binary_multiplicative_operation_context);
         }
+        else if (const auto variable_expression_context = dynamic_cast<SanParser::VariableExpressionContext *>(context))
+        {
+            return visitVariableExpression(variable_expression_context);
+        }
         else if (const auto literal_declaration_context = dynamic_cast<SanParser::LiteralDeclarationContext *>(context))
         {
             return visitLiteralDeclaration(literal_declaration_context);
@@ -275,6 +305,8 @@ public:
 
     antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) override
     {
+        auto scope = this->scopes.top();
+
         const auto opt = context->multiplicativeOperatorStatement();
         const auto lexpr_context = context->expression(0);
         const auto rexpr_context = context->expression(1);
@@ -282,15 +314,15 @@ public:
         const auto lexpr = visitExpression(lexpr_context);
         const auto rexpr = visitExpression(rexpr_context);
 
-        const auto lvar = lexpr.as<Variable *>();
-        const auto rvar = rexpr.as<Variable *>();
+        auto lvar = lexpr.as<Variable *>();
+        auto rvar = rexpr.as<Variable *>();
 
         if (opt->Mul())
         {
             if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateNSWMul(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Div())
@@ -298,7 +330,7 @@ public:
             if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSDiv(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Mod())
@@ -306,7 +338,7 @@ public:
             if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSRem(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
 
@@ -348,6 +380,14 @@ public:
         }
 
         return 0;
+    }
+
+    antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto var = scope->get_var(context->VariableName()->getText());
+
+        return var->load(scope->builder);
     }
 
     antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) override
