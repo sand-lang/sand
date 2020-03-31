@@ -44,6 +44,8 @@ Return: 'return';
 Comma: ',';
 Colon: ':';
 
+InstructionsSeparator: ';'+;
+
 VariableName: Name;
 fragment Name: [a-zA-Z] [a-zA-Z0-9]*;
 

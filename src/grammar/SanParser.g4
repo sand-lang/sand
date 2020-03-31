@@ -10,10 +10,10 @@ body: '{' statement* '}';
 
 statement:
 	function
-	| expression
+	| expression InstructionsSeparator
 	| body
-	| variableDeclaration
-	| returnStatement;
+	| variableDeclaration InstructionsSeparator
+	| returnStatement InstructionsSeparator;
 
 expression:
 	'(' expression ')'										# InParenExpression
