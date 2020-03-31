@@ -26,9 +26,10 @@ public:
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
     RuleLiteral = 6, RuleVariableDeclaration = 7, RuleVariableQualifier = 8, 
-    RuleFunction = 9, RuleFunctionDeclaration = 10, RuleFunctionArguments = 11, 
-    RuleFunctionArgument = 12, RuleReturnStatement = 13, RuleType = 14, 
-    RuleTypeDimensions = 15, RuleTypeName = 16, RuleEos = 17
+    RuleFunctionCallArguments = 9, RuleFunctionCallArgument = 10, RuleFunction = 11, 
+    RuleFunctionDeclaration = 12, RuleFunctionArguments = 13, RuleFunctionArgument = 14, 
+    RuleReturnStatement = 15, RuleType = 16, RuleTypeDimensions = 17, RuleTypeName = 18, 
+    RuleEos = 19
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -50,6 +51,8 @@ public:
   class LiteralContext;
   class VariableDeclarationContext;
   class VariableQualifierContext;
+  class FunctionCallArgumentsContext;
+  class FunctionCallArgumentContext;
   class FunctionContext;
   class FunctionDeclarationContext;
   class FunctionArgumentsContext;
@@ -172,6 +175,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  FunctionCallExpressionContext : public ExpressionContext {
+  public:
+    FunctionCallExpressionContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *OpeningParen();
+    antlr4::tree::TerminalNode *ClosingParen();
+    FunctionCallArgumentsContext *functionCallArguments();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   ExpressionContext* expression();
   ExpressionContext* expression(int precedence);
   class  MultiplicativeOperatorStatementContext : public antlr4::ParserRuleContext {
@@ -248,6 +263,35 @@ public:
   };
 
   VariableQualifierContext* variableQualifier();
+
+  class  FunctionCallArgumentsContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionCallArgumentsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<FunctionCallArgumentContext *> functionCallArgument();
+    FunctionCallArgumentContext* functionCallArgument(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionCallArgumentsContext* functionCallArguments();
+
+  class  FunctionCallArgumentContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionCallArgumentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ExpressionContext *expression();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionCallArgumentContext* functionCallArgument();
 
   class  FunctionContext : public antlr4::ParserRuleContext {
   public:

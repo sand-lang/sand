@@ -47,6 +47,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -64,6 +68,14 @@ public:
   }
 
   virtual antlrcpp::Any visitVariableQualifier(SanParser::VariableQualifierContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunctionCallArgument(SanParser::FunctionCallArgumentContext *ctx) override {
     return visitChildren(ctx);
   }
 

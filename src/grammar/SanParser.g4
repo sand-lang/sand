@@ -20,6 +20,7 @@ expression:
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| VariableName											# VariableExpression
+	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
@@ -30,6 +31,10 @@ literal: IntegerLiteral | StringLiteral;
 variableDeclaration:
 	variableQualifier VariableName ':' type ('=' expression)?;
 variableQualifier: ConstQualifier | LetQualifier;
+
+functionCallArguments:
+	functionCallArgument (',' functionCallArgument)*;
+functionCallArgument: expression;
 
 function: functionDeclaration body?;
 functionDeclaration:

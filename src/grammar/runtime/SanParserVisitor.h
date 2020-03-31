@@ -35,6 +35,8 @@ public:
 
     virtual antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
@@ -44,6 +46,10 @@ public:
     virtual antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *context) = 0;
 
     virtual antlrcpp::Any visitVariableQualifier(SanParser::VariableQualifierContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionCallArgument(SanParser::FunctionCallArgumentContext *context) = 0;
 
     virtual antlrcpp::Any visitFunction(SanParser::FunctionContext *context) = 0;
 
