@@ -21,6 +21,7 @@ expression:
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
+	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| VariableName											# VariableExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
@@ -29,6 +30,13 @@ multiplicativeOperatorStatement: Mul | Div | Mod;
 operatorStatement: Add | Sub;
 bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
 conditionalOperatorStatement: ConditionalOr | ConditionalAnd;
+comparisonOperatorStatement:
+	EqualTo
+	| NotEqualTo
+	| LessThanOrEqualTo
+	| GreaterThanOrEqualTo
+	| LessThan
+	| GreaterThan;
 
 literal: IntegerLiteral | StringLiteral;
 

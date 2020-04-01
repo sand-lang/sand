@@ -10,6 +10,13 @@ Mod: '%';
 ConditionalOr: '||';
 ConditionalAnd: '&&';
 
+EqualTo: '==';
+NotEqualTo: '!=';
+LessThanOrEqualTo: '<=';
+GreaterThanOrEqualTo: '>=';
+LessThan: '<';
+GreaterThan: '>';
+
 Xor: '^';
 BitwiseOr: '|';
 BitwiseAnd: '&';
