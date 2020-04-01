@@ -5,6 +5,7 @@
 #include <Parser.h>
 
 #include <san/Compiler.hpp>
+#include <san/Debugger.hpp>
 
 #include "grammar/runtime/SanLexer.h"
 #include "grammar/runtime/SanParser.h"
@@ -13,6 +14,8 @@
 
 int main(int argc, char **argv)
 {
+    San::Debugger debug;
+
     std::string pwd = std::filesystem::current_path().string();
     std::string path = argc > 1 ? argv[1] : "test.sn";
 
@@ -24,9 +27,13 @@ int main(int argc, char **argv)
     antlr4::CommonTokenStream tokens(&lexer);
     SanParser parser(&tokens);
 
+    debug.start_timer("bytecode");
+
     SanParser::InstructionsContext *tree = parser.instructions();
     San::Visitor visitor;
     antlrcpp::Any program = visitor.visitInstructions(tree);
+
+    auto elapsed_bytecode = debug.end_timer("bytecode");
 
     std::string bytecode = "";
     llvm::raw_string_ostream out_stream(bytecode);
@@ -35,8 +42,12 @@ int main(int argc, char **argv)
 
     std::cout << out_stream.str() << std::endl;
 
+    debug.start_timer("objects");
+
     San::Compiler compiler(visitor.env.module);
     auto objects = compiler.generate_objects();
+
+    auto elapsed_objects = debug.end_timer("objects");
 
     for (const auto &object : objects)
         std::cout << object << std::endl;
@@ -47,7 +58,15 @@ int main(int argc, char **argv)
         objects_str += object + " ";
     }
 
+    debug.start_timer("linking");
+
     std::system(("/usr/bin/ld " + objects_str + "-lSystem -o output").c_str());
+
+    auto elapsed_linking = debug.end_timer("linking");
+
+    std::cout << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
+    std::cout << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
+    std::cout << "Finished linking in " << elapsed_linking.count() << " secs" << std::endl;
 
     return 0;
 }
