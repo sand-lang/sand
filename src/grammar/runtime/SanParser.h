@@ -12,25 +12,25 @@
 class  SanParser : public antlr4::Parser {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Equal = 6, OpeningParen = 7, 
-    ClosingParen = 8, OpeningBrace = 9, ClosingBrace = 10, OpeningBracket = 11, 
-    ClosingBracket = 12, Void = 13, Bool = 14, Int8 = 15, Int16 = 16, Int32 = 17, 
-    Int64 = 18, UInt8 = 19, UInt16 = 20, UInt32 = 21, UInt64 = 22, Float32 = 23, 
-    Float64 = 24, ConstQualifier = 25, LetQualifier = 26, Function = 27, 
-    Return = 28, Comma = 29, Colon = 30, InstructionsSeparator = 31, VariableName = 32, 
-    StringLiteral = 33, CharLiteral = 34, IntegerLiteral = 35, DecimalLiteral = 36, 
-    ZeroLiteral = 37, HexadecimalLiteral = 38, BinaryLiteral = 39, WhiteSpace = 40, 
-    LineTerminator = 41
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Xor = 6, BitwiseOr = 7, 
+    BitwiseAnd = 8, Equal = 9, OpeningParen = 10, ClosingParen = 11, OpeningBrace = 12, 
+    ClosingBrace = 13, OpeningBracket = 14, ClosingBracket = 15, Void = 16, 
+    Bool = 17, Int8 = 18, Int16 = 19, Int32 = 20, Int64 = 21, UInt8 = 22, 
+    UInt16 = 23, UInt32 = 24, UInt64 = 25, Float32 = 26, Float64 = 27, ConstQualifier = 28, 
+    LetQualifier = 29, Function = 30, Return = 31, Comma = 32, Colon = 33, 
+    InstructionsSeparator = 34, VariableName = 35, StringLiteral = 36, CharLiteral = 37, 
+    IntegerLiteral = 38, DecimalLiteral = 39, ZeroLiteral = 40, HexadecimalLiteral = 41, 
+    BinaryLiteral = 42, WhiteSpace = 43, LineTerminator = 44
   };
 
   enum {
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
-    RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
-    RuleLiteral = 6, RuleVariableDeclaration = 7, RuleVariableQualifier = 8, 
-    RuleFunctionCallArguments = 9, RuleFunctionCallArgument = 10, RuleFunction = 11, 
-    RuleFunctionDeclaration = 12, RuleFunctionArguments = 13, RuleFunctionArgument = 14, 
-    RuleReturnStatement = 15, RuleType = 16, RuleTypeDimensions = 17, RuleTypeName = 18, 
-    RuleEos = 19
+    RuleMultiplicativeOperatorStatement = 4, RuleBitwiseOperatorStatement = 5, 
+    RuleOperatorStatement = 6, RuleLiteral = 7, RuleVariableDeclaration = 8, 
+    RuleVariableQualifier = 9, RuleFunctionCallArguments = 10, RuleFunctionCallArgument = 11, 
+    RuleFunction = 12, RuleFunctionDeclaration = 13, RuleFunctionArguments = 14, 
+    RuleFunctionArgument = 15, RuleReturnStatement = 16, RuleType = 17, 
+    RuleTypeDimensions = 18, RuleTypeName = 19, RuleEos = 20
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -48,6 +48,7 @@ public:
   class StatementContext;
   class ExpressionContext;
   class MultiplicativeOperatorStatementContext;
+  class BitwiseOperatorStatementContext;
   class OperatorStatementContext;
   class LiteralContext;
   class VariableDeclarationContext;
@@ -148,6 +149,17 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  BinaryBitwiseOperationContext : public ExpressionContext {
+  public:
+    BinaryBitwiseOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    BitwiseOperatorStatementContext *bitwiseOperatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  VariableExpressionContext : public ExpressionContext {
   public:
     VariableExpressionContext(ExpressionContext *ctx);
@@ -205,6 +217,21 @@ public:
   };
 
   MultiplicativeOperatorStatementContext* multiplicativeOperatorStatement();
+
+  class  BitwiseOperatorStatementContext : public antlr4::ParserRuleContext {
+  public:
+    BitwiseOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Xor();
+    antlr4::tree::TerminalNode *BitwiseOr();
+    antlr4::tree::TerminalNode *BitwiseAnd();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  BitwiseOperatorStatementContext* bitwiseOperatorStatement();
 
   class  OperatorStatementContext : public antlr4::ParserRuleContext {
   public:

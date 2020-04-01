@@ -7,6 +7,10 @@ Mul: '*';
 Div: '/';
 Mod: '%';
 
+Xor: '^';
+BitwiseOr: '|';
+BitwiseAnd: '&';
+
 Equal: '=';
 
 // Pairs

@@ -19,11 +19,13 @@ expression:
 	'(' expression ')'										# InParenExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
+	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
 	| VariableName											# VariableExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
+bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
 operatorStatement: Add | Sub;
 
 literal: IntegerLiteral | StringLiteral;
