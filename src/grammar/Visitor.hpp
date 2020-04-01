@@ -198,7 +198,7 @@ public:
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
                 this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
 
-                scope->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), true), fa->first);
+                scope->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
 
                 it++;
                 fa++;
@@ -252,7 +252,7 @@ public:
         auto type = visitType(context->type()).as<Type *>();
 
         auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
-        Variable *var = new Variable(type, alloca, true);
+        Variable *var = new Variable(type, alloca, VariableValueType::Alloca);
 
         if (auto expression = context->expression())
         {
@@ -296,6 +296,10 @@ public:
         else if (const auto binary_bitwise_operation_context = dynamic_cast<SanParser::BinaryBitwiseOperationContext *>(context))
         {
             return visitBinaryBitwiseOperation(binary_bitwise_operation_context);
+        }
+        else if (const auto equality_operation_context = dynamic_cast<SanParser::EqualityOperationContext *>(context))
+        {
+            return visitEqualityOperation(equality_operation_context);
         }
         else if (const auto variable_expression_context = dynamic_cast<SanParser::VariableExpressionContext *>(context))
         {
@@ -433,12 +437,35 @@ public:
         return 0;
     }
 
+    antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        const auto opt = context->equalityOperatorStatement();
+        const auto lexpr_context = context->expression(0);
+        const auto rexpr_context = context->expression(1);
+
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
+
+        if (auto alloca = lexpr->get_alloca())
+        {
+            scope->builder.CreateStore(rexpr->get(scope->builder), alloca);
+        }
+        else
+        {
+            std::cerr << "Invalid lvalue" << std::endl;
+        }
+
+        return lexpr;
+    }
+
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
     {
         auto &scope = this->scopes.top();
         auto var = scope->get_var(context->VariableName()->getText());
 
-        return var->load(scope->builder);
+        return var;
     }
 
     antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) override

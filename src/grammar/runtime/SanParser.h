@@ -29,11 +29,12 @@ public:
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
     RuleBitwiseOperatorStatement = 6, RuleConditionalOperatorStatement = 7, 
-    RuleComparisonOperatorStatement = 8, RuleLiteral = 9, RuleVariableDeclaration = 10, 
-    RuleFunctionCallArguments = 11, RuleFunctionCallArgument = 12, RuleFunction = 13, 
-    RuleFunctionDeclaration = 14, RuleFunctionArguments = 15, RuleFunctionArgument = 16, 
-    RuleReturnStatement = 17, RuleType = 18, RuleTypeQualifier = 19, RuleTypeDimensions = 20, 
-    RuleTypeName = 21, RuleEos = 22
+    RuleComparisonOperatorStatement = 8, RuleEqualityOperatorStatement = 9, 
+    RuleLiteral = 10, RuleVariableDeclaration = 11, RuleFunctionCallArguments = 12, 
+    RuleFunctionCallArgument = 13, RuleFunction = 14, RuleFunctionDeclaration = 15, 
+    RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleReturnStatement = 18, 
+    RuleType = 19, RuleTypeQualifier = 20, RuleTypeDimensions = 21, RuleTypeName = 22, 
+    RuleEos = 23
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -55,6 +56,7 @@ public:
   class BitwiseOperatorStatementContext;
   class ConditionalOperatorStatementContext;
   class ComparisonOperatorStatementContext;
+  class EqualityOperatorStatementContext;
   class LiteralContext;
   class VariableDeclarationContext;
   class FunctionCallArgumentsContext;
@@ -161,6 +163,17 @@ public:
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
     BitwiseOperatorStatementContext *bitwiseOperatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  EqualityOperationContext : public ExpressionContext {
+  public:
+    EqualityOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    EqualityOperatorStatementContext *equalityOperatorStatement();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -305,6 +318,19 @@ public:
   };
 
   ComparisonOperatorStatementContext* comparisonOperatorStatement();
+
+  class  EqualityOperatorStatementContext : public antlr4::ParserRuleContext {
+  public:
+    EqualityOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Equal();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  EqualityOperatorStatementContext* equalityOperatorStatement();
 
   class  LiteralContext : public antlr4::ParserRuleContext {
   public:

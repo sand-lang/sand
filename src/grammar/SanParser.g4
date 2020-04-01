@@ -22,6 +22,7 @@ expression:
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
+	| expression equalityOperatorStatement expression		# EqualityOperation
 	| VariableName											# VariableExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
@@ -37,6 +38,7 @@ comparisonOperatorStatement:
 	| GreaterThanOrEqualTo
 	| LessThan
 	| GreaterThan;
+equalityOperatorStatement: Equal;
 
 literal: IntegerLiteral | StringLiteral;
 

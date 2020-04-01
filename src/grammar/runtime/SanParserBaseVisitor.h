@@ -39,6 +39,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -80,6 +84,10 @@ public:
   }
 
   virtual antlrcpp::Any visitComparisonOperatorStatement(SanParser::ComparisonOperatorStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitEqualityOperatorStatement(SanParser::EqualityOperatorStatementContext *ctx) override {
     return visitChildren(ctx);
   }
 

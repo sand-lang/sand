@@ -31,6 +31,8 @@ public:
 
     virtual antlrcpp::Any visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) = 0;
+
     virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
@@ -52,6 +54,8 @@ public:
     virtual antlrcpp::Any visitConditionalOperatorStatement(SanParser::ConditionalOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitComparisonOperatorStatement(SanParser::ComparisonOperatorStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitEqualityOperatorStatement(SanParser::EqualityOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) = 0;
 

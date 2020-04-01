@@ -6,26 +6,33 @@
 
 namespace San
 {
+enum class VariableValueType
+{
+    Simple,
+    Alloca,
+    Load,
+};
+
 class Variable
 {
 public:
     Type *type = nullptr;
     llvm::Value *value = nullptr;
 
-    bool is_alloca = false;
+    VariableValueType value_type = VariableValueType::Simple;
 
     Variable() = default;
     Variable(Type *type_,
              llvm::Value *value_ = nullptr,
-             const bool &is_alloca_ = false) : type(type_),
-                                                 value(value_),
-                                                 is_alloca(is_alloca_) {}
+             const VariableValueType &value_type_ = VariableValueType::Simple) : type(type_),
+                                                                                 value(value_),
+                                                                                 value_type(value_type_) {}
 
     virtual ~Variable() {}
 
     llvm::Value *get(llvm::IRBuilder<> &builder)
     {
-        if (this->is_alloca)
+        if (this->value_type == VariableValueType::Alloca)
         {
             return builder.CreateLoad(this->value);
         }
@@ -35,17 +42,29 @@ public:
 
     llvm::AllocaInst *get_alloca()
     {
-        if (!this->is_alloca)
+        if (this->value_type == VariableValueType::Alloca)
         {
-            return nullptr;
+            return reinterpret_cast<llvm::AllocaInst *>(this->value);
+        }
+        else if (this->value_type == VariableValueType::Load)
+        {
+            auto operand = reinterpret_cast<llvm::LoadInst *>(this->value)->getPointerOperand();
+            return reinterpret_cast<llvm::AllocaInst *>(operand);
         }
 
-        return reinterpret_cast<llvm::AllocaInst *>(this->value);
+        return nullptr;
     }
 
     inline Variable *load(llvm::IRBuilder<> &builder)
     {
-        return new Variable(new Type(*this->type), this->get(builder), false);
+        VariableValueType value_type = VariableValueType::Simple;
+
+        if (this->value_type == VariableValueType::Alloca)
+        {
+            value_type = VariableValueType::Load;
+        }
+
+        return new Variable(new Type(*this->type), this->get(builder), value_type);
     }
 
     Variable *cast(const Type *dest, llvm::IRBuilder<> &builder)
@@ -65,7 +84,7 @@ public:
                 value = builder.CreateZExtOrTrunc(value, dest->ref);
             }
 
-            return new Variable(new Type(*dest), value, false);
+            return new Variable(new Type(*dest), value, VariableValueType::Simple);
         }
 
         return this;
