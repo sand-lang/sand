@@ -12,25 +12,28 @@
 class  SanParser : public antlr4::Parser {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Xor = 6, BitwiseOr = 7, 
-    BitwiseAnd = 8, Equal = 9, OpeningParen = 10, ClosingParen = 11, OpeningBrace = 12, 
-    ClosingBrace = 13, OpeningBracket = 14, ClosingBracket = 15, Void = 16, 
-    Bool = 17, Int8 = 18, Int16 = 19, Int32 = 20, Int64 = 21, UInt8 = 22, 
-    UInt16 = 23, UInt32 = 24, UInt64 = 25, Float32 = 26, Float64 = 27, ConstQualifier = 28, 
-    LetQualifier = 29, Function = 30, Return = 31, Comma = 32, Colon = 33, 
-    InstructionsSeparator = 34, VariableName = 35, StringLiteral = 36, CharLiteral = 37, 
-    IntegerLiteral = 38, DecimalLiteral = 39, ZeroLiteral = 40, HexadecimalLiteral = 41, 
-    BinaryLiteral = 42, WhiteSpace = 43, LineTerminator = 44
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, ConditionalOr = 6, ConditionalAnd = 7, 
+    EqualTo = 8, NotEqualTo = 9, LessThanOrEqualTo = 10, GreaterThanOrEqualTo = 11, 
+    LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
+    Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
+    ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
+    Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
+    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, ConstQualifier = 36, 
+    LetQualifier = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
+    InstructionsSeparator = 42, VariableName = 43, StringLiteral = 44, CharLiteral = 45, 
+    IntegerLiteral = 46, DecimalLiteral = 47, ZeroLiteral = 48, HexadecimalLiteral = 49, 
+    BinaryLiteral = 50, WhiteSpace = 51, LineTerminator = 52
   };
 
   enum {
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
-    RuleMultiplicativeOperatorStatement = 4, RuleBitwiseOperatorStatement = 5, 
-    RuleOperatorStatement = 6, RuleLiteral = 7, RuleVariableDeclaration = 8, 
-    RuleVariableQualifier = 9, RuleFunctionCallArguments = 10, RuleFunctionCallArgument = 11, 
-    RuleFunction = 12, RuleFunctionDeclaration = 13, RuleFunctionArguments = 14, 
-    RuleFunctionArgument = 15, RuleReturnStatement = 16, RuleType = 17, 
-    RuleTypeDimensions = 18, RuleTypeName = 19, RuleEos = 20
+    RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
+    RuleBitwiseOperatorStatement = 6, RuleConditionalOperatorStatement = 7, 
+    RuleComparisonOperatorStatement = 8, RuleLiteral = 9, RuleVariableDeclaration = 10, 
+    RuleVariableQualifier = 11, RuleFunctionCallArguments = 12, RuleFunctionCallArgument = 13, 
+    RuleFunction = 14, RuleFunctionDeclaration = 15, RuleFunctionArguments = 16, 
+    RuleFunctionArgument = 17, RuleReturnStatement = 18, RuleType = 19, 
+    RuleTypeDimensions = 20, RuleTypeName = 21, RuleEos = 22
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -48,8 +51,10 @@ public:
   class StatementContext;
   class ExpressionContext;
   class MultiplicativeOperatorStatementContext;
-  class BitwiseOperatorStatementContext;
   class OperatorStatementContext;
+  class BitwiseOperatorStatementContext;
+  class ConditionalOperatorStatementContext;
+  class ComparisonOperatorStatementContext;
   class LiteralContext;
   class VariableDeclarationContext;
   class VariableQualifierContext;
@@ -189,6 +194,17 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  BinaryConditionalOperationContext : public ExpressionContext {
+  public:
+    BinaryConditionalOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    ConditionalOperatorStatementContext *conditionalOperatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  FunctionCallExpressionContext : public ExpressionContext {
   public:
     FunctionCallExpressionContext(ExpressionContext *ctx);
@@ -197,6 +213,17 @@ public:
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
     FunctionCallArgumentsContext *functionCallArguments();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  BinaryComparisonOperationContext : public ExpressionContext {
+  public:
+    BinaryComparisonOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    ComparisonOperatorStatementContext *comparisonOperatorStatement();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -218,6 +245,20 @@ public:
 
   MultiplicativeOperatorStatementContext* multiplicativeOperatorStatement();
 
+  class  OperatorStatementContext : public antlr4::ParserRuleContext {
+  public:
+    OperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Add();
+    antlr4::tree::TerminalNode *Sub();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  OperatorStatementContext* operatorStatement();
+
   class  BitwiseOperatorStatementContext : public antlr4::ParserRuleContext {
   public:
     BitwiseOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -233,19 +274,37 @@ public:
 
   BitwiseOperatorStatementContext* bitwiseOperatorStatement();
 
-  class  OperatorStatementContext : public antlr4::ParserRuleContext {
+  class  ConditionalOperatorStatementContext : public antlr4::ParserRuleContext {
   public:
-    OperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    ConditionalOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Add();
-    antlr4::tree::TerminalNode *Sub();
+    antlr4::tree::TerminalNode *ConditionalOr();
+    antlr4::tree::TerminalNode *ConditionalAnd();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    
   };
 
-  OperatorStatementContext* operatorStatement();
+  ConditionalOperatorStatementContext* conditionalOperatorStatement();
+
+  class  ComparisonOperatorStatementContext : public antlr4::ParserRuleContext {
+  public:
+    ComparisonOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *EqualTo();
+    antlr4::tree::TerminalNode *NotEqualTo();
+    antlr4::tree::TerminalNode *LessThanOrEqualTo();
+    antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
+    antlr4::tree::TerminalNode *LessThan();
+    antlr4::tree::TerminalNode *GreaterThan();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ComparisonOperatorStatementContext* comparisonOperatorStatement();
 
   class  LiteralContext : public antlr4::ParserRuleContext {
   public:
