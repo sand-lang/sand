@@ -7,6 +7,9 @@ Mul: '*';
 Div: '/';
 Mod: '%';
 
+ConditionalOr: '||';
+ConditionalAnd: '&&';
+
 Xor: '^';
 BitwiseOr: '|';
 BitwiseAnd: '&';

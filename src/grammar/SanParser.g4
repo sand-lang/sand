@@ -20,13 +20,15 @@ expression:
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
+	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| VariableName											# VariableExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
-bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
 operatorStatement: Add | Sub;
+bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
+conditionalOperatorStatement: ConditionalOr | ConditionalAnd;
 
 literal: IntegerLiteral | StringLiteral;
 
