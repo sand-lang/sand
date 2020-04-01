@@ -83,9 +83,8 @@ public:
     {
         auto declaration = visitFunctionDeclaration(context->functionDeclaration()).as<Variable *>();
         auto function = dynamic_cast<Function *>(declaration);
-        auto body = context->body();
 
-        if (body)
+        if (auto body = context->body())
         {
             function->entry = visitBody(body, function).as<Block *>();
         }
@@ -96,7 +95,6 @@ public:
     antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) override
     {
         const auto name = context->VariableName()->getText();
-
         const auto arguments = context->functionArguments();
 
         std::unordered_map<std::string, Type *> args;
@@ -105,6 +103,8 @@ public:
         {
             args = this->visitFunctionArguments(arguments).as<std::unordered_map<std::string, Type *>>();
         }
+
+        auto &scope = this->scopes.top();
 
         auto type = context->type();
         Type *return_type = nullptr;
@@ -115,15 +115,15 @@ public:
         }
         else if (name == "main")
         {
-            return_type = this->scopes.top()->get_type("i32");
+            return_type = scope->get_type("i32");
         }
         else
         {
-            return_type = this->scopes.top()->get_type("void");
+            return_type = scope->get_type("void");
         }
 
-        auto function = new Function(this->scopes.top(), return_type, args, name);
-        return this->scopes.top()->add(function, name);
+        auto function = new Function(scope, return_type, args, name);
+        return scope->add(function, name);
     }
 
     antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) override
@@ -151,20 +151,28 @@ public:
     antlrcpp::Any visitType(SanParser::TypeContext *context) override
     {
         const auto name = context->typeName()->getText();
+        const auto type = this->scopes.top()->get_type(name);
 
-        return this->scopes.top()->get_type(name);
+        for (const auto &qualifier : context->typeQualifier())
+        {
+            if (qualifier->Const())
+                type->qualifiers.is_mutable = false;
+        }
+
+        return type;
     }
 
     antlrcpp::Any visitBody(SanParser::BodyContext *context, Function *function = nullptr)
     {
         this->scopes.push(std::make_shared<Scope>(this->scopes.top(), function));
 
-        auto block = new Block(this->scopes.top(), function != nullptr ? function->ref : nullptr, function != nullptr);
+        auto &scope = this->scopes.top();
+        auto block = new Block(scope, function != nullptr ? function->ref : nullptr, function != nullptr);
 
         if (function == nullptr)
         {
-            this->scopes.top()->builder.CreateBr(block->bb);
-            block->bb->insertInto(this->scopes.top()->function->ref);
+            scope->builder.CreateBr(block->bb);
+            block->bb->insertInto(scope->function->ref);
         }
 
         env.builder.SetInsertPoint(block->bb);
@@ -172,12 +180,12 @@ public:
         if (function != nullptr)
         {
             function->entry = block;
-            function->return_label = llvm::BasicBlock::Create(this->scopes.top()->llvm_context, "return_label");
+            function->return_label = llvm::BasicBlock::Create(scope->llvm_context, "return_label");
 
             const auto return_type = function->ref->getReturnType();
             if (!return_type->isVoidTy())
             {
-                function->return_value = this->scopes.top()->builder.CreateAlloca(return_type, nullptr, "return_value");
+                function->return_value = scope->builder.CreateAlloca(return_type, nullptr, "return_value");
             }
 
             auto it = function->ref->arg_begin();
@@ -190,7 +198,7 @@ public:
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
                 this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
 
-                this->scopes.top()->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), true), fa->first);
+                scope->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), true), fa->first);
 
                 it++;
                 fa++;
@@ -202,11 +210,11 @@ public:
 
                 if (type->isIntegerTy())
                 {
-                    this->scopes.top()->builder.CreateStore(llvm::ConstantInt::get(type, 0), function->return_value);
+                    scope->builder.CreateStore(llvm::ConstantInt::get(type, 0), function->return_value);
                 }
                 else if (type->isPointerTy())
                 {
-                    this->scopes.top()->builder.CreateStore(llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(type)), function->return_value);
+                    scope->builder.CreateStore(llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(type)), function->return_value);
                 }
             }
         }
@@ -216,18 +224,18 @@ public:
         if (function != nullptr)
         {
             function->return_label->insertInto(function->ref);
-            this->scopes.top()->builder.SetInsertPoint(function->return_label);
+            scope->builder.SetInsertPoint(function->return_label);
 
             const auto return_type = function->ref->getReturnType();
 
             if (return_type->isVoidTy())
             {
-                this->scopes.top()->builder.CreateRetVoid();
+                scope->builder.CreateRetVoid();
             }
             else
             {
-                const auto return_value = this->scopes.top()->builder.CreateLoad(function->return_value);
-                this->scopes.top()->builder.CreateRet(return_value);
+                const auto return_value = scope->builder.CreateLoad(function->return_value);
+                scope->builder.CreateRet(return_value);
             }
         }
 
@@ -238,16 +246,13 @@ public:
 
     antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *context) override
     {
-        auto scope = this->scopes.top();
-
-        auto qualifier = context->variableQualifier();
-        auto is_constant = qualifier->ConstQualifier() != nullptr;
+        auto &scope = this->scopes.top();
 
         auto name = context->VariableName()->getText();
         auto type = visitType(context->type()).as<Type *>();
 
         auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
-        Variable *var = new Variable(type, alloca, true, is_constant);
+        Variable *var = new Variable(type, alloca, true);
 
         if (auto expression = context->expression())
         {
@@ -260,7 +265,7 @@ public:
 
     antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) override
     {
-        auto scope = this->scopes.top();
+        auto &scope = this->scopes.top();
         auto expression = context->expression();
 
         if (expression)
@@ -315,17 +320,16 @@ public:
 
     antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) override
     {
-        auto scope = this->scopes.top();
+        auto &scope = this->scopes.top();
 
         const auto opt = context->multiplicativeOperatorStatement();
         const auto lexpr_context = context->expression(0);
         const auto rexpr_context = context->expression(1);
 
-        const auto lexpr = visitExpression(lexpr_context);
-        const auto rexpr = visitExpression(rexpr_context);
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
-        auto lvar = lexpr.as<Variable *>();
-        auto rvar = rexpr.as<Variable *>();
+        auto [lvar, rvar] = Variable::load_and_balance_types(lexpr, rexpr, scope->builder);
 
         if (opt->Mul())
         {
@@ -357,27 +361,23 @@ public:
 
     antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *context) override
     {
+        auto &scope = this->scopes.top();
+
         const auto opt = context->operatorStatement();
         const auto lexpr_context = context->expression(0);
         const auto rexpr_context = context->expression(1);
 
-        const auto lexpr = visitExpression(lexpr_context);
-        const auto rexpr = visitExpression(rexpr_context);
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
-        const auto lvar = lexpr.as<Variable *>();
-        const auto rvar = rexpr.as<Variable *>();
-
-        lvar->value->print(llvm::outs());
-        std::cout << std::endl;
-        rvar->value->print(llvm::outs());
-        std::cout << std::endl;
+        auto [lvar, rvar] = Variable::load_and_balance_types(lexpr, rexpr, scope->builder);
 
         if (opt->Add())
         {
             if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateAdd(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Sub())
@@ -385,7 +385,7 @@ public:
             if (lvar->type->is_integer() && lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSub(lvar->value, rvar->value);
-                return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
 
@@ -394,17 +394,16 @@ public:
 
     antlrcpp::Any visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context) override
     {
-        auto scope = this->scopes.top();
+        auto &scope = this->scopes.top();
 
         const auto opt = context->bitwiseOperatorStatement();
         const auto lexpr_context = context->expression(0);
         const auto rexpr_context = context->expression(1);
 
-        const auto lexpr = visitExpression(lexpr_context);
-        const auto rexpr = visitExpression(rexpr_context);
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
-        auto lvar = lexpr.as<Variable *>();
-        auto rvar = rexpr.as<Variable *>();
+        auto [lvar, rvar] = Variable::load_and_balance_types(lexpr, rexpr, scope->builder);
 
         if (opt->Xor())
         {
@@ -491,12 +490,14 @@ public:
 
     antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) override
     {
+        auto &scope = this->scopes.top();
+
         if (const auto literal = context->IntegerLiteral())
         {
             const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
             const auto value = llvm::ConstantInt::get(type, std::stoi(literal->getText()), true);
 
-            return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+            return scope->add(new Variable(new Type(value->getType()), value));
         }
         else if (const auto literal = context->IntegerLiteral())
         {
@@ -510,7 +511,7 @@ public:
             };
 
             const auto value = this->env.builder.CreateGEP(global, idxs);
-            return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+            return scope->add(new Variable(new Type(value->getType()), value));
         }
 
         return nullptr;

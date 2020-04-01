@@ -48,9 +48,11 @@ UInt64: 'u64';
 Float32: 'f32';
 Float64: 'f64';
 
+// Qualifiers
+Const: 'const';
+
 // Variable
-ConstQualifier: 'const';
-LetQualifier: 'let';
+VariableDeclarator: 'let';
 
 // Others
 Function: 'fn';

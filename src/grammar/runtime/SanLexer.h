@@ -18,8 +18,8 @@ public:
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
-    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, ConstQualifier = 36, 
-    LetQualifier = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
+    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, Const = 36, 
+    VariableDeclarator = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
     InstructionsSeparator = 42, VariableName = 43, StringLiteral = 44, CharLiteral = 45, 
     IntegerLiteral = 46, DecimalLiteral = 47, ZeroLiteral = 48, HexadecimalLiteral = 49, 
     BinaryLiteral = 50, WhiteSpace = 51, LineTerminator = 52

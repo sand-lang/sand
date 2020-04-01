@@ -18,8 +18,8 @@ public:
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
-    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, ConstQualifier = 36, 
-    LetQualifier = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
+    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, Const = 36, 
+    VariableDeclarator = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
     InstructionsSeparator = 42, VariableName = 43, StringLiteral = 44, CharLiteral = 45, 
     IntegerLiteral = 46, DecimalLiteral = 47, ZeroLiteral = 48, HexadecimalLiteral = 49, 
     BinaryLiteral = 50, WhiteSpace = 51, LineTerminator = 52
@@ -30,10 +30,10 @@ public:
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
     RuleBitwiseOperatorStatement = 6, RuleConditionalOperatorStatement = 7, 
     RuleComparisonOperatorStatement = 8, RuleLiteral = 9, RuleVariableDeclaration = 10, 
-    RuleVariableQualifier = 11, RuleFunctionCallArguments = 12, RuleFunctionCallArgument = 13, 
-    RuleFunction = 14, RuleFunctionDeclaration = 15, RuleFunctionArguments = 16, 
-    RuleFunctionArgument = 17, RuleReturnStatement = 18, RuleType = 19, 
-    RuleTypeDimensions = 20, RuleTypeName = 21, RuleEos = 22
+    RuleFunctionCallArguments = 11, RuleFunctionCallArgument = 12, RuleFunction = 13, 
+    RuleFunctionDeclaration = 14, RuleFunctionArguments = 15, RuleFunctionArgument = 16, 
+    RuleReturnStatement = 17, RuleType = 18, RuleTypeQualifier = 19, RuleTypeDimensions = 20, 
+    RuleTypeName = 21, RuleEos = 22
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -57,7 +57,6 @@ public:
   class ComparisonOperatorStatementContext;
   class LiteralContext;
   class VariableDeclarationContext;
-  class VariableQualifierContext;
   class FunctionCallArgumentsContext;
   class FunctionCallArgumentContext;
   class FunctionContext;
@@ -66,6 +65,7 @@ public:
   class FunctionArgumentContext;
   class ReturnStatementContext;
   class TypeContext;
+  class TypeQualifierContext;
   class TypeDimensionsContext;
   class TypeNameContext;
   class EosContext; 
@@ -324,7 +324,7 @@ public:
   public:
     VariableDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    VariableQualifierContext *variableQualifier();
+    antlr4::tree::TerminalNode *VariableDeclarator();
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
@@ -337,20 +337,6 @@ public:
   };
 
   VariableDeclarationContext* variableDeclaration();
-
-  class  VariableQualifierContext : public antlr4::ParserRuleContext {
-  public:
-    VariableQualifierContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *ConstQualifier();
-    antlr4::tree::TerminalNode *LetQualifier();
-
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  VariableQualifierContext* variableQualifier();
 
   class  FunctionCallArgumentsContext : public antlr4::ParserRuleContext {
   public:
@@ -464,6 +450,8 @@ public:
     TypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     TypeNameContext *typeName();
+    std::vector<TypeQualifierContext *> typeQualifier();
+    TypeQualifierContext* typeQualifier(size_t i);
     std::vector<TypeDimensionsContext *> typeDimensions();
     TypeDimensionsContext* typeDimensions(size_t i);
 
@@ -473,6 +461,19 @@ public:
   };
 
   TypeContext* type();
+
+  class  TypeQualifierContext : public antlr4::ParserRuleContext {
+  public:
+    TypeQualifierContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Const();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeQualifierContext* typeQualifier();
 
   class  TypeDimensionsContext : public antlr4::ParserRuleContext {
   public:

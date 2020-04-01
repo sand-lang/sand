@@ -13,16 +13,13 @@ public:
     llvm::Value *value = nullptr;
 
     bool is_alloca = false;
-    bool is_constant = false;
 
     Variable() = default;
     Variable(Type *type_,
              llvm::Value *value_ = nullptr,
-             const bool &is_alloca_ = false,
-             const bool &is_constant_ = false) : type(type_),
+             const bool &is_alloca_ = false) : type(type_),
                                                  value(value_),
-                                                 is_alloca(is_alloca_),
-                                                 is_constant(is_constant_) {}
+                                                 is_alloca(is_alloca_) {}
 
     virtual ~Variable() {}
 
@@ -46,13 +43,59 @@ public:
         return reinterpret_cast<llvm::AllocaInst *>(this->value);
     }
 
-    Variable *load(llvm::IRBuilder<> &builder)
+    inline Variable *load(llvm::IRBuilder<> &builder)
     {
-        auto copy = new Variable(*this);
-        copy->value = copy->get(builder);
-        copy->is_alloca = false;
+        return new Variable(new Type(*this->type), this->get(builder), false);
+    }
 
-        return copy;
+    Variable *cast(const Type *dest, llvm::IRBuilder<> &builder)
+    {
+        auto value = this->get(builder);
+
+        if (this->type->is_integer() && dest->is_integer())
+        {
+            bool is_signed = this->type->qualifiers.is_signed;
+
+            if (is_signed)
+            {
+                value = builder.CreateSExtOrTrunc(value, dest->ref);
+            }
+            else
+            {
+                value = builder.CreateZExtOrTrunc(value, dest->ref);
+            }
+
+            return new Variable(new Type(*dest), value, false);
+        }
+
+        return this;
+    }
+
+    static std::pair<Variable *, Variable *> balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)
+    {
+        auto pair = std::pair<Variable *, Variable *>(l, r);
+
+        if (l->type->is_integer() && r->type->is_integer())
+        {
+            auto lbits = l->type->ref->getIntegerBitWidth();
+            auto rbits = r->type->ref->getIntegerBitWidth();
+
+            if (lbits < rbits)
+            {
+                pair.first = pair.first->cast(r->type, builder);
+            }
+            else if (rbits < lbits)
+            {
+                pair.second = pair.second->cast(l->type, builder);
+            }
+        }
+
+        return pair;
+    }
+
+    inline static std::pair<Variable *, Variable *> load_and_balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)
+    {
+        return balance_types(l->load(builder), r->load(builder), builder);
     }
 };
 } // namespace San

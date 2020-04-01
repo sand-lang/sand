@@ -41,8 +41,7 @@ comparisonOperatorStatement:
 literal: IntegerLiteral | StringLiteral;
 
 variableDeclaration:
-	variableQualifier VariableName ':' type ('=' expression)?;
-variableQualifier: ConstQualifier | LetQualifier;
+	VariableDeclarator VariableName ':' type ('=' expression)?;
 
 functionCallArguments:
 	functionCallArgument (',' functionCallArgument)*;
@@ -57,7 +56,8 @@ functionArgument: VariableName ':' type;
 
 returnStatement: 'return' expression?;
 
-type: typeName typeDimensions*;
+type: typeQualifier* typeName typeDimensions*;
+typeQualifier: Const;
 typeDimensions: '[' ']';
 
 typeName:

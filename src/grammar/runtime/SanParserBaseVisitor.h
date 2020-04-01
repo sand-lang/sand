@@ -91,10 +91,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVariableQualifier(SanParser::VariableQualifierContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -124,6 +120,10 @@ public:
   }
 
   virtual antlrcpp::Any visitType(SanParser::TypeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitTypeQualifier(SanParser::TypeQualifierContext *ctx) override {
     return visitChildren(ctx);
   }
 

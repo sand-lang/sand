@@ -7,16 +7,30 @@
 
 namespace San
 {
+struct TypeQualifiers
+{
+    bool is_signed = true;
+    bool is_mutable = true;
+};
+
 class Type
 {
 public:
+    llvm::Type *ref = nullptr;
+
     bool accept_generics = false;
     std::vector<Type *> generics;
 
-    llvm::Type *ref = nullptr;
+    TypeQualifiers qualifiers;
 
-    Type(llvm::Type *ref_ = nullptr) : ref(ref_) {}
-    Type(const std::vector<Type *> &generics_, llvm::Type *ref_ = nullptr) : accept_generics(true), generics(generics_), ref(ref_) {}
+    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_) {}
+
+    Type(llvm::Type *ref_,
+         const std::vector<Type *> &generics_,
+         const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_),
+                                                                 accept_generics(true),
+                                                                 generics(generics_),
+                                                                 qualifiers(qualifiers_) {}
 
     inline bool is_integer() const
     {
