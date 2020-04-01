@@ -288,6 +288,10 @@ public:
         {
             return visitBinaryMultiplicativeOperation(binary_multiplicative_operation_context);
         }
+        else if (const auto binary_bitwise_operation_context = dynamic_cast<SanParser::BinaryBitwiseOperationContext *>(context))
+        {
+            return visitBinaryBitwiseOperation(binary_bitwise_operation_context);
+        }
         else if (const auto variable_expression_context = dynamic_cast<SanParser::VariableExpressionContext *>(context))
         {
             return visitVariableExpression(variable_expression_context);
@@ -382,6 +386,48 @@ public:
             {
                 const auto value = this->env.builder.CreateSub(lvar->value, rvar->value);
                 return this->scopes.top()->add(new Variable(new Type(value->getType()), value));
+            }
+        }
+
+        return 0;
+    }
+
+    antlrcpp::Any visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context) override
+    {
+        auto scope = this->scopes.top();
+
+        const auto opt = context->bitwiseOperatorStatement();
+        const auto lexpr_context = context->expression(0);
+        const auto rexpr_context = context->expression(1);
+
+        const auto lexpr = visitExpression(lexpr_context);
+        const auto rexpr = visitExpression(rexpr_context);
+
+        auto lvar = lexpr.as<Variable *>();
+        auto rvar = rexpr.as<Variable *>();
+
+        if (opt->Xor())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateXor(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+        }
+        else if (opt->BitwiseOr())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateOr(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+        }
+        else if (opt->BitwiseAnd())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateAnd(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
 
