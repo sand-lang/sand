@@ -75,6 +75,10 @@ public:
         {
             return visitReturnStatement(return_statement);
         }
+        else if (auto if_statement = context->ifStatement())
+        {
+            return visitIfStatement(if_statement);
+        }
 
         return 0;
     }
@@ -271,7 +275,9 @@ public:
         if (expression)
         {
             auto value = visitExpression(expression).as<Variable *>();
-            scope->builder.CreateStore(value->value, scope->function->return_value);
+            auto casted = value->cast(scope->function->return_type, scope->builder);
+
+            scope->builder.CreateStore(casted->value, scope->function->return_value);
         }
 
         scope->builder.CreateBr(scope->function->return_label);
@@ -296,6 +302,10 @@ public:
         else if (const auto binary_bitwise_operation_context = dynamic_cast<SanParser::BinaryBitwiseOperationContext *>(context))
         {
             return visitBinaryBitwiseOperation(binary_bitwise_operation_context);
+        }
+        else if (const auto binary_comparison_operation_context = dynamic_cast<SanParser::BinaryComparisonOperationContext *>(context))
+        {
+            return visitBinaryComparisonOperation(binary_comparison_operation_context);
         }
         else if (const auto equality_operation_context = dynamic_cast<SanParser::EqualityOperationContext *>(context))
         {
@@ -437,6 +447,74 @@ public:
         return 0;
     }
 
+    antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        const auto opt = context->comparisonOperatorStatement();
+        const auto lexpr_context = context->expression(0);
+        const auto rexpr_context = context->expression(1);
+
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
+
+        auto [lvar, rvar] = Variable::load_and_balance_types(lexpr, rexpr, scope->builder);
+
+        TypeQualifiers qualifiers;
+        qualifiers.is_signed = false;
+
+        if (opt->EqualTo())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpEQ(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+        else if (opt->NotEqualTo())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpNE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+        else if (opt->LessThan())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpSLT(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+        else if (opt->LessThanOrEqualTo())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpSLE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+        else if (opt->GreaterThan())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpSGT(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+        else if (opt->GreaterThanOrEqualTo())
+        {
+            if (lvar->type->is_integer() && lvar->type->is_integer())
+            {
+                const auto value = this->env.builder.CreateICmpSGE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+        }
+
+        return nullptr;
+    }
+
     antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) override
     {
         auto &scope = this->scopes.top();
@@ -542,6 +620,33 @@ public:
         }
 
         return nullptr;
+    }
+
+    antlrcpp::Any visitIfStatement(SanParser::IfStatementContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        auto if_then = new Block(scope, "if.then", scope->function->ref, false);
+        auto if_end = new Block(scope, "if.end", scope->function->ref, false);
+
+        scope->function->insert(if_then);
+        env.builder.SetInsertPoint(if_then->bb);
+
+        if_then->has_returned = visitStatements({context->statement()});
+
+        if (!if_then->has_returned)
+        {
+            scope->builder.CreateBr(if_end->bb);
+        }
+
+        scope->function->insert(if_end);
+
+        return 0;
+    }
+
+    antlrcpp::Any visitElseStatement(SanParser::ElseStatementContext *context) override
+    {
+        return 0;
     }
 };
 } // namespace San
