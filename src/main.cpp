@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     out_stream << *visitor.env.module;
     out_stream.flush();
 
-    std::cout << out_stream.str() << std::endl;
+    debug.out << out_stream.str() << std::endl;
 
     debug.start_timer("objects");
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     auto elapsed_objects = debug.end_timer("objects");
 
     for (const auto &object : objects)
-        std::cout << object << std::endl;
+        debug.out << object << std::endl;
 
     std::string objects_str(" ");
     for (const auto &object : objects)
@@ -64,9 +64,9 @@ int main(int argc, char **argv)
 
     auto elapsed_linking = debug.end_timer("linking");
 
-    std::cout << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
-    std::cout << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
-    std::cout << "Finished linking in " << elapsed_linking.count() << " secs" << std::endl;
+    debug.out << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
+    debug.out << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
+    debug.out << "Finished linking in " << elapsed_linking.count() << " secs" << std::endl;
 
     return 0;
 }
