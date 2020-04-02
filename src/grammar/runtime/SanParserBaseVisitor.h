@@ -127,6 +127,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitIfStatement(SanParser::IfStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitElseStatement(SanParser::ElseStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitType(SanParser::TypeContext *ctx) override {
     return visitChildren(ctx);
   }

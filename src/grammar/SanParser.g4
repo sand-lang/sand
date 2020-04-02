@@ -13,15 +13,16 @@ statement:
 	| expression InstructionsSeparator
 	| body
 	| variableDeclaration InstructionsSeparator
-	| returnStatement InstructionsSeparator;
+	| returnStatement InstructionsSeparator
+	| ifStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
-	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
+	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| VariableName											# VariableExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
@@ -57,6 +58,9 @@ functionArguments: functionArgument (',' functionArgument)*;
 functionArgument: VariableName ':' type;
 
 returnStatement: 'return' expression?;
+
+ifStatement: 'if' expression statement elseStatement?;
+elseStatement: 'else' statement;
 
 type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;

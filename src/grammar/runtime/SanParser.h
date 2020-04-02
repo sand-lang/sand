@@ -19,10 +19,11 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
     UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, Const = 36, 
-    VariableDeclarator = 37, Function = 38, Return = 39, Comma = 40, Colon = 41, 
-    InstructionsSeparator = 42, VariableName = 43, StringLiteral = 44, CharLiteral = 45, 
-    IntegerLiteral = 46, DecimalLiteral = 47, ZeroLiteral = 48, HexadecimalLiteral = 49, 
-    BinaryLiteral = 50, WhiteSpace = 51, LineTerminator = 52
+    VariableDeclarator = 37, If = 38, Else = 39, Function = 40, Return = 41, 
+    Comma = 42, Colon = 43, InstructionsSeparator = 44, VariableName = 45, 
+    StringLiteral = 46, CharLiteral = 47, IntegerLiteral = 48, DecimalLiteral = 49, 
+    ZeroLiteral = 50, HexadecimalLiteral = 51, BinaryLiteral = 52, WhiteSpace = 53, 
+    LineTerminator = 54
   };
 
   enum {
@@ -33,8 +34,8 @@ public:
     RuleLiteral = 10, RuleVariableDeclaration = 11, RuleFunctionCallArguments = 12, 
     RuleFunctionCallArgument = 13, RuleFunction = 14, RuleFunctionDeclaration = 15, 
     RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleReturnStatement = 18, 
-    RuleType = 19, RuleTypeQualifier = 20, RuleTypeDimensions = 21, RuleTypeName = 22, 
-    RuleEos = 23
+    RuleIfStatement = 19, RuleElseStatement = 20, RuleType = 21, RuleTypeQualifier = 22, 
+    RuleTypeDimensions = 23, RuleTypeName = 24, RuleEos = 25
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -66,6 +67,8 @@ public:
   class FunctionArgumentsContext;
   class FunctionArgumentContext;
   class ReturnStatementContext;
+  class IfStatementContext;
+  class ElseStatementContext;
   class TypeContext;
   class TypeQualifierContext;
   class TypeDimensionsContext;
@@ -113,6 +116,7 @@ public:
     BodyContext *body();
     VariableDeclarationContext *variableDeclaration();
     ReturnStatementContext *returnStatement();
+    IfStatementContext *ifStatement();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -470,6 +474,36 @@ public:
   };
 
   ReturnStatementContext* returnStatement();
+
+  class  IfStatementContext : public antlr4::ParserRuleContext {
+  public:
+    IfStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *If();
+    ExpressionContext *expression();
+    StatementContext *statement();
+    ElseStatementContext *elseStatement();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  IfStatementContext* ifStatement();
+
+  class  ElseStatementContext : public antlr4::ParserRuleContext {
+  public:
+    ElseStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Else();
+    StatementContext *statement();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ElseStatementContext* elseStatement();
 
   class  TypeContext : public antlr4::ParserRuleContext {
   public:

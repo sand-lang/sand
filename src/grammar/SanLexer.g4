@@ -54,6 +54,10 @@ Const: 'const';
 // Variable
 VariableDeclarator: 'let';
 
+// Loops and conditions
+If: 'if';
+Else: 'else';
+
 // Others
 Function: 'fn';
 Return: 'return';
