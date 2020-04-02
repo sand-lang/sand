@@ -37,6 +37,11 @@ public:
         return this->ref->isIntegerTy();
     }
 
+    inline bool is_pointer() const
+    {
+        return this->ref->isPointerTy();
+    }
+
     inline bool is_function() const
     {
         return this->ref->isFunctionTy();

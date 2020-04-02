@@ -18,6 +18,8 @@ public:
     Environment env;
     std::stack<std::shared_ptr<Scope>> scopes;
 
+    Debugger debug;
+
     Visitor() : env("output")
     {
         scopes.push(env.scope);
@@ -624,29 +626,83 @@ public:
 
     antlrcpp::Any visitIfStatement(SanParser::IfStatementContext *context) override
     {
-        auto &scope = this->scopes.top();
+        this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
+
+        auto scope = this->scopes.top();
 
         auto if_then = new Block(scope, "if.then", scope->function->ref, false);
         auto if_end = new Block(scope, "if.end", scope->function->ref, false);
+        auto if_next = if_end;
+
+        if (context->elseStatement())
+        {
+            if_next = new Block(scope, "if.else", scope->function->ref, false);
+        }
+
+        if (auto expression = context->expression())
+        {
+        }
+        else if (auto variable_declaration = context->variableDeclaration())
+        {
+            auto var = this->visitVariableDeclaration(variable_declaration).as<Variable *>();
+            auto value = var->get(scope->builder);
+
+            if (var->type->is_integer())
+            {
+                auto type = var->type->ref;
+                auto cond = scope->builder.CreateICmpNE(value, llvm::ConstantInt::get(type, 0));
+
+                scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
+            }
+            else if (var->type->is_pointer())
+            {
+                auto type = reinterpret_cast<llvm::PointerType *>(var->type->ref);
+                auto cond = scope->builder.CreateICmpNE(value, llvm::ConstantPointerNull::get(type));
+
+                scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
+            }
+            else
+            {
+                debug.err << "Variable boolean could not be evaluated." << std::endl;
+            }
+        }
 
         scope->function->insert(if_then);
         env.builder.SetInsertPoint(if_then->bb);
 
         if_then->has_returned = visitStatements({context->statement()});
 
+        this->scopes.pop();
+
         if (!if_then->has_returned)
         {
             scope->builder.CreateBr(if_end->bb);
         }
 
-        scope->function->insert(if_end);
+        scope = this->scopes.top();
+
+        scope->function->insert(if_next);
+        env.builder.SetInsertPoint(if_next->bb);
+
+        if (auto else_statement = context->elseStatement())
+        {
+            if_next->has_returned = visitElseStatement(else_statement).as<bool>();
+
+            if (!if_next->has_returned)
+            {
+                scope->builder.CreateBr(if_end->bb);
+            }
+
+            scope->function->insert(if_end);
+            env.builder.SetInsertPoint(if_end->bb);
+        }
 
         return 0;
     }
 
     antlrcpp::Any visitElseStatement(SanParser::ElseStatementContext *context) override
     {
-        return 0;
+        return visitStatements({context->statement()});
     }
 };
 } // namespace San

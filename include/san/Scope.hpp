@@ -26,6 +26,8 @@ public:
 
     Function *function = nullptr;
 
+    bool is_condition = false;
+
     Scope(llvm::LLVMContext &llvm_context_,
           llvm::IRBuilder<> &builder_,
           std::unique_ptr<llvm::Module> &module_,

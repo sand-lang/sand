@@ -59,7 +59,8 @@ functionArgument: VariableName ':' type;
 
 returnStatement: 'return' expression?;
 
-ifStatement: 'if' expression statement elseStatement?;
+ifStatement:
+	'if' (expression | variableDeclaration) statement elseStatement?;
 elseStatement: 'else' statement;
 
 type: typeQualifier* typeName typeDimensions*;

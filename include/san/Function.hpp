@@ -48,5 +48,10 @@ public:
     }
 
     virtual ~Function() {}
+
+    void insert(Block *block)
+    {
+        block->bb->insertInto(this->ref);
+    }
 };
 } // namespace San
