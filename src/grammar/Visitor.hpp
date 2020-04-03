@@ -309,6 +309,10 @@ public:
         {
             return visitBinaryComparisonOperation(binary_comparison_operation_context);
         }
+        else if (const auto binary_conditional_operation_context = dynamic_cast<SanParser::BinaryConditionalOperationContext *>(context))
+        {
+            return visitBinaryConditionalOperation(binary_conditional_operation_context);
+        }
         else if (const auto equality_operation_context = dynamic_cast<SanParser::EqualityOperationContext *>(context))
         {
             return visitEqualityOperation(equality_operation_context);
@@ -517,6 +521,58 @@ public:
         return nullptr;
     }
 
+    antlrcpp::Any visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        const auto opt = context->conditionalOperatorStatement();
+
+        const auto lexpr_context = context->expression(0);
+        auto lexpr = visitExpression(lexpr_context).as<Variable *>();
+
+        auto cond_false = new Block(scope, scope->function->ref, false);
+        auto cond_end = new Block(scope, scope->function->ref, false);
+
+        llvm::Constant *boolean_constant = nullptr;
+
+        if (opt->ConditionalOr())
+        {
+            boolean_constant = llvm::ConstantInt::getTrue(scope->llvm_context);
+
+            cond_false->bb->setName("lor.rhs");
+            cond_end->bb->setName("lor.end");
+
+            scope->builder.CreateCondBr(lexpr->value, cond_end->bb, cond_false->bb);
+        }
+        else if (opt->ConditionalAnd())
+        {
+            boolean_constant = llvm::ConstantInt::getFalse(scope->llvm_context);
+
+            cond_false->bb->setName("land.rhs");
+            cond_end->bb->setName("land.end");
+
+            scope->builder.CreateCondBr(lexpr->value, cond_false->bb, cond_end->bb);
+        }
+
+        scope->function->insert(cond_false);
+        env.builder.SetInsertPoint(cond_false->bb);
+
+        const auto rexpr_context = context->expression(1);
+        auto rexpr = visitExpression(rexpr_context).as<Variable *>();
+
+        scope->builder.CreateBr(cond_end->bb);
+
+        scope->function->insert(cond_end);
+        env.builder.SetInsertPoint(cond_end->bb);
+
+        auto phi = scope->builder.CreatePHI(llvm::Type::getInt1Ty(scope->llvm_context), 2);
+        phi->addIncoming(boolean_constant, reinterpret_cast<llvm::Instruction *>(lexpr->value)->getParent());
+        phi->addIncoming(rexpr->value, reinterpret_cast<llvm::Instruction *>(rexpr->value)->getParent());
+
+        auto var = new Variable(new Type(phi->getType()), phi);
+        return scope->add(var);
+    }
+
     antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) override
     {
         auto &scope = this->scopes.top();
@@ -641,6 +697,12 @@ public:
 
         if (auto expression = context->expression())
         {
+            auto var = this->visitExpression(expression).as<Variable *>();
+            auto target_type = new Type(llvm::Type::getInt1Ty(scope->llvm_context));
+
+            auto cond = scope->builder.CreateICmpNE(var->cast(target_type, scope->builder)->value, llvm::ConstantInt::get(target_type->ref, 0));
+
+            scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
         }
         else if (auto variable_declaration = context->variableDeclaration())
         {
