@@ -103,11 +103,11 @@ public:
         const auto name = context->VariableName()->getText();
         const auto arguments = context->functionArguments();
 
-        std::unordered_map<std::string, Type *> args;
+        std::vector<std::pair<std::string, Type *>> args;
 
         if (arguments)
         {
-            args = this->visitFunctionArguments(arguments).as<std::unordered_map<std::string, Type *>>();
+            args = this->visitFunctionArguments(arguments).as<std::vector<std::pair<std::string, Type *>>>();
         }
 
         auto &scope = this->scopes.top();
@@ -135,12 +135,12 @@ public:
     antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) override
     {
         const auto arguments = context->functionArgument();
-        std::unordered_map<std::string, Type *> args;
+        std::vector<std::pair<std::string, Type *>> args;
 
         for (const auto &arg : arguments)
         {
             auto pair = this->visitFunctionArgument(arg).as<std::pair<std::string, Type *>>();
-            args.insert(pair);
+            args.push_back(pair);
         }
 
         return args;

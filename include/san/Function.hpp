@@ -17,7 +17,7 @@ public:
     Type *return_type = nullptr;
     llvm::Function *ref = nullptr;
 
-    std::unordered_map<std::string, Type *> args;
+    std::vector<std::pair<std::string, Type *>> args;
 
     Block *entry = nullptr;
 
@@ -26,7 +26,7 @@ public:
 
     Function(std::shared_ptr<Scope> &scope,
              Type *return_type_,
-             const std::unordered_map<std::string, Type *> &args_,
+             const std::vector<std::pair<std::string, Type *>> &args_,
              const std::string &name_ = "",
              const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::ExternalLinkage)
         : return_type(return_type_),
