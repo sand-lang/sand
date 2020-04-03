@@ -18,6 +18,7 @@ statement:
 
 expression:
 	'(' expression ')'										# InParenExpression
+	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
@@ -25,7 +26,6 @@ expression:
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| VariableName											# VariableExpression
-	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
