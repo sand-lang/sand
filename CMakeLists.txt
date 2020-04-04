@@ -109,4 +109,10 @@ llvm_map_components_to_libnames(llvm_libs
     Demangle
 )
 
-target_link_libraries(${PROJECT_NAME} stdc++fs antlr4_static ${llvm_libs})
+set(NATIVE_LIBRARIES)
+
+if(Linux)
+    list(APPEND NATIVE_LIBRARIES "stdc++fs")
+endif(Linux)
+
+target_link_libraries(${PROJECT_NAME} ${NATIVE_LIBRARIES} antlr4_static ${llvm_libs})
