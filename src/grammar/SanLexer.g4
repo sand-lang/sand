@@ -67,7 +67,7 @@ Colon: ':';
 InstructionsSeparator: ';'+;
 
 VariableName: Name;
-fragment Name: [a-zA-Z] [a-zA-Z0-9]*;
+fragment Name: [a-zA-Z_] [a-zA-Z0-9_]*;
 
 // Literals
 StringLiteral: '"' StringChar* '"';
