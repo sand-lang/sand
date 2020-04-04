@@ -81,6 +81,10 @@ public:
         {
             return visitIfStatement(if_statement);
         }
+        else if (auto while_statement = context->whileStatement())
+        {
+            return visitWhileStatement(while_statement);
+        }
 
         return 0;
     }
@@ -703,35 +707,16 @@ public:
         if (auto expression = context->expression())
         {
             auto var = this->visitExpression(expression).as<Variable *>();
-            auto target_type = new Type(llvm::Type::getInt1Ty(scope->llvm_context));
+            auto cond = var->cast(new Type(llvm::Type::getInt1Ty(scope->llvm_context)), scope->builder);
 
-            auto cond = scope->builder.CreateICmpNE(var->cast(target_type, scope->builder)->value, llvm::ConstantInt::get(target_type->ref, 0));
-
-            scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
+            scope->builder.CreateCondBr(cond->get(scope->builder), if_then->bb, if_next->bb);
         }
         else if (auto variable_declaration = context->variableDeclaration())
         {
             auto var = this->visitVariableDeclaration(variable_declaration).as<Variable *>();
-            auto value = var->get(scope->builder);
+            auto cond = var->cast(new Type(llvm::Type::getInt1Ty(scope->llvm_context)), scope->builder);
 
-            if (var->type->is_integer())
-            {
-                auto type = var->type->ref;
-                auto cond = scope->builder.CreateICmpNE(value, llvm::ConstantInt::get(type, 0));
-
-                scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
-            }
-            else if (var->type->is_pointer())
-            {
-                auto type = reinterpret_cast<llvm::PointerType *>(var->type->ref);
-                auto cond = scope->builder.CreateICmpNE(value, llvm::ConstantPointerNull::get(type));
-
-                scope->builder.CreateCondBr(cond, if_then->bb, if_next->bb);
-            }
-            else
-            {
-                debug.err << "Variable boolean could not be evaluated." << std::endl;
-            }
+            scope->builder.CreateCondBr(cond->get(scope->builder), if_then->bb, if_next->bb);
         }
 
         scope->function->insert(if_then);
@@ -764,12 +749,51 @@ public:
             env.builder.SetInsertPoint(if_end->bb);
         }
 
+        this->scopes.pop();
+
         return 0;
     }
 
     antlrcpp::Any visitElseStatement(SanParser::ElseStatementContext *context) override
     {
         return visitStatements({context->statement()});
+    }
+
+    antlrcpp::Any visitWhileStatement(SanParser::WhileStatementContext *context) override
+    {
+        this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
+
+        auto scope = this->scopes.top();
+
+        auto while_cond = new Block(scope, "while.cond", scope->function->ref, false);
+        auto while_body = new Block(scope, "while.body", scope->function->ref, false);
+        auto while_end = new Block(scope, "while.end", scope->function->ref, false);
+
+        scope->builder.CreateBr(while_cond->bb);
+
+        scope->function->insert(while_cond);
+        env.builder.SetInsertPoint(while_cond->bb);
+
+        auto var = this->visitExpression(context->expression()).as<Variable *>();
+        auto condition = var->cast(new Type(llvm::Type::getInt1Ty(scope->llvm_context)), scope->builder);
+
+        scope->builder.CreateCondBr(condition->get(scope->builder), while_body->bb, while_end->bb);
+
+        scope->function->insert(while_body);
+        env.builder.SetInsertPoint(while_body->bb);
+        while_body->has_returned = visitStatements({context->statement()});
+
+        if (!while_body->has_returned)
+        {
+            scope->builder.CreateBr(while_cond->bb);
+        }
+
+        scope->function->insert(while_end);
+        env.builder.SetInsertPoint(while_end->bb);
+
+        this->scopes.pop();
+
+        return 0;
     }
 };
 } // namespace San
