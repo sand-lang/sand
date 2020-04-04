@@ -6,6 +6,7 @@
 
 #include <san/Compiler.hpp>
 #include <san/Debugger.hpp>
+#include <san/Linker.hpp>
 
 #include "grammar/runtime/SanLexer.h"
 #include "grammar/runtime/SanParser.h"
@@ -126,15 +127,11 @@ int main(int argc, char **argv)
     for (const auto &object : objects)
         debug.out << object << std::endl;
 
-    std::string objects_str(" ");
-    for (const auto &object : objects)
-    {
-        objects_str += object + " ";
-    }
-
     debug.start_timer("linking");
 
-    std::system(("/usr/bin/ld " + objects_str + "-lSystem -o output").c_str());
+    San::Linker linker;
+    linker.prepare(objects);
+    linker.execute();
 
     auto elapsed_linking = debug.end_timer("linking");
 
