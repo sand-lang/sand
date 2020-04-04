@@ -46,5 +46,10 @@ public:
     {
         return this->ref->isFunctionTy();
     }
+
+    inline bool is_boolean() const
+    {
+        return this->ref->isIntegerTy(1);
+    }
 };
 } // namespace San

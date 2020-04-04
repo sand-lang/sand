@@ -71,17 +71,47 @@ public:
     {
         auto value = this->get(builder);
 
-        if (this->type->is_integer() && dest->is_integer())
+        if (this->type->is_integer())
         {
-            bool is_signed = this->type->qualifiers.is_signed;
+            if (dest->is_integer())
+            {
+                bool is_signed = this->type->qualifiers.is_signed;
 
-            if (is_signed)
-            {
-                value = builder.CreateSExtOrTrunc(value, dest->ref);
+                if (is_signed)
+                {
+                    value = builder.CreateSExtOrTrunc(value, dest->ref);
+                }
+                else
+                {
+                    value = builder.CreateZExtOrTrunc(value, dest->ref);
+                }
+
+                if (dest->is_boolean())
+                {
+                    value = builder.CreateICmpNE(value, llvm::ConstantInt::get(value->getType(), 0));
+                }
             }
-            else
+            else if (dest->is_pointer())
             {
-                value = builder.CreateZExtOrTrunc(value, dest->ref);
+                value = builder.CreateIntToPtr(this->value, dest->ref);
+            }
+
+            return new Variable(new Type(*dest), value, VariableValueType::Simple);
+        }
+        else if (this->type->is_pointer())
+        {
+            if (dest->is_boolean())
+            {
+                auto type = reinterpret_cast<llvm::PointerType *>(this->type->ref);
+                value = builder.CreateICmpNE(this->value, llvm::ConstantPointerNull::get(type));
+            }
+            else if (dest->is_integer())
+            {
+                value = builder.CreatePtrToInt(this->value, dest->ref);
+            }
+            else if (dest->is_pointer())
+            {
+                value = builder.CreateBitCast(this->value, dest->ref);
             }
 
             return new Variable(new Type(*dest), value, VariableValueType::Simple);
