@@ -18,7 +18,7 @@ public:
     std::ostream out;
     std::ostream err;
 
-    Debugger(std::streambuf *out_ = std::cout.rdbuf(), std::streambuf *err_ = std::cout.rdbuf()) : out(out_), err(err_) {}
+    Debugger(std::streambuf *out_ = std::cout.rdbuf(), std::streambuf *err_ = std::cerr.rdbuf()) : out(out_), err(err_) {}
 
     void start_timer(const std::string &name)
     {
