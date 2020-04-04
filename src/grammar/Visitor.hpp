@@ -229,6 +229,11 @@ public:
 
         if (function != nullptr)
         {
+            if (!block->has_returned)
+            {
+                scope->builder.CreateBr(function->return_label);
+            }
+
             function->return_label->insertInto(function->ref);
             scope->builder.SetInsertPoint(function->return_label);
 
