@@ -14,7 +14,8 @@ statement:
 	| body
 	| variableDeclaration InstructionsSeparator
 	| returnStatement InstructionsSeparator
-	| ifStatement;
+	| ifStatement
+	| whileStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
@@ -62,6 +63,8 @@ returnStatement: 'return' expression?;
 ifStatement:
 	'if' (expression | variableDeclaration) statement elseStatement?;
 elseStatement: 'else' statement;
+
+whileStatement: 'while' expression statement;
 
 type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;

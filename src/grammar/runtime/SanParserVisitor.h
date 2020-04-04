@@ -79,6 +79,8 @@ public:
 
     virtual antlrcpp::Any visitElseStatement(SanParser::ElseStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitWhileStatement(SanParser::WhileStatementContext *context) = 0;
+
     virtual antlrcpp::Any visitType(SanParser::TypeContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeQualifier(SanParser::TypeQualifierContext *context) = 0;

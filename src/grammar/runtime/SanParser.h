@@ -19,11 +19,11 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
     UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, Const = 36, 
-    VariableDeclarator = 37, If = 38, Else = 39, Function = 40, Return = 41, 
-    Comma = 42, Colon = 43, InstructionsSeparator = 44, VariableName = 45, 
-    StringLiteral = 46, CharLiteral = 47, IntegerLiteral = 48, DecimalLiteral = 49, 
-    ZeroLiteral = 50, HexadecimalLiteral = 51, BinaryLiteral = 52, WhiteSpace = 53, 
-    LineTerminator = 54
+    VariableDeclarator = 37, If = 38, Else = 39, While = 40, Function = 41, 
+    Return = 42, Comma = 43, Colon = 44, InstructionsSeparator = 45, VariableName = 46, 
+    StringLiteral = 47, CharLiteral = 48, IntegerLiteral = 49, DecimalLiteral = 50, 
+    ZeroLiteral = 51, HexadecimalLiteral = 52, BinaryLiteral = 53, WhiteSpace = 54, 
+    LineTerminator = 55
   };
 
   enum {
@@ -34,8 +34,9 @@ public:
     RuleLiteral = 10, RuleVariableDeclaration = 11, RuleFunctionCallArguments = 12, 
     RuleFunctionCallArgument = 13, RuleFunction = 14, RuleFunctionDeclaration = 15, 
     RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleReturnStatement = 18, 
-    RuleIfStatement = 19, RuleElseStatement = 20, RuleType = 21, RuleTypeQualifier = 22, 
-    RuleTypeDimensions = 23, RuleTypeName = 24, RuleEos = 25
+    RuleIfStatement = 19, RuleElseStatement = 20, RuleWhileStatement = 21, 
+    RuleType = 22, RuleTypeQualifier = 23, RuleTypeDimensions = 24, RuleTypeName = 25, 
+    RuleEos = 26
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -69,6 +70,7 @@ public:
   class ReturnStatementContext;
   class IfStatementContext;
   class ElseStatementContext;
+  class WhileStatementContext;
   class TypeContext;
   class TypeQualifierContext;
   class TypeDimensionsContext;
@@ -117,6 +119,7 @@ public:
     VariableDeclarationContext *variableDeclaration();
     ReturnStatementContext *returnStatement();
     IfStatementContext *ifStatement();
+    WhileStatementContext *whileStatement();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -505,6 +508,21 @@ public:
   };
 
   ElseStatementContext* elseStatement();
+
+  class  WhileStatementContext : public antlr4::ParserRuleContext {
+  public:
+    WhileStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *While();
+    ExpressionContext *expression();
+    StatementContext *statement();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  WhileStatementContext* whileStatement();
 
   class  TypeContext : public antlr4::ParserRuleContext {
   public:

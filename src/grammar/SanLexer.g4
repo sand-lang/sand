@@ -58,6 +58,8 @@ VariableDeclarator: 'let';
 If: 'if';
 Else: 'else';
 
+While: 'while';
+
 // Others
 Function: 'fn';
 Return: 'return';
