@@ -59,6 +59,7 @@ If: 'if';
 Else: 'else';
 
 While: 'while';
+Break: 'break';
 
 // Others
 Function: 'fn';
