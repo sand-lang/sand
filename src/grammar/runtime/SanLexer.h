@@ -16,14 +16,14 @@ public:
     EqualTo = 8, NotEqualTo = 9, LessThanOrEqualTo = 10, GreaterThanOrEqualTo = 11, 
     LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
-    ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
-    Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
-    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, As = 36, 
-    Const = 37, VariableDeclarator = 38, If = 39, Else = 40, While = 41, 
-    Break = 42, Function = 43, Extern = 44, Return = 45, Comma = 46, Colon = 47, 
-    InstructionsSeparator = 48, VariableName = 49, StringLiteral = 50, CharLiteral = 51, 
-    IntegerLiteral = 52, DecimalLiteral = 53, ZeroLiteral = 54, HexadecimalLiteral = 55, 
-    BinaryLiteral = 56, WhiteSpace = 57, LineTerminator = 58
+    ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
+    Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
+    UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
+    As = 37, Const = 38, VariableDeclarator = 39, If = 40, Else = 41, While = 42, 
+    Break = 43, Function = 44, Extern = 45, Return = 46, Comma = 47, Colon = 48, 
+    InstructionsSeparator = 49, VariableName = 50, StringLiteral = 51, CharLiteral = 52, 
+    IntegerLiteral = 53, DecimalLiteral = 54, ZeroLiteral = 55, HexadecimalLiteral = 56, 
+    BinaryLiteral = 57, WhiteSpace = 58, LineTerminator = 59
   };
 
   SanLexer(antlr4::CharStream *input);

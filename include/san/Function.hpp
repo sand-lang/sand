@@ -18,6 +18,7 @@ public:
     llvm::Function *ref = nullptr;
 
     std::vector<std::pair<std::string, Type *>> args;
+    bool is_variadic = false;
 
     Block *entry = nullptr;
 
@@ -27,10 +28,12 @@ public:
     Function(std::shared_ptr<Scope> &scope,
              Type *return_type_,
              const std::vector<std::pair<std::string, Type *>> &args_,
+             const bool &is_variadic_ = false,
              const std::string &name_ = "",
              const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::PrivateLinkage)
         : return_type(return_type_),
-          args(args_)
+          args(args_),
+          is_variadic(is_variadic_)
     {
         std::vector<llvm::Type *> types;
 
@@ -39,7 +42,7 @@ public:
             types.push_back(type->ref);
         }
 
-        llvm::FunctionType *function_type = llvm::FunctionType::get(return_type->ref, types, false);
+        llvm::FunctionType *function_type = llvm::FunctionType::get(return_type->ref, types, this->is_variadic);
 
         this->type = new Type(function_type);
 

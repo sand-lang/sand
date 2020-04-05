@@ -31,6 +31,9 @@ ClosingBrace: '}';
 OpeningBracket: '[';
 ClosingBracket: ']';
 
+// Ranges
+Variadic: '...';
+
 // Types
 Void: 'void';
 Bool: 'bool' | 'i1';

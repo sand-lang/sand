@@ -127,6 +127,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitFunctionArgumentVariable(SanParser::FunctionArgumentVariableContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunctionArgumentVariadic(SanParser::FunctionArgumentVariadicContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *ctx) override {
     return visitChildren(ctx);
   }

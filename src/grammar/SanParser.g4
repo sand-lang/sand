@@ -60,7 +60,9 @@ functionDeclaration:
 	)?;
 
 functionArguments: functionArgument (',' functionArgument)*;
-functionArgument: VariableName ':' type;
+functionArgument: functionArgumentVariable | functionArgumentVariadic;
+functionArgumentVariable: (VariableName ':')? type;
+functionArgumentVariadic: '...';
 
 returnStatement: 'return' expression?;
 

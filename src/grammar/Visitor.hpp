@@ -8,6 +8,7 @@
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <regex>
 #include <string>
 #include <unordered_map>
 
@@ -110,13 +111,15 @@ public:
     antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) override
     {
         const auto name = context->VariableName()->getText();
-        const auto arguments = context->functionArguments();
 
         std::vector<std::pair<std::string, Type *>> args;
+        bool is_variadic = false;
 
-        if (arguments)
+        if (auto arguments = context->functionArguments())
         {
-            args = this->visitFunctionArguments(arguments).as<std::vector<std::pair<std::string, Type *>>>();
+            auto [args_, is_variadic_] = this->visitFunctionArguments(arguments).as<std::pair<std::vector<std::pair<std::string, Type *>>, bool>>();
+            args = args_;
+            is_variadic = is_variadic_;
         }
 
         auto &scope = this->scopes.top();
@@ -140,7 +143,7 @@ public:
         const auto is_extern = !!context->Extern() || name == "main";
         auto linkage = is_extern ? llvm::GlobalValue::LinkageTypes::ExternalLinkage : llvm::GlobalValue::LinkageTypes::InternalLinkage;
 
-        auto function = new Function(scope, return_type, args, name, linkage);
+        auto function = new Function(scope, return_type, args, is_variadic, name, linkage);
         return scope->add(function, name);
     }
 
@@ -148,22 +151,46 @@ public:
     {
         const auto arguments = context->functionArgument();
         std::vector<std::pair<std::string, Type *>> args;
+        bool is_variadic = false;
 
         for (const auto &arg : arguments)
         {
-            auto pair = this->visitFunctionArgument(arg).as<std::pair<std::string, Type *>>();
-            args.push_back(pair);
+            auto value = this->visitFunctionArgument(arg);
+
+            if (value.is<std::pair<std::string, Type *>>())
+            {
+                auto pair = value.as<std::pair<std::string, Type *>>();
+                args.push_back(pair);
+            }
+            else if (value.is<bool>())
+            {
+                is_variadic = value.as<bool>();
+            }
         }
 
-        return args;
+        return std::pair(args, is_variadic);
     }
 
     antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) override
     {
-        const auto name = context->VariableName()->getText();
+        if (auto variable = context->functionArgumentVariable())
+        {
+            return this->visitFunctionArgumentVariable(variable);
+        }
+        else if (auto variadic = context->functionArgumentVariadic())
+        {
+            return true;
+        }
+
+        return 0;
+    }
+
+    antlrcpp::Any visitFunctionArgumentVariable(SanParser::FunctionArgumentVariableContext *context) override
+    {
+        const auto name = context->VariableName();
         const auto type = this->visitType(context->type()).as<Type *>();
 
-        return std::pair<std::string, Type *>(name, type);
+        return std::pair<std::string, Type *>(!!name ? name->getText() : "", type);
     }
 
     antlrcpp::Any visitType(SanParser::TypeContext *context) override
@@ -701,9 +728,23 @@ public:
 
             return scope->add(new Variable(new Type(value->getType()), value));
         }
-        else if (const auto literal = context->IntegerLiteral())
+        else if (const auto literal = context->StringLiteral())
         {
-            auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, literal->getText(), true);
+            auto str = literal->getSymbol()->getText();
+            str = str.substr(1, str.size() - 2);
+
+            str = std::regex_replace(str, std::regex("\\\\a"), "\a");
+            str = std::regex_replace(str, std::regex("\\\\b"), "\b");
+            str = std::regex_replace(str, std::regex("\\\\f"), "\f");
+            str = std::regex_replace(str, std::regex("\\\\n"), "\n");
+            str = std::regex_replace(str, std::regex("\\\\r"), "\r");
+            str = std::regex_replace(str, std::regex("\\\\t"), "\t");
+            str = std::regex_replace(str, std::regex("\\\\t"), "\t");
+            str = std::regex_replace(str, std::regex("\\\\v"), "\v");
+            str = std::regex_replace(str, std::regex("\\\\\\?"), "\?");
+            str = std::regex_replace(str, std::regex("\\\\(.)"), "$1");
+
+            auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
             auto global = new llvm::GlobalVariable(*this->env.module, constant->getType(), false, llvm::GlobalValue::PrivateLinkage, constant, ".str");
             global->setAlignment(1);
 

@@ -75,6 +75,10 @@ public:
 
     virtual antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionArgumentVariable(SanParser::FunctionArgumentVariableContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionArgumentVariadic(SanParser::FunctionArgumentVariadicContext *context) = 0;
+
     virtual antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitIfStatement(SanParser::IfStatementContext *context) = 0;
