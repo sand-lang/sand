@@ -55,7 +55,9 @@ functionCallArgument: expression;
 
 function: functionDeclaration body?;
 functionDeclaration:
-	Function VariableName '(' functionArguments? ')' (':' type)?;
+	Extern? Function VariableName '(' functionArguments? ')' (
+		':' type
+	)?;
 
 functionArguments: functionArgument (',' functionArgument)*;
 functionArgument: VariableName ':' type;

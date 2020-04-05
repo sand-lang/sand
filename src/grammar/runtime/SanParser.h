@@ -20,10 +20,10 @@ public:
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
     UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, As = 36, 
     Const = 37, VariableDeclarator = 38, If = 39, Else = 40, While = 41, 
-    Break = 42, Function = 43, Return = 44, Comma = 45, Colon = 46, InstructionsSeparator = 47, 
-    VariableName = 48, StringLiteral = 49, CharLiteral = 50, IntegerLiteral = 51, 
-    DecimalLiteral = 52, ZeroLiteral = 53, HexadecimalLiteral = 54, BinaryLiteral = 55, 
-    WhiteSpace = 56, LineTerminator = 57
+    Break = 42, Function = 43, Extern = 44, Return = 45, Comma = 46, Colon = 47, 
+    InstructionsSeparator = 48, VariableName = 49, StringLiteral = 50, CharLiteral = 51, 
+    IntegerLiteral = 52, DecimalLiteral = 53, ZeroLiteral = 54, HexadecimalLiteral = 55, 
+    BinaryLiteral = 56, WhiteSpace = 57, LineTerminator = 58
   };
 
   enum {
@@ -435,6 +435,7 @@ public:
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
+    antlr4::tree::TerminalNode *Extern();
     FunctionArgumentsContext *functionArguments();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();

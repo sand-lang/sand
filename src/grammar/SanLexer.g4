@@ -66,6 +66,7 @@ Break: 'break';
 
 // Others
 Function: 'fn';
+Extern: 'extern';
 Return: 'return';
 Comma: ',';
 Colon: ':';

@@ -137,7 +137,10 @@ public:
             return_type = scope->get_type("void");
         }
 
-        auto function = new Function(scope, return_type, args, name);
+        const auto is_extern = !!context->Extern() || name == "main";
+        auto linkage = is_extern ? llvm::GlobalValue::LinkageTypes::ExternalLinkage : llvm::GlobalValue::LinkageTypes::InternalLinkage;
+
+        auto function = new Function(scope, return_type, args, name, linkage);
         return scope->add(function, name);
     }
 

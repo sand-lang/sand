@@ -28,7 +28,7 @@ public:
              Type *return_type_,
              const std::vector<std::pair<std::string, Type *>> &args_,
              const std::string &name_ = "",
-             const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::ExternalLinkage)
+             const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::PrivateLinkage)
         : return_type(return_type_),
           args(args_)
     {
