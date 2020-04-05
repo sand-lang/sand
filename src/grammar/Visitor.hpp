@@ -174,6 +174,11 @@ public:
                 type->qualifiers.is_mutable = false;
         }
 
+        for (const auto &dimension : context->typeDimensions())
+        {
+            type->ref = type->ref->getPointerTo();
+        }
+
         return type;
     }
 
