@@ -1,6 +1,7 @@
 #pragma once
 
 #include <san/Scope.hpp>
+#include <san/StatementStatus.hpp>
 
 namespace San
 {
@@ -10,7 +11,7 @@ public:
     std::shared_ptr<Scope> scope = nullptr;
     llvm::BasicBlock *bb = nullptr;
 
-    bool has_returned = false;
+    StatementStatus status = StatementStatus::None;
 
     Block(std::shared_ptr<Scope> scope_, const std::string &name = "", llvm::Function *function = nullptr, bool direct_insert = true) : scope(scope_)
     {

@@ -4,6 +4,7 @@
 
 #include <san/Environment.hpp>
 #include <san/Function.hpp>
+#include <san/StatementStatus.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
@@ -32,7 +33,7 @@ public:
         return 0;
     }
 
-    bool visitStatements(const std::vector<SanParser::StatementContext *> &statements)
+    StatementStatus visitStatements(const std::vector<SanParser::StatementContext *> &statements)
     {
         for (const auto &statement : statements)
         {
@@ -40,19 +41,23 @@ public:
 
             if (statement->returnStatement())
             {
-                return true;
+                return StatementStatus::Returned;
+            }
+            else if (statement->breakStatement())
+            {
+                return StatementStatus::Breaked;
             }
             else if (value.is<Block *>())
             {
                 const auto block = value.as<Block *>();
-                if (block->has_returned)
+                if (block->status == StatementStatus::Returned || block->status == StatementStatus::Breaked)
                 {
-                    return true;
+                    return block->status;
                 }
             }
         }
 
-        return false;
+        return StatementStatus::None;
     }
 
     antlrcpp::Any visitStatement(SanParser::StatementContext *context) override
@@ -229,11 +234,15 @@ public:
             }
         }
 
-        block->has_returned = visitStatements(context->statement());
+        block->status = visitStatements(context->statement());
 
-        if (function != nullptr)
+        if (block->status == StatementStatus::Breaked && scope->is_loop())
         {
-            if (!block->has_returned)
+            scope->builder.CreateBr(scope->get_loop_end_label());
+        }
+        else if (function != nullptr)
+        {
+            if (block->status != StatementStatus::Returned)
             {
                 scope->builder.CreateBr(function->return_label);
             }
@@ -722,11 +731,11 @@ public:
         scope->function->insert(if_then);
         env.builder.SetInsertPoint(if_then->bb);
 
-        if_then->has_returned = visitStatements({context->statement()});
+        if_then->status = visitStatements({context->statement()});
 
         this->scopes.pop();
 
-        if (!if_then->has_returned)
+        if (if_then->status == StatementStatus::None)
         {
             scope->builder.CreateBr(if_end->bb);
         }
@@ -738,9 +747,9 @@ public:
 
         if (auto else_statement = context->elseStatement())
         {
-            if_next->has_returned = visitElseStatement(else_statement).as<bool>();
+            if_next->status = visitElseStatement(else_statement).as<StatementStatus>();
 
-            if (!if_next->has_returned)
+            if (if_next->status == StatementStatus::None)
             {
                 scope->builder.CreateBr(if_end->bb);
             }
@@ -748,8 +757,6 @@ public:
             scope->function->insert(if_end);
             env.builder.SetInsertPoint(if_end->bb);
         }
-
-        this->scopes.pop();
 
         return 0;
     }
@@ -769,6 +776,9 @@ public:
         auto while_body = new Block(scope, "while.body", scope->function->ref, false);
         auto while_end = new Block(scope, "while.end", scope->function->ref, false);
 
+        scope->is_loop(true);
+        scope->loop_end_label = while_end->bb;
+
         scope->builder.CreateBr(while_cond->bb);
 
         scope->function->insert(while_cond);
@@ -781,9 +791,13 @@ public:
 
         scope->function->insert(while_body);
         env.builder.SetInsertPoint(while_body->bb);
-        while_body->has_returned = visitStatements({context->statement()});
+        while_body->status = this->visitStatements({context->statement()});
 
-        if (!while_body->has_returned)
+        if (while_body->status == StatementStatus::Breaked)
+        {
+            scope->builder.CreateBr(while_end->bb);
+        }
+        else if (while_body->status != StatementStatus::Returned)
         {
             scope->builder.CreateBr(while_cond->bb);
         }

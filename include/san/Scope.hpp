@@ -14,6 +14,9 @@ class Function;
 
 class Scope
 {
+private:
+    bool _is_loop = false;
+
 public:
     llvm::LLVMContext &llvm_context;
     llvm::IRBuilder<> &builder;
@@ -26,7 +29,7 @@ public:
 
     Function *function = nullptr;
 
-    bool is_condition = false;
+    llvm::BasicBlock *loop_end_label = nullptr;
 
     Scope(llvm::LLVMContext &llvm_context_,
           llvm::IRBuilder<> &builder_,
@@ -116,6 +119,33 @@ public:
     inline bool is_root() const
     {
         return parent == nullptr;
+    }
+
+    bool is_loop() const
+    {
+        if (!this->_is_loop && !this->is_root())
+        {
+            return this->parent->is_loop();
+        }
+
+        return this->_is_loop;
+    }
+
+    llvm::BasicBlock *get_loop_end_label()
+    {
+        auto label = this->loop_end_label;
+
+        if (!label && !this->is_root())
+        {
+            return this->parent->get_loop_end_label();
+        }
+
+        return label;
+    }
+
+    inline void is_loop(const bool &value)
+    {
+        this->_is_loop = value;
     }
 
 private:
