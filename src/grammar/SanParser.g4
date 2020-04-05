@@ -90,6 +90,8 @@ typeName:
 	| UInt64
 	| Float32
 	| Float64
+	| Void
+	| Bool
 	| VariableName;
 
 eos: (EOF | LineTerminator);

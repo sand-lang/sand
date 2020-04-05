@@ -640,6 +640,8 @@ public:
     antlr4::tree::TerminalNode *UInt64();
     antlr4::tree::TerminalNode *Float32();
     antlr4::tree::TerminalNode *Float64();
+    antlr4::tree::TerminalNode *Void();
+    antlr4::tree::TerminalNode *Bool();
     antlr4::tree::TerminalNode *VariableName();
 
 

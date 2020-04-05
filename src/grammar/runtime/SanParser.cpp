@@ -1582,6 +1582,8 @@ SanParser::FunctionDeclarationContext* SanParser::functionDeclaration() {
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & ((1ULL << SanParser::Variadic)
+      | (1ULL << SanParser::Void)
+      | (1ULL << SanParser::Bool)
       | (1ULL << SanParser::Int8)
       | (1ULL << SanParser::Int16)
       | (1ULL << SanParser::Int32)
@@ -1728,6 +1730,8 @@ SanParser::FunctionArgumentContext* SanParser::functionArgument() {
     setState(202);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
+      case SanParser::Void:
+      case SanParser::Bool:
       case SanParser::Int8:
       case SanParser::Int16:
       case SanParser::Int32:
@@ -2417,6 +2421,14 @@ tree::TerminalNode* SanParser::TypeNameContext::Float64() {
   return getToken(SanParser::Float64, 0);
 }
 
+tree::TerminalNode* SanParser::TypeNameContext::Void() {
+  return getToken(SanParser::Void, 0);
+}
+
+tree::TerminalNode* SanParser::TypeNameContext::Bool() {
+  return getToken(SanParser::Bool, 0);
+}
+
 tree::TerminalNode* SanParser::TypeNameContext::VariableName() {
   return getToken(SanParser::VariableName, 0);
 }
@@ -2447,7 +2459,9 @@ SanParser::TypeNameContext* SanParser::typeName() {
     setState(252);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & ((1ULL << SanParser::Int8)
+      ((1ULL << _la) & ((1ULL << SanParser::Void)
+      | (1ULL << SanParser::Bool)
+      | (1ULL << SanParser::Int8)
       | (1ULL << SanParser::Int16)
       | (1ULL << SanParser::Int32)
       | (1ULL << SanParser::Int64)
@@ -2667,7 +2681,7 @@ SanParser::Initializer::Initializer() {
     0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 
     0x3a, 0x3c, 0x2, 0xa, 0x3, 0x2, 0x5, 0x7, 0x3, 0x2, 0x3, 0x4, 0x3, 0x2, 
     0x10, 0x12, 0x3, 0x2, 0x8, 0x9, 0x3, 0x2, 0xa, 0xf, 0x3, 0x2, 0x35, 
-    0x37, 0x4, 0x2, 0x1d, 0x26, 0x34, 0x34, 0x3, 0x3, 0x3d, 0x3d, 0x2, 0x106, 
+    0x37, 0x4, 0x2, 0x1b, 0x26, 0x34, 0x34, 0x3, 0x3, 0x3d, 0x3d, 0x2, 0x106, 
     0x2, 0x41, 0x3, 0x2, 0x2, 0x2, 0x4, 0x46, 0x3, 0x2, 0x2, 0x2, 0x6, 0x5f, 
     0x3, 0x2, 0x2, 0x2, 0x8, 0x68, 0x3, 0x2, 0x2, 0x2, 0xa, 0x90, 0x3, 0x2, 
     0x2, 0x2, 0xc, 0x92, 0x3, 0x2, 0x2, 0x2, 0xe, 0x94, 0x3, 0x2, 0x2, 0x2, 
