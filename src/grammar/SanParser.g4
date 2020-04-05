@@ -44,7 +44,7 @@ comparisonOperatorStatement:
 	| GreaterThan;
 equalityOperatorStatement: Equal;
 
-literal: IntegerLiteral | StringLiteral;
+literal: IntegerLiteral | StringLiteral | CharLiteral;
 
 variableDeclaration:
 	VariableDeclarator VariableName ':' type ('=' expression)?;
@@ -60,7 +60,9 @@ functionDeclaration:
 	)?;
 
 functionArguments: functionArgument (',' functionArgument)*;
-functionArgument: functionArgumentVariable | functionArgumentVariadic;
+functionArgument:
+	functionArgumentVariable
+	| functionArgumentVariadic;
 functionArgumentVariable: (VariableName ':')? type;
 functionArgumentVariadic: '...';
 

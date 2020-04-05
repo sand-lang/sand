@@ -756,6 +756,22 @@ public:
             const auto value = this->env.builder.CreateGEP(global, idxs);
             return scope->add(new Variable(new Type(value->getType()), value));
         }
+        else if (const auto literal = context->CharLiteral())
+        {
+            auto str = literal->getSymbol()->getText();
+            str = str.substr(1, str.size() - 2);
+
+            int integer = 0;
+            for (const auto &c : str)
+            {
+                integer = (integer << 8) + static_cast<int>(c);
+            }
+
+            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
+            const auto value = llvm::ConstantInt::get(type, integer, true);
+
+            return scope->add(new Variable(new Type(value->getType()), value));
+        }
 
         return nullptr;
     }
