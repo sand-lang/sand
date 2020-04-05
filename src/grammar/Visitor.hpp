@@ -330,7 +330,7 @@ public:
         if (expression)
         {
             auto value = visitExpression(expression).as<Variable *>();
-            auto casted = value->cast(scope->function->return_type, scope->builder);
+            auto casted = value->load(scope->builder)->cast(scope->function->return_type, scope->builder);
 
             scope->builder.CreateStore(casted->value, scope->function->return_value);
         }
@@ -373,6 +373,10 @@ public:
         else if (const auto equality_operation_context = dynamic_cast<SanParser::EqualityOperationContext *>(context))
         {
             return visitEqualityOperation(equality_operation_context);
+        }
+        else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
+        {
+            return visitIndex(index_context);
         }
         else if (const auto type_cast_context = dynamic_cast<SanParser::TypeCastContext *>(context))
         {
@@ -641,9 +645,15 @@ public:
         auto lexpr = visitExpression(lexpr_context).as<Variable *>();
         auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
+        auto value = rexpr->load(scope->builder)->cast(lexpr->type, scope->builder)->get(scope->builder);
+
         if (auto alloca = lexpr->get_alloca())
         {
-            scope->builder.CreateStore(rexpr->cast(lexpr->type, scope->builder)->get(scope->builder), alloca);
+            scope->builder.CreateStore(value, alloca);
+        }
+        else if (lexpr->value_type == VariableValueType::GEP)
+        {
+            scope->builder.CreateStore(value, lexpr->value);
         }
         else
         {
@@ -651,6 +661,35 @@ public:
         }
 
         return lexpr;
+    }
+
+    antlrcpp::Any visitIndex(SanParser::IndexContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        auto expression = this->visitExpression(context->expression(0)).as<Variable *>();
+        auto index = this->visitExpression(context->expression(1)).as<Variable *>();
+
+        auto i64 = llvm::Type::getInt64Ty(scope->llvm_context);
+
+        std::vector<llvm::Value *> idxs;
+
+        if (expression->type->is_pointer())
+        {
+            expression = expression->load(scope->builder);
+        }
+        else
+        {
+            idxs.push_back(llvm::ConstantInt::get(i64, 0));
+        }
+
+        auto index_value = index->cast(new Type(i64), scope->builder)->get(scope->builder);
+        idxs.push_back(index_value);
+
+        auto value = scope->builder.CreateInBoundsGEP(expression->value, idxs, "idx");
+
+        auto var = new Variable(new Type(value->getType()->getPointerElementType()), value, VariableValueType::GEP);
+        return scope->add(var);
     }
 
     antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) override

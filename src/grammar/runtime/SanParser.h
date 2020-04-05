@@ -210,6 +210,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  IndexContext : public ExpressionContext {
+  public:
+    IndexContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *OpeningBracket();
+    antlr4::tree::TerminalNode *ClosingBracket();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LiteralDeclarationContext : public ExpressionContext {
   public:
     LiteralDeclarationContext(ExpressionContext *ctx);

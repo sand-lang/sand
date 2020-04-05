@@ -10,6 +10,7 @@ enum class VariableValueType
 {
     Simple,
     Alloca,
+    GEP,
     Load,
 };
 
@@ -32,7 +33,7 @@ public:
 
     llvm::Value *get(llvm::IRBuilder<> &builder)
     {
-        if (this->value_type == VariableValueType::Alloca)
+        if (this->value_type == VariableValueType::Alloca || this->value_type == VariableValueType::GEP)
         {
             return builder.CreateLoad(this->value);
         }
@@ -59,7 +60,7 @@ public:
     {
         VariableValueType value_type = VariableValueType::Simple;
 
-        if (this->value_type == VariableValueType::Alloca)
+        if (this->value_type == VariableValueType::Alloca || this->value_type == VariableValueType::GEP)
         {
             value_type = VariableValueType::Load;
         }
