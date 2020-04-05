@@ -59,6 +59,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *ctx) override {
     return visitChildren(ctx);
   }

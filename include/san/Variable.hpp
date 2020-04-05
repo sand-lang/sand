@@ -75,15 +75,21 @@ public:
         {
             if (dest->is_integer())
             {
-                bool is_signed = this->type->qualifiers.is_signed;
+                auto lbits = dest->ref->getIntegerBitWidth();
+                auto rbits = this->type->ref->getIntegerBitWidth();
 
-                if (is_signed)
+                if (lbits != rbits)
                 {
-                    value = builder.CreateSExtOrTrunc(value, dest->ref);
-                }
-                else
-                {
-                    value = builder.CreateZExtOrTrunc(value, dest->ref);
+                    bool is_signed = this->type->qualifiers.is_signed;
+
+                    if (is_signed)
+                    {
+                        value = builder.CreateSExtOrTrunc(value, dest->ref);
+                    }
+                    else
+                    {
+                        value = builder.CreateZExtOrTrunc(value, dest->ref);
+                    }
                 }
 
                 if (dest->is_boolean())
@@ -120,31 +126,12 @@ public:
         return this;
     }
 
-    static std::pair<Variable *, Variable *> balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)
+    static std::pair<Variable *, Variable *> load_and_balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)
     {
-        auto pair = std::pair<Variable *, Variable *>(l, r);
+        l = l->load(builder);
+        r = r->cast(l->type, builder);
 
-        if (l->type->is_integer() && r->type->is_integer())
-        {
-            auto lbits = l->type->ref->getIntegerBitWidth();
-            auto rbits = r->type->ref->getIntegerBitWidth();
-
-            if (lbits < rbits)
-            {
-                pair.first = pair.first->cast(r->type, builder);
-            }
-            else if (rbits < lbits)
-            {
-                pair.second = pair.second->cast(l->type, builder);
-            }
-        }
-
-        return pair;
-    }
-
-    inline static std::pair<Variable *, Variable *> load_and_balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)
-    {
-        return balance_types(l->load(builder), r->load(builder), builder);
+        return std::pair(l, r);
     }
 };
 } // namespace San

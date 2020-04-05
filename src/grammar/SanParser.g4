@@ -27,6 +27,7 @@ expression:
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
+	| expression 'as' type									# TypeCast
 	| VariableName											# VariableExpression
 	| literal												# LiteralDeclaration;
 

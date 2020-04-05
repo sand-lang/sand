@@ -48,6 +48,9 @@ UInt64: 'u64';
 Float32: 'f32';
 Float64: 'f64';
 
+// Casting
+As: 'as';
+
 // Qualifiers
 Const: 'const';
 

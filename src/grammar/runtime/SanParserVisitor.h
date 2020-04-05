@@ -41,6 +41,8 @@ public:
 
     virtual antlrcpp::Any visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) = 0;
+
     virtual antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) = 0;

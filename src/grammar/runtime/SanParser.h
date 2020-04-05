@@ -18,12 +18,12 @@ public:
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Void = 24, 
     Bool = 25, Int8 = 26, Int16 = 27, Int32 = 28, Int64 = 29, UInt8 = 30, 
-    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, Const = 36, 
-    VariableDeclarator = 37, If = 38, Else = 39, While = 40, Break = 41, 
-    Function = 42, Return = 43, Comma = 44, Colon = 45, InstructionsSeparator = 46, 
-    VariableName = 47, StringLiteral = 48, CharLiteral = 49, IntegerLiteral = 50, 
-    DecimalLiteral = 51, ZeroLiteral = 52, HexadecimalLiteral = 53, BinaryLiteral = 54, 
-    WhiteSpace = 55, LineTerminator = 56
+    UInt16 = 31, UInt32 = 32, UInt64 = 33, Float32 = 34, Float64 = 35, As = 36, 
+    Const = 37, VariableDeclarator = 38, If = 39, Else = 40, While = 41, 
+    Break = 42, Function = 43, Return = 44, Comma = 45, Colon = 46, InstructionsSeparator = 47, 
+    VariableName = 48, StringLiteral = 49, CharLiteral = 50, IntegerLiteral = 51, 
+    DecimalLiteral = 52, ZeroLiteral = 53, HexadecimalLiteral = 54, BinaryLiteral = 55, 
+    WhiteSpace = 56, LineTerminator = 57
   };
 
   enum {
@@ -223,6 +223,17 @@ public:
     std::vector<ExpressionContext *> expression();
     ExpressionContext* expression(size_t i);
     ConditionalOperatorStatementContext *conditionalOperatorStatement();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  TypeCastContext : public ExpressionContext {
+  public:
+    TypeCastContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *As();
+    TypeContext *type();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

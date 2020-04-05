@@ -286,7 +286,7 @@ public:
         if (auto expression = context->expression())
         {
             auto rvar = visitExpression(expression).as<Variable *>();
-            scope->builder.CreateStore(rvar->value, alloca);
+            scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
         }
 
         return scope->add(var, name);
@@ -316,6 +316,10 @@ public:
         {
             return visitInParenExpression(in_paren_expression_context);
         }
+        else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
+        {
+            return visitFunctionCallExpression(function_call_expression_context);
+        }
         else if (const auto binary_operation_context = dynamic_cast<SanParser::BinaryOperationContext *>(context))
         {
             return visitBinaryOperation(binary_operation_context);
@@ -340,13 +344,13 @@ public:
         {
             return visitEqualityOperation(equality_operation_context);
         }
+        else if (const auto type_cast_context = dynamic_cast<SanParser::TypeCastContext *>(context))
+        {
+            return visitTypeCast(type_cast_context);
+        }
         else if (const auto variable_expression_context = dynamic_cast<SanParser::VariableExpressionContext *>(context))
         {
             return visitVariableExpression(variable_expression_context);
-        }
-        else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
-        {
-            return visitFunctionCallExpression(function_call_expression_context);
         }
         else if (const auto literal_declaration_context = dynamic_cast<SanParser::LiteralDeclarationContext *>(context))
         {
@@ -609,7 +613,7 @@ public:
 
         if (auto alloca = lexpr->get_alloca())
         {
-            scope->builder.CreateStore(rexpr->get(scope->builder), alloca);
+            scope->builder.CreateStore(rexpr->cast(lexpr->type, scope->builder)->get(scope->builder), alloca);
         }
         else
         {
@@ -617,6 +621,15 @@ public:
         }
 
         return lexpr;
+    }
+
+    antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto expr = visitExpression(context->expression()).as<Variable *>();
+        auto type = visitType(context->type()).as<Type *>();
+
+        return expr->cast(type, scope->builder);
     }
 
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
