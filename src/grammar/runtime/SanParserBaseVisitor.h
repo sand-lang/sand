@@ -159,6 +159,30 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassInstantiationStatement(SanParser::ClassInstantiationStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitType(SanParser::TypeContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -172,6 +196,10 @@ public:
   }
 
   virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *ctx) override {
     return visitChildren(ctx);
   }
 

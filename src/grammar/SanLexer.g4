@@ -57,6 +57,9 @@ As: 'as';
 // Qualifiers
 Const: 'const';
 
+// Classes
+Class: 'class';
+
 // Variable
 VariableDeclarator: 'let';
 

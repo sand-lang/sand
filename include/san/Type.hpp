@@ -1,5 +1,6 @@
 #pragma once
 
+#include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 
 #include <string>
@@ -18,19 +19,14 @@ class Type
 public:
     llvm::Type *ref = nullptr;
 
-    bool accept_generics = false;
-    std::vector<Type *> generics;
-
     TypeQualifiers qualifiers;
+    bool is_struct = false;
 
-    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_) {}
+    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers(), const bool is_struct_ = false) : ref(ref_), qualifiers(qualifiers_), is_struct(is_struct_) {}
 
-    Type(llvm::Type *ref_,
-         const std::vector<Type *> &generics_,
-         const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_),
-                                                                 accept_generics(true),
-                                                                 generics(generics_),
-                                                                 qualifiers(qualifiers_) {}
+    virtual ~Type() {}
+
+    size_t size() const;
 
     inline bool is_integer() const
     {

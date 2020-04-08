@@ -16,7 +16,9 @@ statement:
 	| returnStatement InstructionsSeparator
 	| ifStatement
 	| whileStatement
-	| breakStatement InstructionsSeparator;
+	| breakStatement InstructionsSeparator
+	| classStatement
+	| classInstantiationStatement InstructionsSeparator;
 
 expression:
 	'(' expression ')'										# InParenExpression
@@ -76,6 +78,16 @@ elseStatement: 'else' statement;
 whileStatement: 'while' expression statement;
 breakStatement: 'break';
 
+classStatement: 'class' VariableName classBody;
+classBody: '{' classProperty* '}';
+classProperty: VariableName ':' type ('=' expression)? InstructionsSeparator;
+
+classInstantiationStatement:
+	classTypeName '{' classInstantiationProperties? '}';
+classInstantiationProperties:
+	classInstantiationProperty (',' classProperty)* ','?;
+classInstantiationProperty: VariableName ':' expression?;
+
 type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;
 typeDimensions: '[' ']';
@@ -93,6 +105,8 @@ typeName:
 	| Float64
 	| Void
 	| Bool
-	| VariableName;
+	| classTypeName;
+
+classTypeName: VariableName;
 
 eos: (EOF | LineTerminator);

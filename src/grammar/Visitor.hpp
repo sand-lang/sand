@@ -2,6 +2,7 @@
 
 #include "runtime/SanParserBaseVisitor.h"
 
+#include <san/ClassType.hpp>
 #include <san/Environment.hpp>
 #include <san/Function.hpp>
 #include <san/StatementStatus.hpp>
@@ -90,6 +91,10 @@ public:
         else if (auto while_statement = context->whileStatement())
         {
             return visitWhileStatement(while_statement);
+        }
+        else if (auto class_statement = context->classStatement())
+        {
+            return visitClassStatement(class_statement);
         }
 
         return 0;
@@ -318,6 +323,8 @@ public:
             auto rvar = visitExpression(expression).as<Variable *>();
             scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
         }
+
+        std::cout << "Size -> " << var->type->size() << std::endl;
 
         return scope->add(var, name);
     }
@@ -925,6 +932,44 @@ public:
         this->scopes.pop();
 
         return 0;
+    }
+
+    antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto name = context->VariableName()->getText();
+
+        auto structure = this->visitClassBody(context->classBody()).as<ClassType *>();
+        structure->get_struct()->setName(name + ".class");
+
+        return scope->add_type(structure, name);
+    }
+
+    antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        std::vector<std::pair<std::string, Type *>> properties;
+        std::vector<llvm::Type *> properties_types;
+
+        for (auto &class_property : context->classProperty())
+        {
+            auto property = this->visitClassProperty(class_property).as<std::pair<std::string, Type *>>();
+
+            properties.push_back(property);
+            properties_types.push_back(property.second->ref);
+        }
+
+        auto type = llvm::StructType::create(scope->llvm_context, properties_types, "", false);
+        return new ClassType(type, {}, properties);
+    }
+
+    antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) override
+    {
+        auto name = context->VariableName()->getText();
+        auto type = this->visitType(context->type()).as<Type *>();
+
+        return std::pair(name, type);
     }
 };
 } // namespace San

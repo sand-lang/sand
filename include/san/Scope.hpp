@@ -1,5 +1,6 @@
 #pragma once
 
+#include <san/ClassType.hpp>
 #include <san/Type.hpp>
 #include <san/Variable.hpp>
 
@@ -7,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 
 namespace San
 {
@@ -65,6 +67,14 @@ public:
         return variable;
     }
 
+    Type *add_type(Type *type, const std::string &name = "")
+    {
+        const auto pair = std::pair(name, type);
+        this->types.insert(pair);
+
+        return type;
+    }
+
     Variable *get_var(const std::string &name)
     {
         auto it = this->variables.find(name);
@@ -105,7 +115,12 @@ public:
 
         if (type)
         {
-            return new Type(*type);
+            if (auto structure = dynamic_cast<ClassType *>(type))
+            {
+                return structure;
+            }
+
+            return type;
         }
 
         if (this->parent)

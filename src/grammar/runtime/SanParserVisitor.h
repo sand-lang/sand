@@ -91,6 +91,18 @@ public:
 
     virtual antlrcpp::Any visitBreakStatement(SanParser::BreakStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassInstantiationStatement(SanParser::ClassInstantiationStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context) = 0;
+
     virtual antlrcpp::Any visitType(SanParser::TypeContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeQualifier(SanParser::TypeQualifierContext *context) = 0;
@@ -98,6 +110,8 @@ public:
     virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 
