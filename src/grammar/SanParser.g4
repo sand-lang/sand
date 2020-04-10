@@ -22,6 +22,7 @@ statement:
 
 expression:
 	'(' expression ')'										# InParenExpression
+	| 'sizeof' type											# SizeofExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
@@ -80,7 +81,8 @@ breakStatement: 'break';
 
 classStatement: 'class' VariableName classBody;
 classBody: '{' classProperty* '}';
-classProperty: VariableName ':' type ('=' expression)? InstructionsSeparator;
+classProperty:
+	VariableName ':' type ('=' expression)? InstructionsSeparator;
 
 classInstantiationStatement:
 	classTypeName '{' classInstantiationProperties? '}';

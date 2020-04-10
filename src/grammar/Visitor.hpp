@@ -353,6 +353,10 @@ public:
         {
             return visitInParenExpression(in_paren_expression_context);
         }
+        else if (const auto sizeof_expression_context = dynamic_cast<SanParser::SizeofExpressionContext *>(context))
+        {
+            return visitSizeofExpression(sizeof_expression_context);
+        }
         else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
         {
             return visitFunctionCallExpression(function_call_expression_context);
@@ -714,6 +718,16 @@ public:
         auto var = scope->get_var(context->VariableName()->getText());
 
         return var;
+    }
+
+    antlrcpp::Any visitSizeofExpression(SanParser::SizeofExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        auto type = this->visitType(context->type()).as<Type *>();
+        auto value = llvm::ConstantInt::get(llvm::Type::getInt64Ty(scope->llvm_context), type->size());
+
+        return new Variable(new Type(value->getType()), value);
     }
 
     antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) override

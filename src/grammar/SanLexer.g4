@@ -54,6 +54,9 @@ Float64: 'f64';
 // Casting
 As: 'as';
 
+// Sizeof
+SizeOf: 'sizeof';
+
 // Qualifiers
 Const: 'const';
 
