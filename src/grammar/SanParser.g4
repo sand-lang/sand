@@ -17,12 +17,12 @@ statement:
 	| ifStatement
 	| whileStatement
 	| breakStatement InstructionsSeparator
-	| classStatement
-	| classInstantiationStatement InstructionsSeparator;
+	| classStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
 	| 'sizeof' type											# SizeofExpression
+	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
@@ -84,11 +84,9 @@ classBody: '{' classProperty* '}';
 classProperty:
 	VariableName ':' type ('=' expression)? InstructionsSeparator;
 
-classInstantiationStatement:
-	classTypeName '{' classInstantiationProperties? '}';
 classInstantiationProperties:
-	classInstantiationProperty (',' classProperty)* ','?;
-classInstantiationProperty: VariableName ':' expression?;
+	classInstantiationProperty (',' classInstantiationProperty)* ','?;
+classInstantiationProperty: VariableName (':' expression)?;
 
 type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;

@@ -49,6 +49,8 @@ public:
 
     virtual antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *context) = 0;
@@ -98,8 +100,6 @@ public:
     virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) = 0;
 
     virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) = 0;
-
-    virtual antlrcpp::Any visitClassInstantiationStatement(SanParser::ClassInstantiationStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context) = 0;
 

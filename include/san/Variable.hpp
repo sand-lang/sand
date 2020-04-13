@@ -56,7 +56,7 @@ public:
         return nullptr;
     }
 
-    inline Variable *load(llvm::IRBuilder<> &builder)
+    Variable *load(llvm::IRBuilder<> &builder)
     {
         VariableValueType value_type = VariableValueType::Simple;
 

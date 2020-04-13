@@ -75,6 +75,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -172,10 +176,6 @@ public:
   }
 
   virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitClassInstantiationStatement(SanParser::ClassInstantiationStatementContext *ctx) override {
     return visitChildren(ctx);
   }
 

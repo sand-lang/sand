@@ -25,9 +25,33 @@ public:
 
     size_t size() const;
 
-    void add_property(std::string name, Type *type)
+    void add_property(const std::string &name, Type *type)
     {
         this->properties.push_back(std::pair(name, type));
+    }
+
+    struct PropertyData
+    {
+        size_t index;
+        Type *type;
+    };
+
+    PropertyData get_property(const std::string &name) const
+    {
+        for (size_t i = 0; i < this->properties.size(); i++)
+        {
+            auto &property = properties[i];
+
+            if (property.first == name)
+            {
+                return PropertyData{
+                    .index = i,
+                    .type = property.second,
+                };
+            }
+        }
+
+        throw std::out_of_range("Property " + name + " doesn't exist");
     }
 
     llvm::StructType *get_struct()

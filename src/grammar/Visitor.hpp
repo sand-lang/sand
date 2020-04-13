@@ -357,6 +357,10 @@ public:
         {
             return visitSizeofExpression(sizeof_expression_context);
         }
+        else if (const auto class_instantiation_expression_context = dynamic_cast<SanParser::ClassInstantiationExpressionContext *>(context))
+        {
+            return visitClassInstantiationExpression(class_instantiation_expression_context);
+        }
         else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
         {
             return visitFunctionCallExpression(function_call_expression_context);
@@ -656,7 +660,7 @@ public:
         auto lexpr = visitExpression(lexpr_context).as<Variable *>();
         auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
-        auto value = rexpr->load(scope->builder)->cast(lexpr->type, scope->builder)->get(scope->builder);
+        auto value = rexpr->cast(lexpr->type, scope->builder)->get(scope->builder);
 
         if (auto alloca = lexpr->get_alloca())
         {
@@ -984,6 +988,71 @@ public:
         auto type = this->visitType(context->type()).as<Type *>();
 
         return std::pair(name, type);
+    }
+
+    antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto structure = this->visitClassTypeName(context->classTypeName()).as<Type *>();
+
+        auto alloca = scope->builder.CreateAlloca(structure->ref);
+        auto var = new Variable(structure, alloca, VariableValueType::Alloca);
+
+        if (auto properties = context->classInstantiationProperties())
+        {
+            this->visitClassInstantiationProperties(properties, var);
+        }
+
+        return var;
+    }
+
+    antlrcpp::Any visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context, Variable *var)
+    {
+        for (const auto &property : context->classInstantiationProperty())
+        {
+            this->visitClassInstantiationProperty(property, var);
+        }
+
+        return 0;
+    }
+
+    antlrcpp::Any visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context, Variable *var)
+    {
+        auto &scope = this->scopes.top();
+        auto type = dynamic_cast<ClassType *>(var->type);
+
+        auto name = context->VariableName()->getText();
+
+        Variable *value = nullptr;
+
+        if (auto expression = context->expression())
+        {
+            value = this->visitExpression(expression).as<Variable *>();
+        }
+        else
+        {
+            value = scope->get_var(name);
+        }
+
+        auto property = type->get_property(name);
+
+        std::vector<llvm::Value *> idxs = {
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), 0, false),
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property.index, false),
+        };
+
+        auto ptr = scope->builder.CreateInBoundsGEP(var->value, idxs, name);
+        scope->builder.CreateStore(value->cast(property.type, scope->builder)->get(scope->builder), ptr);
+
+        return 0;
+    }
+
+    antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto name = context->VariableName()->getText();
+
+        return scope->get_type(name);
     }
 };
 } // namespace San
