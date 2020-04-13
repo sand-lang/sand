@@ -67,6 +67,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *ctx) override {
     return visitChildren(ctx);
   }

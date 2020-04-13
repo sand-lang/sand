@@ -45,6 +45,8 @@ public:
 
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) = 0;

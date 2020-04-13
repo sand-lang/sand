@@ -397,6 +397,10 @@ public:
         {
             return visitTypeCast(type_cast_context);
         }
+        else if (const auto property_expression_context = dynamic_cast<SanParser::PropertyExpressionContext *>(context))
+        {
+            return visitPropertyExpression(property_expression_context);
+        }
         else if (const auto variable_expression_context = dynamic_cast<SanParser::VariableExpressionContext *>(context))
         {
             return visitVariableExpression(variable_expression_context);
@@ -714,6 +718,26 @@ public:
         auto type = visitType(context->type()).as<Type *>();
 
         return expr->cast(type, scope->builder);
+    }
+
+    antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        auto expr = this->visitExpression(context->expression()).as<Variable *>();
+        auto name = context->VariableName()->getText();
+
+        auto type = dynamic_cast<ClassType *>(expr->type);
+
+        auto property = type->get_property(name);
+
+        std::vector<llvm::Value *> idxs = {
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), 0, false),
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property.index, false),
+        };
+
+        auto ptr = scope->builder.CreateInBoundsGEP(expr->value, idxs, name);
+        return new Variable(property.type, ptr, VariableValueType::GEP);
     }
 
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override

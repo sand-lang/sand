@@ -23,6 +23,7 @@ expression:
 	'(' expression ')'										# InParenExpression
 	| 'sizeof' type											# SizeofExpression
 	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
+	| expression '.' VariableName							# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
