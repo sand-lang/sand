@@ -111,6 +111,10 @@ BinaryLiteral: ('0b' | '0B') BINARYDIGIT (
 		DIGITSEPARATOR? BINARYDIGIT
 	)*;
 
+// Comments
+Comment: '#' CommentLine* -> skip;
+fragment CommentLine: ~ [\\\r\n] | Escape;
+
 // Specials
 WhiteSpace: [ \t]+ -> skip;
 LineTerminator: [\r\n] -> channel(HIDDEN);

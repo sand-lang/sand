@@ -24,7 +24,7 @@ public:
     Function = 48, Extern = 49, Return = 50, Comma = 51, Colon = 52, InstructionsSeparator = 53, 
     VariableName = 54, StringLiteral = 55, CharLiteral = 56, IntegerLiteral = 57, 
     DecimalLiteral = 58, ZeroLiteral = 59, HexadecimalLiteral = 60, BinaryLiteral = 61, 
-    WhiteSpace = 62, LineTerminator = 63
+    Comment = 62, WhiteSpace = 63, LineTerminator = 64
   };
 
   enum {
