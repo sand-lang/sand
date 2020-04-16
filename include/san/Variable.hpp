@@ -68,9 +68,9 @@ public:
         return new Variable(new Type(*this->type), this->get(builder), value_type);
     }
 
-    Variable *cast(const Type *dest, llvm::IRBuilder<> &builder)
+    Variable *cast(const Type *dest, llvm::IRBuilder<> &builder, const bool &load = true)
     {
-        auto value = this->get(builder);
+        auto value = load ? this->get(builder) : this->value;
 
         if (this->type->is_integer())
         {
@@ -125,6 +125,14 @@ public:
         }
 
         return this;
+    }
+
+    Variable *cast_to_bytes(llvm::IRBuilder<> &builder)
+    {
+        auto type = llvm::Type::getInt8PtrTy(builder.getContext());
+        auto value = builder.CreateBitCast(this->value, type);
+
+        return new Variable(new Type(type), value, this->value_type);
     }
 
     static std::pair<Variable *, Variable *> load_and_balance_types(Variable *l, Variable *r, llvm::IRBuilder<> &builder)

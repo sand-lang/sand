@@ -22,11 +22,23 @@ public:
     TypeQualifiers qualifiers;
     bool is_struct = false;
 
+    Type *base = nullptr;
+
     Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers(), const bool is_struct_ = false) : ref(ref_), qualifiers(qualifiers_), is_struct(is_struct_) {}
 
     virtual ~Type() {}
 
     size_t size() const;
+
+    Type *pointer()
+    {
+        auto llvm_type = reinterpret_cast<llvm::Type *>(this->ref->getPointerTo());
+
+        auto type = new Type(llvm_type, this->qualifiers);
+        type->base = this;
+
+        return type;
+    }
 
     inline bool is_integer() const
     {

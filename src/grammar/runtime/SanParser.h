@@ -19,12 +19,12 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
     UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
-    As = 37, SizeOf = 38, Const = 39, Class = 40, Dot = 41, VariableDeclarator = 42, 
-    If = 43, Else = 44, While = 45, Break = 46, Function = 47, Extern = 48, 
-    Return = 49, Comma = 50, Colon = 51, InstructionsSeparator = 52, VariableName = 53, 
-    StringLiteral = 54, CharLiteral = 55, IntegerLiteral = 56, DecimalLiteral = 57, 
-    ZeroLiteral = 58, HexadecimalLiteral = 59, BinaryLiteral = 60, WhiteSpace = 61, 
-    LineTerminator = 62
+    As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Dot = 42, 
+    VariableDeclarator = 43, If = 44, Else = 45, While = 46, Break = 47, 
+    Function = 48, Extern = 49, Return = 50, Comma = 51, Colon = 52, InstructionsSeparator = 53, 
+    VariableName = 54, StringLiteral = 55, CharLiteral = 56, IntegerLiteral = 57, 
+    DecimalLiteral = 58, ZeroLiteral = 59, HexadecimalLiteral = 60, BinaryLiteral = 61, 
+    WhiteSpace = 62, LineTerminator = 63
   };
 
   enum {
@@ -37,10 +37,10 @@ public:
     RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleFunctionArgumentVariable = 18, 
     RuleFunctionArgumentVariadic = 19, RuleReturnStatement = 20, RuleIfStatement = 21, 
     RuleElseStatement = 22, RuleWhileStatement = 23, RuleBreakStatement = 24, 
-    RuleClassStatement = 25, RuleClassBody = 26, RuleClassProperty = 27, 
-    RuleClassInstantiationProperties = 28, RuleClassInstantiationProperty = 29, 
-    RuleType = 30, RuleTypeQualifier = 31, RuleTypeDimensions = 32, RuleTypeName = 33, 
-    RuleClassTypeName = 34, RuleEos = 35
+    RuleClassStatement = 25, RuleClassExtends = 26, RuleClassBody = 27, 
+    RuleClassProperty = 28, RuleClassInstantiationProperties = 29, RuleClassInstantiationProperty = 30, 
+    RuleType = 31, RuleTypeQualifier = 32, RuleTypeDimensions = 33, RuleTypeName = 34, 
+    RuleClassTypeName = 35, RuleEos = 36
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -79,6 +79,7 @@ public:
   class WhileStatementContext;
   class BreakStatementContext;
   class ClassStatementContext;
+  class ClassExtendsContext;
   class ClassBodyContext;
   class ClassPropertyContext;
   class ClassInstantiationPropertiesContext;
@@ -644,6 +645,8 @@ public:
     antlr4::tree::TerminalNode *Class();
     antlr4::tree::TerminalNode *VariableName();
     ClassBodyContext *classBody();
+    antlr4::tree::TerminalNode *Extends();
+    ClassExtendsContext *classExtends();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -651,6 +654,22 @@ public:
   };
 
   ClassStatementContext* classStatement();
+
+  class  ClassExtendsContext : public antlr4::ParserRuleContext {
+  public:
+    ClassExtendsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<ClassTypeNameContext *> classTypeName();
+    ClassTypeNameContext* classTypeName(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassExtendsContext* classExtends();
 
   class  ClassBodyContext : public antlr4::ParserRuleContext {
   public:

@@ -8,6 +8,11 @@ size_t San::ClassType::size() const
 {
     size_t size = 0;
 
+    for (const auto &parent : this->parents)
+    {
+        size += parent->size();
+    }
+
     for (const auto &[name, type] : this->properties)
     {
         size += type->size();

@@ -730,14 +730,39 @@ public:
         auto type = dynamic_cast<ClassType *>(expr->type);
 
         auto property = type->get_property(name);
+        if (property == nullptr)
+        {
+            throw std::out_of_range("Property " + name + " doesn't exist");
+        }
+
+        llvm::Value *value = nullptr;
+
+        if (property->from != nullptr)
+        {
+            auto bytes = expr->cast_to_bytes(scope->builder);
+
+            std::vector<llvm::Value *> idxs = {
+                llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property->padding, false),
+            };
+
+            value = scope->builder.CreateInBoundsGEP(bytes->value, idxs);
+
+            auto tmp_var = new Variable(new Type(value->getType()), value, VariableValueType::GEP);
+            auto target_type = property->from->pointer();
+            value = tmp_var->cast(target_type, scope->builder, false)->value;
+        }
+        else
+        {
+            value = expr->value;
+        }
 
         std::vector<llvm::Value *> idxs = {
             llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), 0, false),
-            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property.index, false),
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property->index, false),
         };
 
-        auto ptr = scope->builder.CreateInBoundsGEP(expr->value, idxs, name);
-        return new Variable(property.type, ptr, VariableValueType::GEP);
+        auto ptr = scope->builder.CreateInBoundsGEP(value, idxs, name);
+        return new Variable(property->type, ptr, VariableValueType::GEP);
     }
 
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
@@ -981,18 +1006,42 @@ public:
         auto &scope = this->scopes.top();
         auto name = context->VariableName()->getText();
 
-        auto structure = this->visitClassBody(context->classBody()).as<ClassType *>();
+        std::vector<ClassType *> parents;
+        if (auto extends = context->classExtends())
+        {
+            parents = this->visitClassExtends(extends).as<decltype(parents)>();
+        }
+
+        auto structure = this->visitClassBody(context->classBody(), parents).as<ClassType *>();
         structure->get_struct()->setName(name + ".class");
 
         return scope->add_type(structure, name);
     }
 
-    antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) override
+    antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *context) override
+    {
+        std::vector<ClassType *> types;
+
+        for (auto &typeName : context->classTypeName())
+        {
+            auto type = this->visitClassTypeName(typeName).as<ClassType *>();
+            types.push_back(type);
+        }
+
+        return types;
+    }
+
+    antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context, std::vector<ClassType *> parents)
     {
         auto &scope = this->scopes.top();
 
         std::vector<std::pair<std::string, Type *>> properties;
         std::vector<llvm::Type *> properties_types;
+
+        for (auto &parent : parents)
+        {
+            properties_types.push_back(parent->ref);
+        }
 
         for (auto &class_property : context->classProperty())
         {
@@ -1003,7 +1052,7 @@ public:
         }
 
         auto type = llvm::StructType::create(scope->llvm_context, properties_types, "", false);
-        return new ClassType(type, {}, properties);
+        return new ClassType(type, parents, {}, properties);
     }
 
     antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) override
@@ -1017,7 +1066,7 @@ public:
     antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) override
     {
         auto &scope = this->scopes.top();
-        auto structure = this->visitClassTypeName(context->classTypeName()).as<Type *>();
+        auto structure = this->visitClassTypeName(context->classTypeName()).as<ClassType *>();
 
         auto alloca = scope->builder.CreateAlloca(structure->ref);
         auto var = new Variable(structure, alloca, VariableValueType::Alloca);
@@ -1059,14 +1108,39 @@ public:
         }
 
         auto property = type->get_property(name);
+        if (property == nullptr)
+        {
+            throw std::out_of_range("Property " + name + " doesn't exist");
+        }
+
+        llvm::Value *target = nullptr;
+
+        if (property->from != nullptr)
+        {
+            auto bytes = var->cast_to_bytes(scope->builder);
+
+            std::vector<llvm::Value *> idxs = {
+                llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property->padding, false),
+            };
+
+            target = scope->builder.CreateInBoundsGEP(bytes->value, idxs);
+
+            auto tmp_var = new Variable(new Type(target->getType()), target, VariableValueType::GEP);
+            auto target_type = property->from->pointer();
+            target = tmp_var->cast(target_type, scope->builder, false)->value;
+        }
+        else
+        {
+            target = var->value;
+        }
 
         std::vector<llvm::Value *> idxs = {
             llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), 0, false),
-            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property.index, false),
+            llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->env.llvm_context), property->index, false),
         };
 
-        auto ptr = scope->builder.CreateInBoundsGEP(var->value, idxs, name);
-        scope->builder.CreateStore(value->cast(property.type, scope->builder)->get(scope->builder), ptr);
+        auto ptr = scope->builder.CreateInBoundsGEP(target, idxs, name);
+        scope->builder.CreateStore(value->cast(property->type, scope->builder)->get(scope->builder), ptr);
 
         return 0;
     }
@@ -1076,7 +1150,14 @@ public:
         auto &scope = this->scopes.top();
         auto name = context->VariableName()->getText();
 
-        return scope->get_type(name);
+        auto type = scope->get_type(name);
+
+        if (auto class_type = dynamic_cast<ClassType *>(type))
+        {
+            return class_type;
+        }
+
+        return type;
     }
 };
 } // namespace San

@@ -80,7 +80,9 @@ elseStatement: 'else' statement;
 whileStatement: 'while' expression statement;
 breakStatement: 'break';
 
-classStatement: 'class' VariableName classBody;
+classStatement:
+	'class' VariableName (Extends classExtends)? classBody;
+classExtends: classTypeName (',' classTypeName)*;
 classBody: '{' classProperty* '}';
 classProperty:
 	VariableName ':' type ('=' expression)? InstructionsSeparator;

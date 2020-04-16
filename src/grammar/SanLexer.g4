@@ -62,6 +62,7 @@ Const: 'const';
 
 // Classes
 Class: 'class';
+Extends: 'extends';
 Dot: '.';
 
 // Variable

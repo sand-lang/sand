@@ -99,6 +99,8 @@ public:
 
     virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *context) = 0;
+
     virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) = 0;
 
     virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) = 0;

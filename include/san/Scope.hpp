@@ -111,13 +111,11 @@ public:
             return primary_type;
         }
 
-        auto type = this->types[name];
-
-        if (type)
+        if (auto type = this->types[name])
         {
-            if (auto structure = dynamic_cast<ClassType *>(type))
+            if (auto class_type = dynamic_cast<ClassType *>(type))
             {
-                return structure;
+                return class_type;
             }
 
             return type;
