@@ -175,6 +175,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitClassGenerics(SanParser::ClassGenericsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -211,7 +215,15 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *ctx) override {
     return visitChildren(ctx);
   }
 

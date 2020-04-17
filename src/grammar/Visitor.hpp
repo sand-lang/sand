@@ -200,8 +200,17 @@ public:
 
     antlrcpp::Any visitType(SanParser::TypeContext *context) override
     {
-        const auto name = context->typeName()->getText();
-        const auto type = this->scopes.top()->get_type(name);
+        const auto stored_type = this->visitTypeName(context->typeName());
+        Type *type = nullptr;
+
+        if (stored_type.is<ClassType *>())
+        {
+            type = stored_type.as<ClassType *>();
+        }
+        else
+        {
+            type = stored_type.as<Type *>();
+        }
 
         for (const auto &qualifier : context->typeQualifier())
         {
@@ -323,8 +332,6 @@ public:
             auto rvar = visitExpression(expression).as<Variable *>();
             scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
         }
-
-        std::cout << "Size -> " << var->type->size() << std::endl;
 
         return scope->add(var, name);
     }
@@ -1006,6 +1013,43 @@ public:
         auto &scope = this->scopes.top();
         auto name = context->VariableName()->getText();
 
+        if (auto generics_context = context->classGenerics())
+        {
+            auto generics = this->visitClassGenerics(generics_context).as<std::vector<std::string>>();
+            auto structure = new ClassType(generics, context);
+
+            return scope->add_type(structure, name);
+        }
+        else
+        {
+            std::vector<ClassType *> parents;
+            if (auto extends = context->classExtends())
+            {
+                parents = this->visitClassExtends(extends).as<decltype(parents)>();
+            }
+
+            auto structure = this->visitClassBody(context->classBody(), parents).as<ClassType *>();
+            structure->get_struct()->setName(name + ".class");
+
+            return scope->add_type(structure, name);
+        }
+    }
+
+    antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context, std::vector<Type *> generics)
+    {
+        this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
+        auto scope = this->scopes.top();
+
+        auto name = context->VariableName()->getText();
+
+        auto generics_context = context->classGenerics();
+        auto generics_names = this->visitClassGenerics(generics_context).as<std::vector<std::string>>();
+
+        for (size_t i = 0; i < generics.size(); i++)
+        {
+            scope->add_type(generics[i], generics_names[i]);
+        }
+
         std::vector<ClassType *> parents;
         if (auto extends = context->classExtends())
         {
@@ -1015,7 +1059,24 @@ public:
         auto structure = this->visitClassBody(context->classBody(), parents).as<ClassType *>();
         structure->get_struct()->setName(name + ".class");
 
-        return scope->add_type(structure, name);
+        this->scopes.pop();
+
+        scope = this->scopes.top();
+        scope->add_type(structure, name);
+
+        return structure;
+    }
+
+    antlrcpp::Any visitClassGenerics(SanParser::ClassGenericsContext *context) override
+    {
+        std::vector<std::string> generics;
+
+        for (const auto &name : context->VariableName())
+        {
+            generics.push_back(name->getText());
+        }
+
+        return generics;
     }
 
     antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *context) override
@@ -1145,19 +1206,67 @@ public:
         return 0;
     }
 
+    antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) override
+    {
+        if (auto primary_type_name = context->primaryTypeName())
+        {
+            auto name = primary_type_name->getText();
+            return this->scopes.top()->get_type(name);
+        }
+        else if (auto class_type_name = context->classTypeName())
+        {
+            auto type = this->visitClassTypeName(class_type_name);
+
+            if (type.is<ClassType *>())
+            {
+                return type.as<ClassType *>();
+            }
+
+            return type.as<Type *>();
+        }
+
+        return nullptr;
+    }
+
     antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) override
     {
         auto &scope = this->scopes.top();
         auto name = context->VariableName()->getText();
 
-        auto type = scope->get_type(name);
+        std::vector<Type *> generics;
+        if (auto class_type_name_generics = context->classTypeNameGenerics())
+        {
+            generics = this->visitClassTypeNameGenerics(class_type_name_generics).as<decltype(generics)>();
+        }
+
+        auto type = scope->get_type(name, generics);
 
         if (auto class_type = dynamic_cast<ClassType *>(type))
         {
+            if (!generics.empty())
+            {
+                return this->visitClassStatement(class_type->context, generics).as<ClassType *>();
+            }
+
             return class_type;
         }
 
         return type;
+    }
+
+    antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        std::vector<Type *> types;
+
+        for (const auto &type_context : context->type())
+        {
+            auto type = this->visitType(type_context);
+            types.push_back(type);
+        }
+
+        return types;
     }
 };
 } // namespace San

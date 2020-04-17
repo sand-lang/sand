@@ -1,9 +1,11 @@
 #pragma once
 
+#include <grammar/runtime/SanParser.h>
 #include <san/Type.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <functional>
 #include <vector>
 
 namespace San
@@ -13,21 +15,37 @@ class ClassType : public Type
 public:
     std::vector<ClassType *> parents;
 
-    bool accept_generics = false;
-    std::vector<Type *> generics;
+    bool is_base = false;
+    std::vector<std::pair<std::string, Type *>> generics;
+    SanParser::ClassStatementContext *context = nullptr;
 
     std::vector<std::pair<std::string, Type *>> properties;
 
     ClassType(llvm::Type *ref_,
               const std::vector<ClassType *> &parents_ = {},
-              const std::vector<Type *> &generics_ = {},
+              const std::vector<std::pair<std::string, Type *>> &generics_ = {},
               const std::vector<std::pair<std::string, Type *>> &properties_ = {}) : Type(ref_, {}, true),
                                                                                      parents(parents_),
-                                                                                     accept_generics(true),
                                                                                      generics(generics_),
                                                                                      properties(properties_) {}
 
+    ClassType(const std::vector<std::string> &generics,
+              SanParser::ClassStatementContext *context_) : Type(nullptr, {}, true),
+                                                            context(context_),
+                                                            is_base(true)
+    {
+        for (const auto &name : generics)
+        {
+            this->generics.push_back(std::pair(name, nullptr));
+        }
+    }
+
     size_t size() const;
+
+    inline bool is_generic() const noexcept
+    {
+        return !this->generics.empty();
+    }
 
     void add_property(const std::string &name, Type *type)
     {

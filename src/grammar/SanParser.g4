@@ -81,7 +81,8 @@ whileStatement: 'while' expression statement;
 breakStatement: 'break';
 
 classStatement:
-	'class' VariableName (Extends classExtends)? classBody;
+	'class' VariableName classGenerics? (Extends classExtends)? classBody;
+classGenerics: '<' VariableName (',' VariableName)* '>';
 classExtends: classTypeName (',' classTypeName)*;
 classBody: '{' classProperty* '}';
 classProperty:
@@ -89,13 +90,14 @@ classProperty:
 
 classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;
-classInstantiationProperty: VariableName (':' expression)?;
+classInstantiationProperty: VariableName ('=' expression)?;
 
 type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;
 typeDimensions: '[' ']';
 
-typeName:
+typeName: primaryTypeName | classTypeName;
+primaryTypeName:
 	Int8
 	| Int16
 	| Int32
@@ -107,9 +109,9 @@ typeName:
 	| Float32
 	| Float64
 	| Void
-	| Bool
-	| classTypeName;
+	| Bool;
 
-classTypeName: VariableName;
+classTypeName: VariableName classTypeNameGenerics?;
+classTypeNameGenerics: '<' type (',' type)* '>';
 
 eos: (EOF | LineTerminator);

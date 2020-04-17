@@ -99,6 +99,8 @@ public:
 
     virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassGenerics(SanParser::ClassGenericsContext *context) = 0;
+
     virtual antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *context) = 0;
 
     virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) = 0;
@@ -117,7 +119,11 @@ public:
 
     virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
+    virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *context) = 0;
+
     virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context) = 0;
 
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 

@@ -37,10 +37,11 @@ public:
     RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleFunctionArgumentVariable = 18, 
     RuleFunctionArgumentVariadic = 19, RuleReturnStatement = 20, RuleIfStatement = 21, 
     RuleElseStatement = 22, RuleWhileStatement = 23, RuleBreakStatement = 24, 
-    RuleClassStatement = 25, RuleClassExtends = 26, RuleClassBody = 27, 
-    RuleClassProperty = 28, RuleClassInstantiationProperties = 29, RuleClassInstantiationProperty = 30, 
-    RuleType = 31, RuleTypeQualifier = 32, RuleTypeDimensions = 33, RuleTypeName = 34, 
-    RuleClassTypeName = 35, RuleEos = 36
+    RuleClassStatement = 25, RuleClassGenerics = 26, RuleClassExtends = 27, 
+    RuleClassBody = 28, RuleClassProperty = 29, RuleClassInstantiationProperties = 30, 
+    RuleClassInstantiationProperty = 31, RuleType = 32, RuleTypeQualifier = 33, 
+    RuleTypeDimensions = 34, RuleTypeName = 35, RulePrimaryTypeName = 36, 
+    RuleClassTypeName = 37, RuleClassTypeNameGenerics = 38, RuleEos = 39
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -79,6 +80,7 @@ public:
   class WhileStatementContext;
   class BreakStatementContext;
   class ClassStatementContext;
+  class ClassGenericsContext;
   class ClassExtendsContext;
   class ClassBodyContext;
   class ClassPropertyContext;
@@ -88,7 +90,9 @@ public:
   class TypeQualifierContext;
   class TypeDimensionsContext;
   class TypeNameContext;
+  class PrimaryTypeNameContext;
   class ClassTypeNameContext;
+  class ClassTypeNameGenericsContext;
   class EosContext; 
 
   class  InstructionsContext : public antlr4::ParserRuleContext {
@@ -645,6 +649,7 @@ public:
     antlr4::tree::TerminalNode *Class();
     antlr4::tree::TerminalNode *VariableName();
     ClassBodyContext *classBody();
+    ClassGenericsContext *classGenerics();
     antlr4::tree::TerminalNode *Extends();
     ClassExtendsContext *classExtends();
 
@@ -654,6 +659,24 @@ public:
   };
 
   ClassStatementContext* classStatement();
+
+  class  ClassGenericsContext : public antlr4::ParserRuleContext {
+  public:
+    ClassGenericsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LessThan();
+    std::vector<antlr4::tree::TerminalNode *> VariableName();
+    antlr4::tree::TerminalNode* VariableName(size_t i);
+    antlr4::tree::TerminalNode *GreaterThan();
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassGenericsContext* classGenerics();
 
   class  ClassExtendsContext : public antlr4::ParserRuleContext {
   public:
@@ -726,7 +749,7 @@ public:
     ClassInstantiationPropertyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *VariableName();
-    antlr4::tree::TerminalNode *Colon();
+    antlr4::tree::TerminalNode *Equal();
     ExpressionContext *expression();
 
 
@@ -784,6 +807,20 @@ public:
   public:
     TypeNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    PrimaryTypeNameContext *primaryTypeName();
+    ClassTypeNameContext *classTypeName();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeNameContext* typeName();
+
+  class  PrimaryTypeNameContext : public antlr4::ParserRuleContext {
+  public:
+    PrimaryTypeNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Int8();
     antlr4::tree::TerminalNode *Int16();
     antlr4::tree::TerminalNode *Int32();
@@ -796,20 +833,20 @@ public:
     antlr4::tree::TerminalNode *Float64();
     antlr4::tree::TerminalNode *Void();
     antlr4::tree::TerminalNode *Bool();
-    ClassTypeNameContext *classTypeName();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    
   };
 
-  TypeNameContext* typeName();
+  PrimaryTypeNameContext* primaryTypeName();
 
   class  ClassTypeNameContext : public antlr4::ParserRuleContext {
   public:
     ClassTypeNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *VariableName();
+    ClassTypeNameGenericsContext *classTypeNameGenerics();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -817,6 +854,24 @@ public:
   };
 
   ClassTypeNameContext* classTypeName();
+
+  class  ClassTypeNameGenericsContext : public antlr4::ParserRuleContext {
+  public:
+    ClassTypeNameGenericsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LessThan();
+    std::vector<TypeContext *> type();
+    TypeContext* type(size_t i);
+    antlr4::tree::TerminalNode *GreaterThan();
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassTypeNameGenericsContext* classTypeNameGenerics();
 
   class  EosContext : public antlr4::ParserRuleContext {
   public:
