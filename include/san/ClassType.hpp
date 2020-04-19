@@ -2,10 +2,12 @@
 
 #include <grammar/runtime/SanParser.h>
 #include <san/Type.hpp>
+#include <san/Variable.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
 #include <functional>
+#include <unordered_map>
 #include <vector>
 
 namespace San
@@ -21,13 +23,17 @@ public:
 
     std::vector<std::pair<std::string, Type *>> properties;
 
+    std::unordered_map<std::string, Variable *> static_properties;
+
     ClassType(llvm::Type *ref_,
               const std::vector<ClassType *> &parents_ = {},
               const std::vector<std::pair<std::string, Type *>> &generics_ = {},
-              const std::vector<std::pair<std::string, Type *>> &properties_ = {}) : Type(ref_, {}, true),
-                                                                                     parents(parents_),
-                                                                                     generics(generics_),
-                                                                                     properties(properties_) {}
+              const std::vector<std::pair<std::string, Type *>> &properties_ = {},
+              const std::unordered_map<std::string, Variable *> &static_properties_ = {}) : Type(ref_, {}, true),
+                                                                                            parents(parents_),
+                                                                                            generics(generics_),
+                                                                                            properties(properties_),
+                                                                                            static_properties(static_properties_) {}
 
     ClassType(const std::vector<std::string> &generics,
               SanParser::ClassStatementContext *context_) : Type(nullptr, {}, true),

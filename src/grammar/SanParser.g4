@@ -90,7 +90,7 @@ classGenerics: '<' VariableName (',' VariableName)* '>';
 classExtends: classTypeName (',' classTypeName)*;
 classBody: '{' classProperty* '}';
 classProperty:
-	VariableName ':' type ('=' expression)? InstructionsSeparator;
+	Static? VariableName ':' type ('=' expression)? InstructionsSeparator;
 
 classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;

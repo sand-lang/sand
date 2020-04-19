@@ -302,16 +302,10 @@ public:
 
             if (function->return_value != nullptr)
             {
-                const auto type = function->return_value->getAllocatedType();
+                auto allocated_type = function->return_value->getAllocatedType();
+                const auto type = new Type(allocated_type);
 
-                if (type->isIntegerTy())
-                {
-                    scope->builder.CreateStore(llvm::ConstantInt::get(type, 0), function->return_value);
-                }
-                else if (type->isPointerTy())
-                {
-                    scope->builder.CreateStore(llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(type)), function->return_value);
-                }
+                scope->builder.CreateStore(type->default_value(), function->return_value);
             }
         }
 
@@ -387,7 +381,7 @@ public:
         }
         else if (rvalue == nullptr)
         {
-            auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, nullptr, name);
+            auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, type->default_value(), name);
             auto var = new Variable(type, global, VariableValueType::Alloca);
 
             return scope->add(var, name);
@@ -851,6 +845,8 @@ public:
 
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
     {
+        auto name = context->VariableName()->getText();
+
         if (auto scope_resolver = context->scopeResolver())
         {
             auto space = this->visitScopeResolver(scope_resolver, this->scopes.top());
@@ -858,7 +854,14 @@ public:
             if (space.is<std::shared_ptr<Scope>>())
             {
                 auto scope = space.as<std::shared_ptr<Scope>>();
-                auto var = scope->get_var(context->VariableName()->getText());
+                auto var = scope->get_var(name);
+
+                return var;
+            }
+            else if (space.is<ClassType *>())
+            {
+                auto classtype = space.as<ClassType *>();
+                auto var = classtype->static_properties.at(name);
 
                 return var;
             }
@@ -1190,6 +1193,8 @@ public:
         std::vector<std::pair<std::string, Type *>> properties;
         std::vector<llvm::Type *> properties_types;
 
+        std::unordered_map<std::string, Variable *> static_properties;
+
         for (auto &parent : parents)
         {
             properties_types.push_back(parent->ref);
@@ -1199,12 +1204,24 @@ public:
         {
             auto property = this->visitClassProperty(class_property).as<std::pair<std::string, Type *>>();
 
-            properties.push_back(property);
-            properties_types.push_back(property.second->ref);
+            if (!class_property->Static())
+            {
+                properties.push_back(property);
+                properties_types.push_back(property.second->ref);
+            }
+            else
+            {
+                auto &[name, type] = property;
+
+                auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, type->default_value(), name);
+                auto var = new Variable(type, global, VariableValueType::Alloca);
+
+                static_properties.insert(std::make_pair(name, var));
+            }
         }
 
         auto type = llvm::StructType::create(scope->llvm_context, properties_types, "", false);
-        return new ClassType(type, parents, {}, properties);
+        return new ClassType(type, parents, {}, properties, static_properties);
     }
 
     antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) override
@@ -1386,8 +1403,10 @@ public:
         {
             auto name = name_context->getText();
 
-            if (auto space = scope->get_namespace(name))
+            try
             {
+                auto space = scope->get_namespace(name);
+
                 if (auto scope_resolver = context->scopeResolver())
                 {
                     return this->visitScopeResolver(scope_resolver, space);
@@ -1395,19 +1414,22 @@ public:
 
                 return space;
             }
-            else if (auto type = scope->get_type(name))
+            catch (...)
             {
-                if (auto class_type = dynamic_cast<ClassType *>(type))
+                if (auto type = scope->get_type(name))
                 {
-                    if (auto scope_resolver = context->scopeResolver())
+                    if (auto class_type = dynamic_cast<ClassType *>(type))
                     {
-                        return this->visitScopeResolver(scope_resolver, class_type);
+                        if (auto scope_resolver = context->scopeResolver())
+                        {
+                            return this->visitScopeResolver(scope_resolver, class_type);
+                        }
+
+                        return class_type;
                     }
 
-                    return class_type;
+                    return type;
                 }
-
-                return type;
             }
         }
         else if (auto class_type_name = context->classTypeName())

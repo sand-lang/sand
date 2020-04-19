@@ -19,13 +19,13 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
     UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
-    As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Dot = 42, 
-    Namespace = 43, ScopeResolver = 44, VariableDeclarator = 45, If = 46, 
-    Else = 47, While = 48, Break = 49, Function = 50, Extern = 51, Return = 52, 
-    Comma = 53, Colon = 54, InstructionsSeparator = 55, VariableName = 56, 
-    StringLiteral = 57, CharLiteral = 58, IntegerLiteral = 59, DecimalLiteral = 60, 
-    ZeroLiteral = 61, HexadecimalLiteral = 62, BinaryLiteral = 63, Comment = 64, 
-    WhiteSpace = 65, LineTerminator = 66
+    As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Static = 42, 
+    Dot = 43, Namespace = 44, ScopeResolver = 45, VariableDeclarator = 46, 
+    If = 47, Else = 48, While = 49, Break = 50, Function = 51, Extern = 52, 
+    Return = 53, Comma = 54, Colon = 55, InstructionsSeparator = 56, VariableName = 57, 
+    StringLiteral = 58, CharLiteral = 59, IntegerLiteral = 60, DecimalLiteral = 61, 
+    ZeroLiteral = 62, HexadecimalLiteral = 63, BinaryLiteral = 64, Comment = 65, 
+    WhiteSpace = 66, LineTerminator = 67
   };
 
   enum {
@@ -724,6 +724,7 @@ public:
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
     antlr4::tree::TerminalNode *InstructionsSeparator();
+    antlr4::tree::TerminalNode *Static();
     antlr4::tree::TerminalNode *Equal();
     ExpressionContext *expression();
 

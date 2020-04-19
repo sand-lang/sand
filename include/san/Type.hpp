@@ -1,7 +1,6 @@
 #pragma once
 
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Value.h>
+#include <llvm/IR/IRBuilder.h>
 
 #include <string>
 #include <vector>
@@ -38,6 +37,16 @@ public:
         type->base = this;
 
         return type;
+    }
+
+    llvm::Constant *default_value()
+    {
+        if (this->ref->isIntegerTy())
+        {
+            return llvm::ConstantInt::get(this->ref, 0);
+        }
+
+        return llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(this->ref));
     }
 
     inline bool is_integer() const
