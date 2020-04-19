@@ -100,25 +100,25 @@ public:
             }
             else if (dest->is_pointer())
             {
-                value = builder.CreateIntToPtr(this->value, dest->ref);
+                value = builder.CreateIntToPtr(value, dest->ref);
             }
 
             return new Variable(new Type(*dest), value, VariableValueType::Simple);
         }
-        else if (this->type->is_pointer())
+        else if (type->is_pointer())
         {
             if (dest->is_boolean())
             {
                 auto type = reinterpret_cast<llvm::PointerType *>(this->type->ref);
-                value = builder.CreateICmpNE(this->value, llvm::ConstantPointerNull::get(type));
+                value = builder.CreateICmpNE(value, llvm::ConstantPointerNull::get(type));
             }
             else if (dest->is_integer())
             {
-                value = builder.CreatePtrToInt(this->value, dest->ref);
+                value = builder.CreatePtrToInt(value, dest->ref);
             }
             else if (dest->is_pointer())
             {
-                value = builder.CreateBitCast(this->value, dest->ref);
+                value = builder.CreateBitCast(value, dest->ref);
             }
 
             return new Variable(new Type(*dest), value, VariableValueType::Simple);
