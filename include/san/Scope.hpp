@@ -7,6 +7,7 @@
 #include <llvm/IR/IRBuilder.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -28,6 +29,8 @@ public:
 
     std::unordered_map<std::string, Variable *> variables;
     std::unordered_map<std::string, Type *> types;
+
+    std::unordered_map<std::string, std::shared_ptr<Scope>> namespaces;
 
     Function *function = nullptr;
 
@@ -73,6 +76,32 @@ public:
         this->types.insert(pair);
 
         return type;
+    }
+
+    std::shared_ptr<Scope> add_namespace(std::shared_ptr<Scope> scope, const std::string &name)
+    {
+        const auto pair = std::make_pair(name, scope);
+        this->namespaces.insert(pair);
+
+        return scope;
+    }
+
+    std::shared_ptr<Scope> &get_namespace(const std::string &name)
+    {
+        if (this->namespaces.find(name) != this->namespaces.end())
+        {
+            if (auto &scope = this->namespaces.at(name))
+            {
+                return scope;
+            }
+        }
+
+        if (!this->is_root())
+        {
+            return this->parent->get_namespace(name);
+        }
+
+        throw std::out_of_range("Undefined namespace " + name);
     }
 
     Variable *get_var(const std::string &name)

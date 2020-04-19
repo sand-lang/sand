@@ -68,6 +68,10 @@ public:
         {
             return visitFunction(function);
         }
+        else if (auto namespace_statement = context->namespaceStatement())
+        {
+            return this->visitNamespaceStatement(namespace_statement);
+        }
         else if (auto expression = context->expression())
         {
             return visitExpression(expression);
@@ -198,6 +202,34 @@ public:
         return std::pair<std::string, Type *>(!!name ? name->getText() : "", type);
     }
 
+    antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *context) override
+    {
+        auto &scope = this->scopes.top();
+        auto name = context->VariableName()->getText();
+
+        std::shared_ptr<Scope> nsp = nullptr;
+        try
+        {
+            auto &existing = scope->get_namespace(name);
+            nsp = existing;
+        }
+        catch (...)
+        {
+            nsp = std::make_shared<Scope>(this->scopes.top());
+        }
+        nsp->add_namespace(nsp, name);
+
+        scope->add_namespace(nsp, name);
+
+        this->scopes.push(nsp);
+
+        this->visitStatements(context->statement());
+
+        this->scopes.pop();
+
+        return nsp;
+    }
+
     antlrcpp::Any visitType(SanParser::TypeContext *context) override
     {
         const auto stored_type = this->visitTypeName(context->typeName());
@@ -322,18 +354,41 @@ public:
         auto &scope = this->scopes.top();
 
         auto name = context->VariableName()->getText();
-        auto type = visitType(context->type()).as<Type *>();
+        auto type = this->visitType(context->type()).as<Type *>();
 
-        auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
-        Variable *var = new Variable(type, alloca, VariableValueType::Alloca);
-
-        if (auto expression = context->expression())
+        if (scope->function != nullptr)
         {
-            auto rvar = visitExpression(expression).as<Variable *>();
-            scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
-        }
+            auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
+            Variable *var = new Variable(type, alloca, VariableValueType::Alloca);
 
-        return scope->add(var, name);
+            if (auto expression = context->expression())
+            {
+                auto rvar = visitExpression(expression).as<Variable *>();
+                scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
+            }
+
+            return scope->add(var, name);
+        }
+        else
+        {
+            auto expression = context->expression();
+            auto rvar = this->visitExpression(expression).as<Variable *>()->cast(type, scope->builder)->get(scope->builder);
+
+            if (auto constant = llvm::dyn_cast<llvm::Constant>(rvar))
+            {
+                auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, constant, "." + name);
+                auto var = new Variable(type, global, VariableValueType::Alloca);
+
+                return scope->add(var, name);
+            }
+            else if (auto global = llvm::dyn_cast<llvm::GlobalValue>(rvar))
+            {
+                global->setName("." + name);
+
+                auto var = new Variable(type, global, VariableValueType::Alloca);
+                return scope->add(var, name);
+            }
+        }
     }
 
     antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) override
@@ -774,6 +829,19 @@ public:
 
     antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) override
     {
+        if (auto scope_resolver = context->scopeResolver())
+        {
+            auto space = this->visitScopeResolver(scope_resolver, this->scopes.top());
+
+            if (space.is<std::shared_ptr<Scope>>())
+            {
+                auto scope = space.as<std::shared_ptr<Scope>>();
+                auto var = scope->get_var(context->VariableName()->getText());
+
+                return var;
+            }
+        }
+
         auto &scope = this->scopes.top();
         auto var = scope->get_var(context->VariableName()->getText());
 
@@ -1081,11 +1149,12 @@ public:
 
     antlrcpp::Any visitClassExtends(SanParser::ClassExtendsContext *context) override
     {
+        auto &scope = this->scopes.top();
         std::vector<ClassType *> types;
 
         for (auto &typeName : context->classTypeName())
         {
-            auto type = this->visitClassTypeName(typeName).as<ClassType *>();
+            auto type = this->visitClassTypeName(typeName, scope).as<ClassType *>();
             types.push_back(type);
         }
 
@@ -1127,7 +1196,7 @@ public:
     antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) override
     {
         auto &scope = this->scopes.top();
-        auto structure = this->visitClassTypeName(context->classTypeName()).as<ClassType *>();
+        auto structure = this->visitClassTypeName(context->classTypeName(), scope).as<ClassType *>();
 
         auto alloca = scope->builder.CreateAlloca(structure->ref);
         auto var = new Variable(structure, alloca, VariableValueType::Alloca);
@@ -1215,22 +1284,42 @@ public:
         }
         else if (auto class_type_name = context->classTypeName())
         {
-            auto type = this->visitClassTypeName(class_type_name);
-
-            if (type.is<ClassType *>())
+            if (auto scope_resolver = context->scopeResolver())
             {
-                return type.as<ClassType *>();
-            }
+                auto space = this->visitScopeResolver(scope_resolver, this->scopes.top());
 
-            return type.as<Type *>();
+                if (space.is<std::shared_ptr<Scope>>())
+                {
+                    auto scope = space.as<std::shared_ptr<Scope>>();
+
+                    auto type = this->visitClassTypeName(class_type_name, scope);
+
+                    if (type.is<ClassType *>())
+                    {
+                        return type.as<ClassType *>();
+                    }
+
+                    return type.as<Type *>();
+                }
+            }
+            else
+            {
+                auto type = this->visitClassTypeName(class_type_name, this->scopes.top());
+
+                if (type.is<ClassType *>())
+                {
+                    return type.as<ClassType *>();
+                }
+
+                return type.as<Type *>();
+            }
         }
 
         return nullptr;
     }
 
-    antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) override
+    antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context, std::shared_ptr<San::Scope> &scope)
     {
-        auto &scope = this->scopes.top();
         auto name = context->VariableName()->getText();
 
         std::vector<Type *> generics;
@@ -1267,6 +1356,53 @@ public:
         }
 
         return types;
+    }
+
+    antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context, std::shared_ptr<Scope> &scope)
+    {
+        if (auto name_context = context->VariableName())
+        {
+            auto name = name_context->getText();
+
+            if (auto space = scope->get_namespace(name))
+            {
+                if (auto scope_resolver = context->scopeResolver())
+                {
+                    return this->visitScopeResolver(scope_resolver, space);
+                }
+
+                return space;
+            }
+            else if (auto type = scope->get_type(name))
+            {
+                if (auto class_type = dynamic_cast<ClassType *>(type))
+                {
+                    if (auto scope_resolver = context->scopeResolver())
+                    {
+                        return this->visitScopeResolver(scope_resolver, class_type);
+                    }
+
+                    return class_type;
+                }
+
+                return type;
+            }
+        }
+        else if (auto class_type_name = context->classTypeName())
+        {
+            auto type = this->visitClassTypeName(class_type_name, scope).as<ClassType *>();
+
+            if (auto scope_resolver = context->scopeResolver())
+            {
+                return this->visitScopeResolver(scope_resolver, type);
+            }
+        }
+
+        std::cout << "b" << std::endl;
+    }
+
+    antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context, ClassType *class_type)
+    {
     }
 };
 } // namespace San

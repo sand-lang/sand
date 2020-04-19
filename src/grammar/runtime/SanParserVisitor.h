@@ -125,6 +125,10 @@ public:
 
     virtual antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context) = 0;
 
+    virtual antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context) = 0;
+
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 
 

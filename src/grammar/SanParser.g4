@@ -10,6 +10,7 @@ body: '{' statement* '}';
 
 statement:
 	function
+	| namespaceStatement
 	| expression InstructionsSeparator
 	| body
 	| variableDeclaration InstructionsSeparator
@@ -33,7 +34,7 @@ expression:
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| expression '[' expression ']'							# Index
 	| expression 'as' type									# TypeCast
-	| VariableName											# VariableExpression
+	| scopeResolver? VariableName							# VariableExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
@@ -96,7 +97,7 @@ type: typeQualifier* typeName typeDimensions*;
 typeQualifier: Const;
 typeDimensions: '[' ']';
 
-typeName: primaryTypeName | classTypeName;
+typeName: primaryTypeName | scopeResolver? classTypeName;
 primaryTypeName:
 	Int8
 	| Int16
@@ -113,5 +114,9 @@ primaryTypeName:
 
 classTypeName: VariableName classTypeNameGenerics?;
 classTypeNameGenerics: '<' type (',' type)* '>';
+
+namespaceStatement: Namespace VariableName '{' statement* '}';
+
+scopeResolver: (VariableName | classTypeName) '::' scopeResolver?;
 
 eos: (EOF | LineTerminator);

@@ -65,6 +65,10 @@ Class: 'class';
 Extends: 'extends';
 Dot: '.';
 
+// Namespaces
+Namespace: 'namespace';
+ScopeResolver: '::';
+
 // Variable
 VariableDeclarator: 'let';
 

@@ -227,6 +227,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitEos(SanParser::EosContext *ctx) override {
     return visitChildren(ctx);
   }

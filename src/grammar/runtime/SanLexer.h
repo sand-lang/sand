@@ -20,11 +20,12 @@ public:
     Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
     UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
     As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Dot = 42, 
-    VariableDeclarator = 43, If = 44, Else = 45, While = 46, Break = 47, 
-    Function = 48, Extern = 49, Return = 50, Comma = 51, Colon = 52, InstructionsSeparator = 53, 
-    VariableName = 54, StringLiteral = 55, CharLiteral = 56, IntegerLiteral = 57, 
-    DecimalLiteral = 58, ZeroLiteral = 59, HexadecimalLiteral = 60, BinaryLiteral = 61, 
-    Comment = 62, WhiteSpace = 63, LineTerminator = 64
+    Namespace = 43, ScopeResolver = 44, VariableDeclarator = 45, If = 46, 
+    Else = 47, While = 48, Break = 49, Function = 50, Extern = 51, Return = 52, 
+    Comma = 53, Colon = 54, InstructionsSeparator = 55, VariableName = 56, 
+    StringLiteral = 57, CharLiteral = 58, IntegerLiteral = 59, DecimalLiteral = 60, 
+    ZeroLiteral = 61, HexadecimalLiteral = 62, BinaryLiteral = 63, Comment = 64, 
+    WhiteSpace = 65, LineTerminator = 66
   };
 
   SanLexer(antlr4::CharStream *input);
