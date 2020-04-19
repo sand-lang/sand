@@ -53,7 +53,10 @@ equalityOperatorStatement: Equal;
 literal: IntegerLiteral | StringLiteral | CharLiteral;
 
 variableDeclaration:
-	VariableDeclarator VariableName ':' type ('=' expression)?;
+	VariableDeclarator VariableName (
+		':' type ('=' expression)?
+		| '=' expression
+	);
 
 functionCallArguments:
 	functionCallArgument (',' functionCallArgument)*;

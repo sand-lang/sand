@@ -354,36 +354,58 @@ public:
         auto &scope = this->scopes.top();
 
         auto name = context->VariableName()->getText();
-        auto type = this->visitType(context->type()).as<Type *>();
+
+        Type *type = nullptr;
+        Variable *rvalue = nullptr;
+
+        if (auto type_context = context->type())
+        {
+            type = this->visitType(type_context).as<Type *>();
+        }
+
+        if (auto expression = context->expression())
+        {
+            rvalue = this->visitExpression(expression).as<Variable *>();
+
+            if (type == nullptr)
+            {
+                type = rvalue->type;
+            }
+        }
 
         if (scope->function != nullptr)
         {
             auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
             Variable *var = new Variable(type, alloca, VariableValueType::Alloca);
 
-            if (auto expression = context->expression())
+            if (rvalue != nullptr)
             {
-                auto rvar = visitExpression(expression).as<Variable *>();
-                scope->builder.CreateStore(rvar->cast(type, scope->builder)->get(scope->builder), alloca);
+                scope->builder.CreateStore(rvalue->cast(type, scope->builder)->get(scope->builder), alloca);
             }
+
+            return scope->add(var, name);
+        }
+        else if (rvalue == nullptr)
+        {
+            auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, nullptr, name);
+            auto var = new Variable(type, global, VariableValueType::Alloca);
 
             return scope->add(var, name);
         }
         else
         {
-            auto expression = context->expression();
-            auto rvar = this->visitExpression(expression).as<Variable *>()->cast(type, scope->builder)->get(scope->builder);
+            auto casted_rvalue = rvalue->cast(type, scope->builder)->get(scope->builder);
 
-            if (auto constant = llvm::dyn_cast<llvm::Constant>(rvar))
+            if (auto constant = llvm::dyn_cast<llvm::Constant>(casted_rvalue))
             {
-                auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, constant, "." + name);
+                auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, constant, name);
                 auto var = new Variable(type, global, VariableValueType::Alloca);
 
                 return scope->add(var, name);
             }
-            else if (auto global = llvm::dyn_cast<llvm::GlobalValue>(rvar))
+            else if (auto global = llvm::dyn_cast<llvm::GlobalValue>(casted_rvalue))
             {
-                global->setName("." + name);
+                global->setName(name);
 
                 auto var = new Variable(type, global, VariableValueType::Alloca);
                 return scope->add(var, name);
