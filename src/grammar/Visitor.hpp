@@ -750,13 +750,13 @@ public:
 
         auto value = rexpr->cast(lexpr->type, scope->builder)->get(scope->builder);
 
-        if (auto alloca = lexpr->get_alloca())
-        {
-            scope->builder.CreateStore(value, alloca);
-        }
-        else if (lexpr->value_type == VariableValueType::GEP)
+        if (lexpr->value_type == VariableValueType::GEP)
         {
             scope->builder.CreateStore(value, lexpr->value);
+        }
+        else if (auto alloca = lexpr->get_alloca())
+        {
+            scope->builder.CreateStore(value, alloca);
         }
         else
         {
