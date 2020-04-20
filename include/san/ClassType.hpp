@@ -19,6 +19,8 @@ public:
 
     bool is_base = false;
     std::vector<std::pair<std::string, Type *>> generics;
+    std::vector<ClassType *> generated_generics;
+
     SanParser::ClassStatementContext *context = nullptr;
 
     std::vector<std::pair<std::string, Type *>> properties;
@@ -47,6 +49,43 @@ public:
     }
 
     size_t size() const;
+
+    ClassType *pointer()
+    {
+        auto llvm_type = reinterpret_cast<llvm::Type *>(this->ref->getPointerTo());
+
+        auto type = new ClassType(llvm_type);
+        type->qualifiers = this->qualifiers;
+        type->base = this;
+
+        return type;
+    }
+
+    ClassType *get_generated(const std::vector<Type *> &generics) const
+    {
+        for (auto &generated : this->generated_generics)
+        {
+            bool same = true;
+
+            for (size_t i = 0; i < generated->generics.size(); i++)
+            {
+                auto &[name, type] = generated->generics[i];
+
+                if (!generics[i]->equals(type))
+                {
+                    same = false;
+                    break;
+                }
+            }
+
+            if (same)
+            {
+                return generated;
+            }
+        }
+
+        return nullptr;
+    }
 
     inline bool is_generic() const noexcept
     {

@@ -69,7 +69,7 @@ public:
         return this->ref->isIntegerTy(1);
     }
 
-    inline bool equals(const Type *&right) const
+    inline bool equals(const Type *right) const
     {
         return Type::equals(this, right);
     }

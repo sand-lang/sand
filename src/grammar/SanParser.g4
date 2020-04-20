@@ -26,13 +26,13 @@ expression:
 	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
 	| expression '.' VariableName							# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
+	| expression '[' expression ']'							# Index
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
-	| expression '[' expression ']'							# Index
 	| expression 'as' type									# TypeCast
 	| scopeResolver? VariableName							# VariableExpression
 	| literal												# LiteralDeclaration;

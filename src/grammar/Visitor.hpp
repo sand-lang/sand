@@ -237,11 +237,11 @@ public:
 
         if (stored_type.is<ClassType *>())
         {
-            type = stored_type.as<ClassType *>();
+            type = new ClassType(*stored_type.as<ClassType *>());
         }
         else
         {
-            type = stored_type.as<Type *>();
+            type = new Type(*stored_type.as<Type *>());
         }
 
         for (const auto &qualifier : context->typeQualifier())
@@ -252,7 +252,7 @@ public:
 
         for (const auto &dimension : context->typeDimensions())
         {
-            type->ref = type->ref->getPointerTo();
+            type = type->pointer();
         }
 
         return type;
@@ -294,7 +294,7 @@ public:
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
                 this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
 
-                scope->add(new Variable(new Type(it->getType()), reinterpret_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
+                scope->add(new Variable(fa->second, reinterpret_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
 
                 it++;
                 fa++;
@@ -785,7 +785,7 @@ public:
 
         auto value = scope->builder.CreateInBoundsGEP(expression->value, idxs, "idx");
 
-        auto var = new Variable(new Type(value->getType()->getPointerElementType()), value, VariableValueType::GEP);
+        auto var = new Variable(expression->type->base, value, VariableValueType::GEP);
         return scope->add(var);
     }
 
@@ -805,6 +805,8 @@ public:
         auto expr = this->visitExpression(context->expression()).as<Variable *>();
         auto name = context->VariableName()->getText();
 
+        expr->type->ref->print(llvm::outs());
+        std::cout << std::endl;
         auto type = dynamic_cast<ClassType *>(expr->type);
 
         auto property = type->get_property(name);
@@ -1121,14 +1123,16 @@ public:
                 parents = this->visitClassExtends(extends).as<decltype(parents)>();
             }
 
-            auto structure = this->visitClassBody(context->classBody(), parents).as<ClassType *>();
-            structure->get_struct()->setName(name + ".class");
+            auto structure = llvm::StructType::create(scope->llvm_context, name + ".class");
+            auto type = new ClassType(structure);
 
-            return scope->add_type(structure, name);
+            this->visitClassBody(context->classBody(), parents, type).as<ClassType *>();
+
+            return scope->add_type(type, name);
         }
     }
 
-    antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context, std::vector<Type *> generics)
+    antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context, std::vector<Type *> generics, ClassType *base)
     {
         this->scopes.push(std::make_shared<Scope>(this->scopes.top()));
         auto scope = this->scopes.top();
@@ -1143,21 +1147,24 @@ public:
             scope->add_type(generics[i], generics_names[i]);
         }
 
+        auto structure = llvm::StructType::create(scope->llvm_context, name + ".class");
+        auto type = new ClassType(structure);
+
+        base->generated_generics.push_back(type);
+
         std::vector<ClassType *> parents;
         if (auto extends = context->classExtends())
         {
             parents = this->visitClassExtends(extends).as<decltype(parents)>();
         }
 
-        auto structure = this->visitClassBody(context->classBody(), parents).as<ClassType *>();
-        structure->get_struct()->setName(name + ".class");
+        type->parents = parents;
+
+        this->visitClassBody(context->classBody(), parents, type);
 
         this->scopes.pop();
 
-        scope = this->scopes.top();
-        scope->add_type(structure, name);
-
-        return structure;
+        return type;
     }
 
     antlrcpp::Any visitClassGenerics(SanParser::ClassGenericsContext *context) override
@@ -1186,14 +1193,11 @@ public:
         return types;
     }
 
-    antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context, std::vector<ClassType *> parents)
+    antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context, std::vector<ClassType *> parents, ClassType *type)
     {
         auto &scope = this->scopes.top();
 
-        std::vector<std::pair<std::string, Type *>> properties;
         std::vector<llvm::Type *> properties_types;
-
-        std::unordered_map<std::string, Variable *> static_properties;
 
         for (auto &parent : parents)
         {
@@ -1206,22 +1210,24 @@ public:
 
             if (!class_property->Static())
             {
-                properties.push_back(property);
+                type->properties.push_back(property);
                 properties_types.push_back(property.second->ref);
             }
             else
             {
-                auto &[name, type] = property;
+                auto &[name, property_type] = property;
 
-                auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, type->default_value(), name);
-                auto var = new Variable(type, global, VariableValueType::Alloca);
+                auto global = new llvm::GlobalVariable(*this->env.module, property_type->ref, false, llvm::GlobalValue::PrivateLinkage, property_type->default_value(), name);
+                auto var = new Variable(property_type, global, VariableValueType::Alloca);
 
-                static_properties.insert(std::make_pair(name, var));
+                type->static_properties.insert(std::make_pair(name, var));
             }
         }
 
-        auto type = llvm::StructType::create(scope->llvm_context, properties_types, "", false);
-        return new ClassType(type, parents, {}, properties, static_properties);
+        auto struct_type = type->get_struct();
+        struct_type->setBody(properties_types, false);
+
+        return type;
     }
 
     antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) override
@@ -1371,9 +1377,9 @@ public:
 
         if (auto class_type = dynamic_cast<ClassType *>(type))
         {
-            if (!generics.empty())
+            if (class_type->is_base && !generics.empty())
             {
-                return this->visitClassStatement(class_type->context, generics).as<ClassType *>();
+                return this->visitClassStatement(class_type->context, generics, class_type).as<ClassType *>();
             }
 
             return class_type;
@@ -1441,8 +1447,6 @@ public:
                 return this->visitScopeResolver(scope_resolver, type);
             }
         }
-
-        std::cout << "b" << std::endl;
     }
 
     antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context, ClassType *class_type)

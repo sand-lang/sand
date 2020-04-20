@@ -144,6 +144,14 @@ public:
         {
             if (auto class_type = dynamic_cast<ClassType *>(type))
             {
+                if (!generics.empty())
+                {
+                    if (auto generated = class_type->get_generated(generics))
+                    {
+                        return generated;
+                    }
+                }
+
                 return class_type;
             }
 
