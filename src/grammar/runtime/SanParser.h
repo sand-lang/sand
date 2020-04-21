@@ -39,11 +39,11 @@ public:
     RuleFunctionArgumentVariadic = 19, RuleReturnStatement = 20, RuleIfStatement = 21, 
     RuleElseStatement = 22, RuleWhileStatement = 23, RuleBreakStatement = 24, 
     RuleClassStatement = 25, RuleClassGenerics = 26, RuleClassExtends = 27, 
-    RuleClassBody = 28, RuleClassProperty = 29, RuleClassInstantiationProperties = 30, 
-    RuleClassInstantiationProperty = 31, RuleType = 32, RuleTypeQualifier = 33, 
-    RuleTypeDimensions = 34, RuleTypeName = 35, RulePrimaryTypeName = 36, 
-    RuleClassTypeName = 37, RuleClassTypeNameGenerics = 38, RuleNamespaceStatement = 39, 
-    RuleScopeResolver = 40, RuleEos = 41
+    RuleClassBody = 28, RuleClassProperty = 29, RuleClassMethod = 30, RuleClassInstantiationProperties = 31, 
+    RuleClassInstantiationProperty = 32, RuleType = 33, RuleTypeQualifier = 34, 
+    RuleTypeDimensions = 35, RuleTypeName = 36, RulePrimaryTypeName = 37, 
+    RuleClassTypeName = 38, RuleClassTypeNameGenerics = 39, RuleNamespaceStatement = 40, 
+    RuleScopeResolver = 41, RuleEos = 42
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -86,6 +86,7 @@ public:
   class ClassExtendsContext;
   class ClassBodyContext;
   class ClassPropertyContext;
+  class ClassMethodContext;
   class ClassInstantiationPropertiesContext;
   class ClassInstantiationPropertyContext;
   class TypeContext;
@@ -708,6 +709,8 @@ public:
     antlr4::tree::TerminalNode *ClosingBrace();
     std::vector<ClassPropertyContext *> classProperty();
     ClassPropertyContext* classProperty(size_t i);
+    std::vector<ClassMethodContext *> classMethod();
+    ClassMethodContext* classMethod(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -734,6 +737,20 @@ public:
   };
 
   ClassPropertyContext* classProperty();
+
+  class  ClassMethodContext : public antlr4::ParserRuleContext {
+  public:
+    ClassMethodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    FunctionContext *function();
+    antlr4::tree::TerminalNode *Static();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassMethodContext* classMethod();
 
   class  ClassInstantiationPropertiesContext : public antlr4::ParserRuleContext {
   public:

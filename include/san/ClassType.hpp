@@ -1,6 +1,8 @@
 #pragma once
 
 #include <grammar/runtime/SanParser.h>
+
+#include <san/Scope.hpp>
 #include <san/Type.hpp>
 #include <san/Variable.hpp>
 
@@ -16,6 +18,7 @@ class ClassType : public Type
 {
 public:
     std::vector<ClassType *> parents;
+    std::shared_ptr<Scope> &scope;
 
     bool is_base = false;
     std::vector<std::pair<std::string, Type *>> generics;
@@ -24,21 +27,29 @@ public:
     SanParser::ClassStatementContext *context = nullptr;
 
     std::vector<std::pair<std::string, Type *>> properties;
+    std::unordered_map<std::string, Variable *> methods;
 
     std::unordered_map<std::string, Variable *> static_properties;
+    std::unordered_map<std::string, Variable *> static_methods;
+
+    std::vector<SanParser::ClassMethodContext *> pending_methods;
 
     ClassType(llvm::Type *ref_,
+              std::shared_ptr<Scope> &scope_,
               const std::vector<ClassType *> &parents_ = {},
               const std::vector<std::pair<std::string, Type *>> &generics_ = {},
               const std::vector<std::pair<std::string, Type *>> &properties_ = {},
-              const std::unordered_map<std::string, Variable *> &static_properties_ = {}) : Type(ref_, {}, true),
+              const std::unordered_map<std::string, Variable *> &static_properties_ = {}) : Type(ref_),
+                                                                                            scope(scope_),
                                                                                             parents(parents_),
                                                                                             generics(generics_),
                                                                                             properties(properties_),
                                                                                             static_properties(static_properties_) {}
 
     ClassType(const std::vector<std::string> &generics,
-              SanParser::ClassStatementContext *context_) : Type(nullptr, {}, true),
+              std::shared_ptr<Scope> &scope_,
+              SanParser::ClassStatementContext *context_) : Type(nullptr),
+                                                            scope(scope_),
                                                             context(context_),
                                                             is_base(true)
     {
@@ -54,7 +65,7 @@ public:
     {
         auto llvm_type = reinterpret_cast<llvm::Type *>(this->ref->getPointerTo());
 
-        auto type = new ClassType(llvm_type);
+        auto type = new ClassType(llvm_type, this->scope);
         type->qualifiers = this->qualifiers;
         type->base = this;
 
@@ -134,6 +145,25 @@ public:
             }
 
             padding += parent->size();
+        }
+
+        return nullptr;
+    }
+
+    Variable *get_method(const std::string &name)
+    {
+        auto function = this->methods.find(name);
+        if (function != this->methods.end())
+        {
+            return function->second;
+        }
+
+        for (const auto &parent : this->parents)
+        {
+            if (auto method = parent->get_method(name))
+            {
+                return method;
+            }
         }
 
         return nullptr;

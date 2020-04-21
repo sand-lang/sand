@@ -88,9 +88,10 @@ classStatement:
 	'class' VariableName classGenerics? (Extends classExtends)? classBody;
 classGenerics: '<' VariableName (',' VariableName)* '>';
 classExtends: classTypeName (',' classTypeName)*;
-classBody: '{' classProperty* '}';
+classBody: '{' (classProperty | classMethod)* '}';
 classProperty:
 	Static? VariableName ':' type ('=' expression)? InstructionsSeparator;
+classMethod: Static? function;
 
 classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;

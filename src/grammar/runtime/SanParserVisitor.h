@@ -107,6 +107,8 @@ public:
 
     virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassMethod(SanParser::ClassMethodContext *context) = 0;
+
     virtual antlrcpp::Any visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context) = 0;
 
     virtual antlrcpp::Any visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context) = 0;

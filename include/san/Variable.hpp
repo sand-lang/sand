@@ -22,6 +22,8 @@ public:
 
     VariableValueType value_type = VariableValueType::Simple;
 
+    Variable *calling_variable = nullptr;
+
     Variable() = default;
     Variable(Type *type_,
              llvm::Value *value_ = nullptr,
@@ -141,6 +143,24 @@ public:
         r = r->cast(l->type, builder);
 
         return std::pair(l, r);
+    }
+
+    void copy(Variable *target, llvm::IRBuilder<> &builder)
+    {
+        if (this->type->is_struct() && target->type->is_struct())
+        {
+            auto lvalue = target->cast_to_bytes(builder)->value;
+            auto rvalue = this->cast_to_bytes(builder)->value;
+
+            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), this->type->size());
+
+            builder.CreateMemCpy(lvalue, 8, rvalue, 8, llvm::cast<llvm::Value>(size));
+        }
+        else
+        {
+            auto rvalue = this->load(builder)->cast(target->type, builder);
+            builder.CreateStore(this->value, target->value);
+        }
     }
 };
 } // namespace San

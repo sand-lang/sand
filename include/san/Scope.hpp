@@ -1,6 +1,5 @@
 #pragma once
 
-#include <san/ClassType.hpp>
 #include <san/Type.hpp>
 #include <san/Variable.hpp>
 
@@ -36,6 +35,8 @@ public:
 
     llvm::BasicBlock *loop_end_label = nullptr;
 
+    bool is_generating_properties = false;
+
     Scope(llvm::LLVMContext &llvm_context_,
           llvm::IRBuilder<> &builder_,
           std::unique_ptr<llvm::Module> &module_,
@@ -61,6 +62,8 @@ public:
             this->variables.erase(key);
         }
     }
+
+    Type *get_type(const std::string &name, const std::vector<Type *> &generics = {});
 
     Variable *add(Variable *variable, const std::string &name = "")
     {
@@ -131,39 +134,6 @@ public:
         }
 
         return count;
-    }
-
-    Type *get_type(const std::string &name, const std::vector<Type *> &generics = {})
-    {
-        if (auto primary_type = this->get_primary_type(name))
-        {
-            return primary_type;
-        }
-
-        if (auto type = this->types[name])
-        {
-            if (auto class_type = dynamic_cast<ClassType *>(type))
-            {
-                if (!generics.empty())
-                {
-                    if (auto generated = class_type->get_generated(generics))
-                    {
-                        return generated;
-                    }
-                }
-
-                return class_type;
-            }
-
-            return type;
-        }
-
-        if (this->parent)
-        {
-            return this->parent->get_type(name, generics);
-        }
-
-        return nullptr;
     }
 
     inline bool is_root() const

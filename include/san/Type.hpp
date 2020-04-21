@@ -19,11 +19,10 @@ public:
     llvm::Type *ref = nullptr;
 
     TypeQualifiers qualifiers;
-    bool is_struct = false;
 
     Type *base = nullptr;
 
-    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers(), const bool is_struct_ = false) : ref(ref_), qualifiers(qualifiers_), is_struct(is_struct_) {}
+    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_) {}
 
     virtual ~Type() {}
 
@@ -67,6 +66,11 @@ public:
     inline bool is_boolean() const
     {
         return this->ref->isIntegerTy(1);
+    }
+
+    inline bool is_struct() const
+    {
+        return this->ref->isStructTy();
     }
 
     inline bool equals(const Type *right) const

@@ -23,7 +23,7 @@ public:
     Block *entry = nullptr;
 
     llvm::BasicBlock *return_label = nullptr;
-    llvm::AllocaInst *return_value = nullptr;
+    Variable *return_value = nullptr;
 
     Function(std::shared_ptr<Scope> &scope,
              Type *return_type_,
