@@ -64,6 +64,7 @@ Const: 'const';
 Class: 'class';
 Extends: 'extends';
 Static: 'static';
+This: 'this';
 Dot: '.';
 
 // Namespaces

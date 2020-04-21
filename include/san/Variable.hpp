@@ -145,14 +145,14 @@ public:
         return std::pair(l, r);
     }
 
-    void copy(Variable *target, llvm::IRBuilder<> &builder)
+    void copy(Variable *target, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
     {
         if (this->type->is_struct() && target->type->is_struct())
         {
             auto lvalue = target->cast_to_bytes(builder)->value;
             auto rvalue = this->cast_to_bytes(builder)->value;
 
-            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), this->type->size());
+            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), this->type->size(module));
 
             builder.CreateMemCpy(lvalue, 8, rvalue, 8, llvm::cast<llvm::Value>(size));
         }

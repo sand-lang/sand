@@ -18,7 +18,7 @@ class ClassType : public Type
 {
 public:
     std::vector<ClassType *> parents;
-    std::shared_ptr<Scope> &scope;
+    std::shared_ptr<Scope> scope;
 
     bool is_base = false;
     std::vector<std::pair<std::string, Type *>> generics;
@@ -59,7 +59,7 @@ public:
         }
     }
 
-    size_t size() const;
+    size_t size(std::unique_ptr<llvm::Module> &module) const;
 
     ClassType *pointer()
     {
@@ -117,7 +117,7 @@ public:
         size_t padding = 0;
     };
 
-    PropertyData *get_property(const std::string &name)
+    PropertyData *get_property(const std::string &name, std::unique_ptr<llvm::Module> &module)
     {
         for (size_t i = 0; i < this->properties.size(); i++)
         {
@@ -129,7 +129,7 @@ public:
                     .index = i,
                     .type = property.second,
                     .from = this,
-                    .padding = this->parents_size(),
+                    .padding = this->parents_size(module),
                 };
             }
         }
@@ -138,13 +138,13 @@ public:
 
         for (const auto &parent : this->parents)
         {
-            if (auto property = parent->get_property(name))
+            if (auto property = parent->get_property(name, module))
             {
                 property->padding += padding;
                 return property;
             }
 
-            padding += parent->size();
+            padding += parent->size(module);
         }
 
         return nullptr;
@@ -175,13 +175,13 @@ public:
     }
 
 private:
-    size_t parents_size() const
+    size_t parents_size(std::unique_ptr<llvm::Module> &module) const
     {
         size_t size = 0;
 
         for (const auto &parent : this->parents)
         {
-            size += parent->size();
+            size += parent->size(module);
         }
 
         return size;

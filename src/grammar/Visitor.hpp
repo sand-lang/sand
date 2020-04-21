@@ -317,15 +317,15 @@ public:
                 it->setName(fa->first);
 
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
-                this->env.builder.CreateStore(reinterpret_cast<llvm::Value *>(it), addr, false);
+                this->env.builder.CreateStore(static_cast<llvm::Value *>(it), addr, false);
 
-                scope->add(new Variable(fa->second, reinterpret_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
+                scope->add(new Variable(fa->second, static_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
 
                 it++;
                 fa++;
             }
 
-            if (function->return_value != nullptr)
+            if (function->return_value != nullptr && !dynamic_cast<ClassType *>(function->return_type))
             {
                 auto allocated_type = llvm::cast<llvm::AllocaInst>(function->return_value->value)->getAllocatedType();
                 const auto type = new Type(allocated_type);
@@ -441,7 +441,7 @@ public:
         if (auto expression = context->expression())
         {
             auto rvalue = this->visitExpression(expression).as<Variable *>();
-            rvalue->copy(scope->function->return_value, scope->builder);
+            rvalue->copy(scope->function->return_value, scope->builder, this->env.module);
 
             // scope->builder.CreateStore(casted->value, scope->function->return_value);
         }
@@ -500,6 +500,10 @@ public:
         else if (const auto type_cast_context = dynamic_cast<SanParser::TypeCastContext *>(context))
         {
             return visitTypeCast(type_cast_context);
+        }
+        else if (const auto this_expression_context = dynamic_cast<SanParser::ThisExpressionContext *>(context))
+        {
+            return visitThisExpression(this_expression_context);
         }
         else if (const auto property_expression_context = dynamic_cast<SanParser::PropertyExpressionContext *>(context))
         {
@@ -824,6 +828,16 @@ public:
         return expr->cast(type, scope->builder);
     }
 
+    antlrcpp::Any visitThisExpression(SanParser::ThisExpressionContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        auto var = scope->get_var("this");
+        auto load = var->load(scope->builder);
+
+        return new Variable(var->type->base, load->value, VariableValueType::Load);
+    }
+
     antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *context) override
     {
         auto &scope = this->scopes.top();
@@ -833,7 +847,7 @@ public:
 
         auto type = dynamic_cast<ClassType *>(expr->type);
 
-        if (auto property = type->get_property(name))
+        if (auto property = type->get_property(name, this->env.module))
         {
             llvm::Value *value = nullptr;
 
@@ -916,7 +930,7 @@ public:
         auto &scope = this->scopes.top();
 
         auto type = this->visitType(context->type()).as<Type *>();
-        auto value = llvm::ConstantInt::get(llvm::Type::getInt64Ty(scope->llvm_context), type->size());
+        auto value = llvm::ConstantInt::get(llvm::Type::getInt64Ty(scope->llvm_context), type->size(this->env.module));
 
         return new Variable(new Type(value->getType()), value);
     }
@@ -943,7 +957,7 @@ public:
             }
 
             auto ret = scope->builder.CreateCall(function->value, args);
-            return new Variable(function->return_type, reinterpret_cast<llvm::Value *>(ret));
+            return new Variable(function->return_type, static_cast<llvm::Value *>(ret));
         }
 
         std::cerr << "Expression is not a function" << std::endl;
@@ -1183,7 +1197,7 @@ public:
     {
         bool is_generating_properties = this->scopes.top()->is_generating_properties;
         this->scopes.push(std::make_shared<Scope>(base->scope));
-        auto scope = this->scopes.top();
+        auto &scope = this->scopes.top();
 
         scope->is_generating_properties = is_generating_properties;
 
@@ -1198,7 +1212,7 @@ public:
         }
 
         auto structure = llvm::StructType::create(scope->llvm_context, name + ".class");
-        auto type = new ClassType(structure, base->scope);
+        auto type = new ClassType(structure, scope);
 
         base->generated_generics.push_back(type);
 
@@ -1307,7 +1321,9 @@ public:
         {
             if (auto class_type = dynamic_cast<ClassType *>(property_type))
             {
+                this->scopes.push(class_type->scope);
                 this->generatePendingMethods(class_type);
+                this->scopes.pop();
             }
         }
 
@@ -1406,7 +1422,7 @@ public:
             value = scope->get_var(name);
         }
 
-        auto property = type->get_property(name);
+        auto property = type->get_property(name, this->env.module);
 
         if (property == nullptr)
         {
@@ -1537,7 +1553,7 @@ public:
 
         for (const auto &type_context : context->type())
         {
-            auto type = this->visitType(type_context);
+            auto type = this->visitType(type_context).as<Type *>();
             types.push_back(type);
         }
 
@@ -1607,7 +1623,7 @@ public:
             }
 
             auto method = class_type->static_methods.find(name);
-            return reinterpret_cast<Variable *>(method->second);
+            return static_cast<Variable *>(method->second);
         }
 
         return nullptr;

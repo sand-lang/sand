@@ -26,7 +26,7 @@ public:
 
     virtual ~Type() {}
 
-    size_t size() const;
+    size_t size(std::unique_ptr<llvm::Module> &module) const;
 
     Type *pointer()
     {

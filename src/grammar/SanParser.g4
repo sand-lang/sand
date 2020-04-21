@@ -34,6 +34,7 @@ expression:
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| expression 'as' type									# TypeCast
+	| 'this'												# ThisExpression
 	| scopeResolver? VariableName							# VariableExpression
 	| literal												# LiteralDeclaration;
 

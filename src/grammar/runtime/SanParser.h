@@ -20,12 +20,12 @@ public:
     Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
     UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
     As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Static = 42, 
-    Dot = 43, Namespace = 44, ScopeResolver = 45, VariableDeclarator = 46, 
-    If = 47, Else = 48, While = 49, Break = 50, Function = 51, Extern = 52, 
-    Return = 53, Comma = 54, Colon = 55, InstructionsSeparator = 56, VariableName = 57, 
-    StringLiteral = 58, CharLiteral = 59, IntegerLiteral = 60, DecimalLiteral = 61, 
-    ZeroLiteral = 62, HexadecimalLiteral = 63, BinaryLiteral = 64, Comment = 65, 
-    WhiteSpace = 66, LineTerminator = 67
+    This = 43, Dot = 44, Namespace = 45, ScopeResolver = 46, VariableDeclarator = 47, 
+    If = 48, Else = 49, While = 50, Break = 51, Function = 52, Extern = 53, 
+    Return = 54, Comma = 55, Colon = 56, InstructionsSeparator = 57, VariableName = 58, 
+    StringLiteral = 59, CharLiteral = 60, IntegerLiteral = 61, DecimalLiteral = 62, 
+    ZeroLiteral = 63, HexadecimalLiteral = 64, BinaryLiteral = 65, Comment = 66, 
+    WhiteSpace = 67, LineTerminator = 68
   };
 
   enum {
@@ -260,6 +260,15 @@ public:
 
     antlr4::tree::TerminalNode *SizeOf();
     TypeContext *type();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ThisExpressionContext : public ExpressionContext {
+  public:
+    ThisExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *This();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
