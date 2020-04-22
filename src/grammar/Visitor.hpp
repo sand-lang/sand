@@ -1291,7 +1291,7 @@ public:
             }
         }
 
-        struct_type->setBody(properties_types, false);
+        struct_type->setBody(properties_types, true);
         scope->is_generating_properties = false;
 
         auto class_methods = context->classMethod();
