@@ -195,7 +195,8 @@ public:
         }
         else if (this->type->is_pointer())
         {
-            builder.CreateStore(this->value, target->value);
+            auto lvalue = builder.CreateLoad(this->value);
+            builder.CreateStore(lvalue, target->value);
         }
         else
         {
