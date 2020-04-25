@@ -1038,6 +1038,18 @@ public:
         }
         else if (auto method = type->get_method(name))
         {
+            auto function = static_cast<Function *>(method);
+
+            if (function->is_base)
+            {
+                auto generics_context = context->classTypeNameGenerics();
+                auto generics = this->visitClassTypeNameGenerics(generics_context).as<std::vector<Type *>>();
+
+                auto generated = this->visitFunction(function->context, function, generics).as<Function *>();
+
+                return static_cast<Variable *>(generated);
+            }
+
             method->calling_variable = expr;
             return method;
         }
@@ -1087,8 +1099,20 @@ public:
                     return var->second;
                 }
 
-                auto method = classtype->static_methods.find(name);
-                return static_cast<Variable *>(method->second);
+                auto &[method_name, method] = *classtype->static_methods.find(name);
+
+                auto function = static_cast<Function *>(method);
+                if (function->is_base)
+                {
+                    auto generics_context = context->classTypeNameGenerics();
+                    auto generics = this->visitClassTypeNameGenerics(generics_context).as<std::vector<Type *>>();
+
+                    auto generated = this->visitFunction(function->context, function, generics).as<Function *>();
+
+                    return static_cast<Variable *>(generated);
+                }
+
+                return method;
             }
         }
 
@@ -1601,9 +1625,13 @@ public:
         for (size_t i = 0; i < methods.size(); i++)
         {
             auto method = methods[i];
-            auto class_method = type->pending_methods[i];
 
-            this->visitClassMethod(class_method, type, method);
+            if (!method->is_base)
+            {
+                auto class_method = type->pending_methods[i];
+
+                this->visitClassMethod(class_method, type, method);
+            }
         }
 
         type->pending_methods.clear();

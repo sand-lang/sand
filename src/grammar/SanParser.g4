@@ -24,7 +24,7 @@ expression:
 	'(' expression ')'										# InParenExpression
 	| 'sizeof' type											# SizeofExpression
 	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
-	| expression '.' VariableName							# PropertyExpression
+	| expression '.' VariableName classTypeNameGenerics?	# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression '[' expression ']'							# Index
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation

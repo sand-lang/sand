@@ -293,6 +293,7 @@ public:
     ExpressionContext *expression();
     antlr4::tree::TerminalNode *Dot();
     antlr4::tree::TerminalNode *VariableName();
+    ClassTypeNameGenericsContext *classTypeNameGenerics();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
