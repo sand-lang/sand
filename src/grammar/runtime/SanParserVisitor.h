@@ -127,6 +127,8 @@ public:
 
     virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionType(SanParser::FunctionTypeContext *context) = 0;
+
     virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context) = 0;

@@ -42,8 +42,9 @@ public:
     RuleClassBody = 28, RuleClassProperty = 29, RuleClassMethod = 30, RuleClassInstantiationProperties = 31, 
     RuleClassInstantiationProperty = 32, RuleType = 33, RuleTypeQualifier = 34, 
     RuleTypeDimensions = 35, RuleTypeReference = 36, RuleTypeName = 37, 
-    RulePrimaryTypeName = 38, RuleClassTypeName = 39, RuleClassTypeNameGenerics = 40, 
-    RuleNamespaceStatement = 41, RuleScopeResolver = 42, RuleEos = 43
+    RulePrimaryTypeName = 38, RuleFunctionType = 39, RuleClassTypeName = 40, 
+    RuleClassTypeNameGenerics = 41, RuleNamespaceStatement = 42, RuleScopeResolver = 43, 
+    RuleEos = 44
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -95,6 +96,7 @@ public:
   class TypeReferenceContext;
   class TypeNameContext;
   class PrimaryTypeNameContext;
+  class FunctionTypeContext;
   class ClassTypeNameContext;
   class ClassTypeNameGenericsContext;
   class NamespaceStatementContext;
@@ -859,6 +861,7 @@ public:
     TypeNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     PrimaryTypeNameContext *primaryTypeName();
+    FunctionTypeContext *functionType();
     ClassTypeNameContext *classTypeName();
     ScopeResolverContext *scopeResolver();
 
@@ -892,6 +895,24 @@ public:
   };
 
   PrimaryTypeNameContext* primaryTypeName();
+
+  class  FunctionTypeContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Function();
+    antlr4::tree::TerminalNode *OpeningParen();
+    antlr4::tree::TerminalNode *ClosingParen();
+    FunctionArgumentsContext *functionArguments();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionTypeContext* functionType();
 
   class  ClassTypeNameContext : public antlr4::ParserRuleContext {
   public:

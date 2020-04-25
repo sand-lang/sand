@@ -344,7 +344,7 @@ public:
         {
             type = stored_type.as<Type *>();
 
-            if (make_copy)
+            if (make_copy && !context->typeName()->functionType())
             {
                 auto copy = new Type(*type);
                 copy->base = type;
@@ -425,7 +425,16 @@ public:
                 llvm::AllocaInst *addr = this->env.builder.CreateAlloca(it->getType(), nullptr, fa->first + ".addr");
                 this->env.builder.CreateStore(static_cast<llvm::Value *>(it), addr, false);
 
-                scope->add(new Variable(fa->second, static_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
+                if (fa->second->is_pointer() && fa->second->base->is_function())
+                {
+                    auto function_type = fa->second;
+                    auto function = new Function(function_type, static_cast<llvm::Value *>(addr), VariableValueType::Alloca);
+                    scope->add(function, fa->first);
+                }
+                else
+                {
+                    scope->add(new Variable(fa->second, static_cast<llvm::Value *>(addr), VariableValueType::Alloca), fa->first);
+                }
 
                 it++;
                 fa++;
@@ -1152,10 +1161,17 @@ public:
         auto &scope = this->scopes.top();
         auto expression = this->visitExpression(context->expression()).as<Variable *>();
 
-        if (expression->type->is_function())
-        {
-            auto function = static_cast<Function *>(expression);
+        auto lvalue = expression;
 
+        if (lvalue->type->is_pointer() && lvalue->type->base->is_function())
+        {
+            auto load = scope->builder.CreateLoad(lvalue->value);
+            lvalue = new Function(lvalue->type, load);
+            lvalue->type = lvalue->type->base;
+        }
+
+        if (lvalue->type->is_function())
+        {
             std::vector<Variable *> args;
 
             if (auto arguments = context->functionCallArguments())
@@ -1165,6 +1181,7 @@ public:
 
             std::vector<llvm::Value *> args_values;
 
+            auto function = static_cast<Function *>(lvalue);
             if (function->calling_variable != nullptr)
             {
                 args_values.push_back(function->calling_variable->value);
@@ -1216,7 +1233,7 @@ public:
                 auto tmp = scope->builder.CreateAlloca(function->return_type->ref, nullptr, "tmp");
                 args_values.insert(args_values.begin(), tmp);
 
-                auto call = scope->builder.CreateCall(function->value, args_values);
+                auto call = scope->builder.CreateCall(lvalue->value, args_values);
                 call->addAttribute(1, llvm::Attribute::StructRet);
 
                 auto var = new Variable(function->return_type, tmp, VariableValueType::Alloca);
@@ -1750,6 +1767,10 @@ public:
             auto name = primary_type_name->getText();
             return this->scopes.top()->get_type(name);
         }
+        else if (auto function_type = context->functionType())
+        {
+            return this->visitFunctionType(function_type).as<Type *>();
+        }
         else if (auto class_type_name = context->classTypeName())
         {
             if (auto scope_resolver = context->scopeResolver())
@@ -1784,6 +1805,58 @@ public:
         }
 
         return nullptr;
+    }
+
+    antlrcpp::Any visitFunctionType(SanParser::FunctionTypeContext *context) override
+    {
+        std::vector<Type *> types;
+        std::vector<llvm::Type *> llvm_types;
+
+        bool is_variadic = false;
+
+        if (auto arguments = context->functionArguments())
+        {
+            auto [args, is_variadic_] = this->visitFunctionArguments(arguments).as<std::pair<std::vector<std::pair<std::string, Type *>>, bool>>();
+
+            for (const auto &[name, type] : args)
+            {
+                types.push_back(type);
+                llvm_types.push_back(type->ref);
+            }
+
+            is_variadic = is_variadic_;
+        }
+
+        auto return_type = this->visitType(context->type()).as<Type *>();
+
+        auto return_type_size = return_type->size(this->env.module);
+        auto is_sret = return_type_size > 8;
+
+        auto function_return_type = return_type->ref;
+
+        if (is_sret)
+        {
+            if (return_type->is_pointer())
+            {
+                llvm_types.push_back(return_type->ref);
+            }
+            else
+            {
+                llvm_types.push_back(return_type->pointer()->ref);
+            }
+
+            function_return_type = llvm::Type::getVoidTy(this->env.llvm_context);
+        }
+
+        auto function_type = llvm::FunctionType::get(function_return_type, llvm_types, is_variadic);
+
+        auto type = new Type(function_type);
+        type->is_sret = is_sret;
+        type->is_variadic = is_variadic;
+        type->args = types;
+        type->return_type = return_type;
+
+        return type->pointer();
     }
 
     antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context, std::shared_ptr<San::Scope> &scope)

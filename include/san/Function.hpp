@@ -111,6 +111,20 @@ public:
         }
     }
 
+    Function(Type *type,
+             llvm::Value *value,
+             const VariableValueType &value_type = VariableValueType::Simple) : Variable(type, value, value_type)
+    {
+        this->return_type = type->base->return_type;
+        this->is_sret = type->base->is_sret;
+        this->is_variadic = type->base->is_sret;
+
+        for (const auto &arg : type->base->args)
+        {
+            this->args.push_back(std::make_pair("", arg));
+        }
+    }
+
     virtual ~Function() {}
 
     Function *get_generated(const std::vector<Type *> &generics) const

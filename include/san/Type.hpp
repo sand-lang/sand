@@ -22,6 +22,11 @@ public:
 
     Type *base = nullptr;
 
+    bool is_sret = false;
+    std::vector<Type *> args;
+    bool is_variadic = false;
+    Type *return_type = nullptr;
+
 private:
     bool _is_reference = false;
 

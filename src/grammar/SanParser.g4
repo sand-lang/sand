@@ -103,7 +103,11 @@ typeQualifier: Const;
 typeDimensions: '[' ']';
 typeReference: '&';
 
-typeName: primaryTypeName | scopeResolver? classTypeName;
+typeName:
+	primaryTypeName
+	| functionType
+	| (scopeResolver? classTypeName);
+
 primaryTypeName:
 	Int8
 	| Int16
@@ -117,6 +121,8 @@ primaryTypeName:
 	| Float64
 	| Void
 	| Bool;
+
+functionType: 'fn' '(' functionArguments? ')' (':' type)?;
 
 classTypeName: VariableName classTypeNameGenerics?;
 classTypeNameGenerics: '<' type (',' type)* '>';
