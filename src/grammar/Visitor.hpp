@@ -108,6 +108,12 @@ public:
     {
         auto function = this->visitFunctionDeclaration(context->functionDeclaration(), add_to_scope, this_type).as<Function *>();
 
+        if (function->is_base)
+        {
+            function->context = context;
+            return function;
+        }
+
         if (generate_body)
         {
             if (auto body = context->body())
@@ -129,9 +135,72 @@ public:
         return base;
     }
 
-    antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context, const bool add_to_scope = true, ClassType *this_type = nullptr)
+    antlrcpp::Any visitFunction(SanParser::FunctionContext *context, Function *base, const std::vector<Type *> &generics)
     {
+        if (auto generated = base->get_generated(generics))
+        {
+            return generated;
+        }
+
+        auto scope = this->scopes.top();
+
+        llvm::BasicBlock *original_block = nullptr;
+        llvm::BasicBlock::iterator original_position;
+
+        if (scope->function)
+        {
+            original_block = scope->builder.GetInsertBlock();
+            original_position = scope->builder.GetInsertPoint();
+        }
+
+        this->scopes.push(std::make_shared<Scope>(base->scope));
+        scope = this->scopes.top();
+
+        std::vector<std::pair<std::string, Type *>> generics_pairs;
+        for (size_t i = 0; i < base->generics.size(); i++)
+        {
+            auto &name = base->generics[i].first;
+            generics_pairs.push_back(std::make_pair(name, generics[i]));
+
+            scope->add_type(generics[i], name);
+        }
+
+        auto function = this->visitFunctionDeclaration(context->functionDeclaration(), false, base->this_type, true).as<Function *>();
+        this->visitFunction(context, function);
+
+        base->generated_generics.push_back(function);
+
+        this->scopes.pop();
+
+        scope = this->scopes.top();
+        if (original_block != nullptr)
+        {
+            scope->builder.SetInsertPoint(original_block, original_position);
+        }
+
+        return function;
+    }
+
+    antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context, const bool add_to_scope = true, ClassType *this_type = nullptr, const bool bypass_generics = false)
+    {
+        auto &scope = this->scopes.top();
         const auto name = context->VariableName()->getText();
+
+        if (!bypass_generics)
+        {
+            if (auto generics_context = context->classGenerics())
+            {
+                auto generics = this->visitClassGenerics(generics_context).as<std::vector<std::string>>();
+                auto function = new Function(generics, scope, nullptr);
+
+                if (add_to_scope)
+                {
+                    scope->add(function, name);
+                }
+
+                return function;
+            }
+        }
 
         std::vector<std::pair<std::string, Type *>> args;
         bool is_variadic = false;
@@ -148,8 +217,6 @@ public:
             args.insert(args.end(), args_.begin(), args_.end());
             is_variadic = is_variadic_;
         }
-
-        auto &scope = this->scopes.top();
 
         auto type = context->type();
         Type *return_type = nullptr;
@@ -993,6 +1060,21 @@ public:
                 auto scope = space.as<std::shared_ptr<Scope>>();
                 auto var = scope->get_var(name);
 
+                if (auto function = dynamic_cast<Function *>(var))
+                {
+                    if (function->is_base)
+                    {
+                        auto generics_context = context->classTypeNameGenerics();
+                        auto generics = this->visitClassTypeNameGenerics(generics_context).as<std::vector<Type *>>();
+
+                        auto generated = this->visitFunction(function->context, function, generics).as<Function *>();
+
+                        return static_cast<Variable *>(generated);
+                    }
+
+                    return static_cast<Variable *>(function);
+                }
+
                 return var;
             }
             else if (space.is<ClassType *>())
@@ -1012,6 +1094,21 @@ public:
 
         auto &scope = this->scopes.top();
         auto var = scope->get_var(context->VariableName()->getText());
+
+        if (auto function = dynamic_cast<Function *>(var))
+        {
+            if (function->is_base)
+            {
+                auto generics_context = context->classTypeNameGenerics();
+                auto generics = this->visitClassTypeNameGenerics(generics_context).as<std::vector<Type *>>();
+
+                auto generated = this->visitFunction(function->context, function, generics).as<Function *>();
+
+                return static_cast<Variable *>(generated);
+            }
+
+            return static_cast<Variable *>(function);
+        }
 
         return var;
     }

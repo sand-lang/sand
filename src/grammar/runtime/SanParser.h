@@ -218,6 +218,7 @@ public:
 
     antlr4::tree::TerminalNode *VariableName();
     ScopeResolverContext *scopeResolver();
+    ClassTypeNameGenericsContext *classTypeNameGenerics();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -517,6 +518,7 @@ public:
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
     antlr4::tree::TerminalNode *Extern();
+    ClassGenericsContext *classGenerics();
     FunctionArgumentsContext *functionArguments();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();

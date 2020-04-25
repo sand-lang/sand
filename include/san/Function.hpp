@@ -1,5 +1,7 @@
 #pragma once
 
+#include <grammar/runtime/SanParser.h>
+
 #include <san/Block.hpp>
 #include <san/Scope.hpp>
 #include <san/Type.hpp>
@@ -14,6 +16,15 @@ namespace San
 class Function : public Variable
 {
 public:
+    bool is_base = false;
+    std::shared_ptr<Scope> scope;
+
+    std::vector<std::pair<std::string, Type *>> generics;
+    ClassType *this_type = nullptr;
+
+    std::vector<Function *> generated_generics;
+    SanParser::FunctionContext *context = nullptr;
+
     Type *return_type = nullptr;
     llvm::Function *ref = nullptr;
 
@@ -88,7 +99,45 @@ public:
         this->value = this->ref;
     }
 
+    Function(const std::vector<std::string> &generics,
+             std::shared_ptr<Scope> &scope_,
+             SanParser::FunctionContext *context_) : is_base(true),
+                                                     scope(scope_),
+                                                     context(context_)
+    {
+        for (const auto &name : generics)
+        {
+            this->generics.push_back(std::make_pair(name, nullptr));
+        }
+    }
+
     virtual ~Function() {}
+
+    Function *get_generated(const std::vector<Type *> &generics) const
+    {
+        for (auto &generated : this->generated_generics)
+        {
+            bool same = true;
+
+            for (size_t i = 0; i < generated->generics.size(); i++)
+            {
+                auto &[name, type] = generated->generics[i];
+
+                if (!generics[i]->equals(type))
+                {
+                    same = false;
+                    break;
+                }
+            }
+
+            if (same)
+            {
+                return generated;
+            }
+        }
+
+        return nullptr;
+    }
 
     void insert(Block *block)
     {

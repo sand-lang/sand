@@ -195,13 +195,14 @@ public:
         }
         else if (this->type->is_pointer())
         {
-            auto lvalue = builder.CreateLoad(this->value);
-            builder.CreateStore(lvalue, target->value);
+            // std::cout << "it's a pointer" << std::endl;
+            // auto lvalue = builder.CreateLoad(this->value);
+            auto lvalue = this->cast(target->type, builder, false);
+            builder.CreateStore(lvalue->value, target->value);
         }
         else
         {
             std::cout << "it's something else" << std::endl;
-
             auto rvalue = this->load(builder)->cast(target->type, builder);
             builder.CreateStore(rvalue->value, target->value);
         }

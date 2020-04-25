@@ -35,7 +35,7 @@ expression:
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| expression 'as' type									# TypeCast
 	| 'this'												# ThisExpression
-	| scopeResolver? VariableName							# VariableExpression
+	| scopeResolver? VariableName classTypeNameGenerics?	# VariableExpression
 	| literal												# LiteralDeclaration;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
@@ -65,7 +65,7 @@ functionCallArgument: expression;
 
 function: functionDeclaration body?;
 functionDeclaration:
-	Extern? Function VariableName '(' functionArguments? ')' (
+	Extern? Function VariableName classGenerics? '(' functionArguments? ')' (
 		':' type
 	)?;
 
