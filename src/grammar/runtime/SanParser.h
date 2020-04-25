@@ -41,9 +41,9 @@ public:
     RuleClassStatement = 25, RuleClassGenerics = 26, RuleClassExtends = 27, 
     RuleClassBody = 28, RuleClassProperty = 29, RuleClassMethod = 30, RuleClassInstantiationProperties = 31, 
     RuleClassInstantiationProperty = 32, RuleType = 33, RuleTypeQualifier = 34, 
-    RuleTypeDimensions = 35, RuleTypeName = 36, RulePrimaryTypeName = 37, 
-    RuleClassTypeName = 38, RuleClassTypeNameGenerics = 39, RuleNamespaceStatement = 40, 
-    RuleScopeResolver = 41, RuleEos = 42
+    RuleTypeDimensions = 35, RuleTypeReference = 36, RuleTypeName = 37, 
+    RulePrimaryTypeName = 38, RuleClassTypeName = 39, RuleClassTypeNameGenerics = 40, 
+    RuleNamespaceStatement = 41, RuleScopeResolver = 42, RuleEos = 43
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -92,6 +92,7 @@ public:
   class TypeContext;
   class TypeQualifierContext;
   class TypeDimensionsContext;
+  class TypeReferenceContext;
   class TypeNameContext;
   class PrimaryTypeNameContext;
   class ClassTypeNameContext;
@@ -801,6 +802,7 @@ public:
     TypeQualifierContext* typeQualifier(size_t i);
     std::vector<TypeDimensionsContext *> typeDimensions();
     TypeDimensionsContext* typeDimensions(size_t i);
+    TypeReferenceContext *typeReference();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -835,6 +837,19 @@ public:
   };
 
   TypeDimensionsContext* typeDimensions();
+
+  class  TypeReferenceContext : public antlr4::ParserRuleContext {
+  public:
+    TypeReferenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *BitwiseAnd();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypeReferenceContext* typeReference();
 
   class  TypeNameContext : public antlr4::ParserRuleContext {
   public:

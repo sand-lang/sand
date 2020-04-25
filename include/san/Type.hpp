@@ -22,7 +22,13 @@ public:
 
     Type *base = nullptr;
 
-    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_) {}
+private:
+    bool _is_reference = false;
+
+public:
+    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_)
+    {
+    }
 
     virtual ~Type() {}
 
@@ -48,6 +54,39 @@ public:
         return llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(this->ref));
     }
 
+    Type *get_base(const bool &root = true)
+    {
+        if (this->base == nullptr)
+        {
+            return this;
+        }
+        else if (!root)
+        {
+            return this->base;
+        }
+
+        return this->base->get_base();
+    }
+
+    const Type *get_base(const bool &root = true) const
+    {
+        if (this->base == nullptr)
+        {
+            return this;
+        }
+        else if (!root)
+        {
+            return this->base;
+        }
+
+        return this->base->get_base();
+    }
+
+    inline bool is_void() const
+    {
+        return this->ref->isVoidTy();
+    }
+
     inline bool is_integer() const
     {
         return this->ref->isIntegerTy();
@@ -71,6 +110,16 @@ public:
     inline bool is_struct() const
     {
         return this->ref->isStructTy();
+    }
+
+    inline bool is_reference() const
+    {
+        return this->_is_reference;
+    }
+
+    inline void set_is_reference(const bool &is_reference)
+    {
+        this->_is_reference = is_reference;
     }
 
     inline bool equals(const Type *right) const

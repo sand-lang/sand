@@ -121,6 +121,8 @@ public:
 
     virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;
 
+    virtual antlrcpp::Any visitTypeReference(SanParser::TypeReferenceContext *context) = 0;
+
     virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *context) = 0;

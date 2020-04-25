@@ -170,7 +170,7 @@ public:
         const auto is_extern = !!context->Extern() || name == "main";
         auto linkage = is_extern ? llvm::GlobalValue::LinkageTypes::ExternalLinkage : llvm::GlobalValue::LinkageTypes::LinkOnceAnyLinkage;
 
-        auto function = new Function(scope, return_type, args, is_variadic, name, linkage);
+        auto function = new Function(scope, this->env.module, return_type, args, is_variadic, name, linkage);
 
         if (add_to_scope)
         {
@@ -254,18 +254,36 @@ public:
         return nsp;
     }
 
-    antlrcpp::Any visitType(SanParser::TypeContext *context) override
+    antlrcpp::Any visitType(SanParser::TypeContext *context, const bool &make_copy = true)
     {
         const auto stored_type = this->visitTypeName(context->typeName());
         Type *type = nullptr;
 
         if (stored_type.is<ClassType *>())
         {
-            type = stored_type.as<ClassType *>();
+            auto class_type = stored_type.as<ClassType *>();
+
+            if (make_copy)
+            {
+                auto copy = new ClassType(*class_type);
+                copy->base = class_type;
+
+                class_type = copy;
+            }
+
+            type = class_type;
         }
         else
         {
             type = stored_type.as<Type *>();
+
+            if (make_copy)
+            {
+                auto copy = new Type(*type);
+                copy->base = type;
+
+                type = copy;
+            }
         }
 
         for (const auto &qualifier : context->typeQualifier())
@@ -277,6 +295,12 @@ public:
         for (const auto &dimension : context->typeDimensions())
         {
             type = type->pointer();
+        }
+
+        if (context->typeReference())
+        {
+            type = type->pointer();
+            type->set_is_reference(true);
         }
 
         return type;
@@ -302,14 +326,29 @@ public:
             function->entry = block;
             function->return_label = llvm::BasicBlock::Create(scope->llvm_context, "return_label");
 
-            const auto return_type = function->ref->getReturnType();
-            if (!return_type->isVoidTy())
+            const auto return_type = function->return_type;
+            if (!return_type->is_void())
             {
-                auto alloca = scope->builder.CreateAlloca(return_type, nullptr, "return_value");
-                function->return_value = new Variable(function->return_type, alloca, VariableValueType::Alloca);
+                if (function->is_sret)
+                {
+                    llvm::Argument *return_arg = function->ref->arg_begin();
+                    function->return_value = new Variable(function->return_type, return_arg, VariableValueType::Simple);
+                }
+                else
+                {
+                    auto alloca = scope->builder.CreateAlloca(return_type->ref, nullptr, "return_value");
+                    function->return_value = new Variable(function->return_type, alloca, VariableValueType::Alloca);
+                }
             }
 
             auto it = function->ref->arg_begin();
+
+            if (function->is_sret)
+            {
+                it->setName("return_value");
+                it++;
+            }
+
             auto fa = function->args.begin();
 
             while (it != function->ref->arg_end())
@@ -325,7 +364,7 @@ public:
                 fa++;
             }
 
-            if (function->return_value != nullptr && !dynamic_cast<ClassType *>(function->return_type))
+            if (!function->is_sret && function->return_value != nullptr && !dynamic_cast<ClassType *>(function->return_type))
             {
                 auto allocated_type = llvm::cast<llvm::AllocaInst>(function->return_value->value)->getAllocatedType();
                 const auto type = new Type(allocated_type);
@@ -350,9 +389,9 @@ public:
             function->return_label->insertInto(function->ref);
             scope->builder.SetInsertPoint(function->return_label);
 
-            const auto return_type = function->ref->getReturnType();
+            const auto return_type = function->return_type;
 
-            if (return_type->isVoidTy())
+            if (function->is_sret || return_type->is_void())
             {
                 scope->builder.CreateRetVoid();
             }
@@ -375,7 +414,7 @@ public:
         auto name = context->VariableName()->getText();
 
         Type *type = nullptr;
-        Variable *rvalue = nullptr;
+        Variable *rexpr = nullptr;
 
         if (auto type_context = context->type())
         {
@@ -384,27 +423,65 @@ public:
 
         if (auto expression = context->expression())
         {
-            rvalue = this->visitExpression(expression).as<Variable *>();
+            rexpr = this->visitExpression(expression).as<Variable *>();
 
             if (type == nullptr)
             {
-                type = rvalue->type;
+                type = rexpr->type;
             }
         }
 
         if (scope->function != nullptr)
         {
+            if (rexpr->can_be_taken && rexpr->type->equals(type))
+            {
+                rexpr->value->setName(name);
+                return scope->add(rexpr, name);
+            }
+
             auto alloca = scope->builder.CreateAlloca(type->ref, nullptr, name);
             Variable *var = new Variable(type, alloca, VariableValueType::Alloca);
 
-            if (rvalue != nullptr)
+            if (rexpr->can_be_taken)
             {
-                scope->builder.CreateStore(rvalue->cast(type, scope->builder)->get(scope->builder), alloca);
+                rexpr->copy(var, scope->builder, this->env.module);
+            }
+            else if (rexpr != nullptr)
+            {
+                llvm::Value *lvalue = alloca;
+                llvm::Value *rvalue = nullptr;
+
+                if (rexpr->type->is_reference())
+                {
+                    if (type->is_reference())
+                    {
+                        rvalue = rexpr->value;
+                    }
+                    else
+                    {
+                        rvalue = scope->builder.CreateLoad(rexpr->value);
+                    }
+                }
+                else if (type->is_reference())
+                {
+                    if (!rexpr->is_allocated_variable())
+                    {
+                        debug.err << "Cannot use temporary rvalue as reference" << std::endl;
+                    }
+
+                    rvalue = rexpr->value;
+                }
+                else
+                {
+                    rvalue = rexpr->cast(type, scope->builder)->get(scope->builder);
+                }
+
+                scope->builder.CreateStore(rvalue, lvalue);
             }
 
             return scope->add(var, name);
         }
-        else if (rvalue == nullptr)
+        else if (rexpr == nullptr)
         {
             auto global = new llvm::GlobalVariable(*this->env.module, type->ref, false, llvm::GlobalValue::PrivateLinkage, type->default_value(), name);
             auto var = new Variable(type, global, VariableValueType::Alloca);
@@ -413,7 +490,7 @@ public:
         }
         else
         {
-            auto casted_rvalue = rvalue->cast(type, scope->builder)->get(scope->builder);
+            auto casted_rvalue = rexpr->cast(type, scope->builder)->get(scope->builder);
 
             if (auto constant = llvm::dyn_cast<llvm::Constant>(casted_rvalue))
             {
@@ -441,9 +518,15 @@ public:
         if (auto expression = context->expression())
         {
             auto rvalue = this->visitExpression(expression).as<Variable *>();
-            rvalue->copy(scope->function->return_value, scope->builder, this->env.module);
 
-            // scope->builder.CreateStore(casted->value, scope->function->return_value);
+            if (scope->function->return_type->is_reference())
+            {
+                scope->builder.CreateStore(rvalue->value, scope->function->return_value->value);
+            }
+            else
+            {
+                rvalue->copy(scope->function->return_value, scope->builder, this->env.module);
+            }
         }
 
         scope->builder.CreateBr(scope->function->return_label);
@@ -772,20 +855,28 @@ public:
         auto lexpr = visitExpression(lexpr_context).as<Variable *>();
         auto rexpr = visitExpression(rexpr_context).as<Variable *>();
 
-        auto value = rexpr->cast(lexpr->type, scope->builder)->get(scope->builder);
+        llvm::Value *lvalue = nullptr;
+        llvm::Value *rvalue = nullptr;
 
-        if (lexpr->value_type == VariableValueType::GEP)
+        if (rexpr->type->is_reference())
         {
-            scope->builder.CreateStore(value, lexpr->value);
-        }
-        else if (auto alloca = lexpr->get_alloca())
-        {
-            scope->builder.CreateStore(value, alloca);
+            rvalue = scope->builder.CreateLoad(rexpr->value);
         }
         else
         {
-            std::cerr << "Invalid lvalue" << std::endl;
+            rvalue = rexpr->cast(lexpr->type, scope->builder)->get(scope->builder);
         }
+
+        if (lexpr->type->is_reference())
+        {
+            lvalue = scope->builder.CreateLoad(lexpr->value);
+        }
+        else
+        {
+            lvalue = lexpr->value;
+        }
+
+        scope->builder.CreateStore(rvalue, lvalue);
 
         return lexpr;
     }
@@ -815,7 +906,7 @@ public:
 
         auto value = scope->builder.CreateInBoundsGEP(expression->value, idxs, "idx");
 
-        auto var = new Variable(expression->type->base, value, VariableValueType::GEP);
+        auto var = new Variable(expression->type->get_base(false), value, VariableValueType::GEP);
         return scope->add(var);
     }
 
@@ -835,7 +926,7 @@ public:
         auto var = scope->get_var("this");
         auto load = var->load(scope->builder);
 
-        return new Variable(var->type->base, load->value, VariableValueType::Load);
+        return new Variable(var->type->get_base(), load->value, VariableValueType::Load);
     }
 
     antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *context) override
@@ -845,7 +936,7 @@ public:
         auto expr = this->visitExpression(context->expression()).as<Variable *>();
         auto name = context->VariableName()->getText();
 
-        auto type = dynamic_cast<ClassType *>(expr->type);
+        auto type = dynamic_cast<ClassType *>(expr->type->get_base());
 
         if (auto property = type->get_property(name, this->env.module))
         {
@@ -944,20 +1035,79 @@ public:
         {
             auto function = static_cast<Function *>(expression);
 
-            std::vector<llvm::Value *> args;
+            std::vector<Variable *> args;
 
             if (auto arguments = context->functionCallArguments())
             {
-                args = visitFunctionCallArguments(context->functionCallArguments()).as<std::vector<llvm::Value *>>();
+                args = visitFunctionCallArguments(context->functionCallArguments()).as<std::vector<Variable *>>();
             }
+
+            std::vector<llvm::Value *> args_values;
 
             if (function->calling_variable != nullptr)
             {
-                args.insert(args.begin(), function->calling_variable->value);
+                args_values.push_back(function->calling_variable->value);
             }
 
-            auto ret = scope->builder.CreateCall(function->value, args);
-            return new Variable(function->return_type, static_cast<llvm::Value *>(ret));
+            for (size_t i = 0; i < args.size(); i++)
+            {
+                auto &arg = args[i];
+
+                if (i <= (function->args.size() - (function->is_variadic ? 1 : 0)))
+                {
+                    auto target_type = function->args[i].second;
+
+                    llvm::Value *value = nullptr;
+
+                    if (target_type->is_reference())
+                    {
+                        value = arg->value;
+                    }
+                    else
+                    {
+                        value = arg->cast(target_type, scope->builder)->get(scope->builder);
+                    }
+
+                    args_values.push_back(value);
+                }
+                else
+                {
+                    if (arg->type->is_reference())
+                    {
+                        auto value = scope->builder.CreateLoad(arg->value);
+
+                        if (arg->is_allocated_variable())
+                        {
+                            value = scope->builder.CreateLoad(value);
+                        }
+
+                        args_values.push_back(value);
+                    }
+                    else
+                    {
+                        args_values.push_back(arg->get(scope->builder));
+                    }
+                }
+            }
+
+            if (function->is_sret)
+            {
+                auto tmp = scope->builder.CreateAlloca(function->return_type->ref, nullptr, "tmp");
+                args_values.insert(args_values.begin(), tmp);
+
+                auto call = scope->builder.CreateCall(function->value, args_values);
+                call->addAttribute(1, llvm::Attribute::StructRet);
+
+                auto var = new Variable(function->return_type, tmp, VariableValueType::Alloca);
+                var->can_be_taken = true;
+
+                return var;
+            }
+            else
+            {
+                auto ret = scope->builder.CreateCall(function->value, args_values);
+                return new Variable(function->return_type, static_cast<llvm::Value *>(ret));
+            }
         }
 
         std::cerr << "Expression is not a function" << std::endl;
@@ -968,12 +1118,12 @@ public:
     antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context) override
     {
         auto &scope = this->scopes.top();
-        std::vector<llvm::Value *> args;
+        std::vector<Variable *> args;
 
         for (auto arg : context->functionCallArgument())
         {
             auto var = visitFunctionCallArgument(arg).as<Variable *>();
-            args.push_back(var->get(scope->builder));
+            args.push_back(var);
         }
 
         return args;
@@ -1206,13 +1356,17 @@ public:
         auto generics_context = context->classGenerics();
         auto generics_names = this->visitClassGenerics(generics_context).as<std::vector<std::string>>();
 
+        std::vector<std::pair<std::string, Type *>> generics_pairs;
+
         for (size_t i = 0; i < generics.size(); i++)
         {
             scope->add_type(generics[i], generics_names[i]);
+            generics_pairs.push_back(std::make_pair(generics_names[i], generics[i]));
         }
 
         auto structure = llvm::StructType::create(scope->llvm_context, name + ".class");
         auto type = new ClassType(structure, scope);
+        type->generics = generics_pairs;
 
         base->generated_generics.push_back(type);
 
@@ -1319,11 +1473,14 @@ public:
 
         for (auto &[name, property_type] : type->properties)
         {
-            if (auto class_type = dynamic_cast<ClassType *>(property_type))
+            if (auto class_type = dynamic_cast<ClassType *>(property_type->get_base()))
             {
-                this->scopes.push(class_type->scope);
-                this->generatePendingMethods(class_type);
-                this->scopes.pop();
+                if (!class_type->pending_methods.empty())
+                {
+                    this->scopes.push(class_type->scope);
+                    this->generatePendingMethods(class_type);
+                    this->scopes.pop();
+                }
             }
         }
 

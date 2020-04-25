@@ -219,6 +219,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitTypeReference(SanParser::TypeReferenceContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *ctx) override {
     return visitChildren(ctx);
   }

@@ -24,6 +24,8 @@ public:
 
     Variable *calling_variable = nullptr;
 
+    bool can_be_taken = false;
+
     Variable() = default;
     Variable(Type *type_,
              llvm::Value *value_ = nullptr,
@@ -37,6 +39,12 @@ public:
     {
         if (this->value_type == VariableValueType::Alloca || this->value_type == VariableValueType::GEP)
         {
+            if (this->type->is_reference())
+            {
+                auto load1 = builder.CreateLoad(this->value);
+                return builder.CreateLoad(load1);
+            }
+
             return builder.CreateLoad(this->value);
         }
 
@@ -58,6 +66,11 @@ public:
         return nullptr;
     }
 
+    inline bool is_allocated_variable()
+    {
+        return !!llvm::isa<llvm::AllocaInst>(this->value) || !!llvm::isa<llvm::GlobalVariable>(this->value);
+    }
+
     Variable *load(llvm::IRBuilder<> &builder)
     {
         VariableValueType value_type = VariableValueType::Simple;
@@ -73,17 +86,33 @@ public:
     Variable *cast(const Type *dest, llvm::IRBuilder<> &builder, const bool &load = true)
     {
         auto value = load ? this->get(builder) : this->value;
+        auto type = this->type;
 
-        if (this->type->is_integer())
+        if (this->type->is_reference())
+        {
+            if (!load)
+            {
+                value = builder.CreateLoad(value);
+            }
+
+            type = type->base;
+        }
+
+        if (dest->is_reference())
+        {
+            dest = dest->base;
+        }
+
+        if (type->is_integer())
         {
             if (dest->is_integer())
             {
                 auto lbits = dest->ref->getIntegerBitWidth();
-                auto rbits = this->type->ref->getIntegerBitWidth();
+                auto rbits = type->ref->getIntegerBitWidth();
 
                 if (lbits != rbits)
                 {
-                    bool is_signed = this->type->qualifiers.is_signed;
+                    bool is_signed = type->qualifiers.is_signed;
 
                     if (is_signed)
                     {
@@ -111,8 +140,8 @@ public:
         {
             if (dest->is_boolean())
             {
-                auto type = reinterpret_cast<llvm::PointerType *>(this->type->ref);
-                value = builder.CreateICmpNE(value, llvm::ConstantPointerNull::get(type));
+                auto pointer_type = reinterpret_cast<llvm::PointerType *>(type->ref);
+                value = builder.CreateICmpNE(value, llvm::ConstantPointerNull::get(pointer_type));
             }
             else if (dest->is_integer())
             {
@@ -132,7 +161,15 @@ public:
     Variable *cast_to_bytes(llvm::IRBuilder<> &builder)
     {
         auto type = llvm::Type::getInt8PtrTy(builder.getContext());
-        auto value = builder.CreateBitCast(this->value, type);
+
+        auto value = this->value;
+
+        if (this->type->is_reference())
+        {
+            value = builder.CreateLoad(value);
+        }
+
+        value = builder.CreateBitCast(value, type);
 
         return new Variable(new Type(type), value, this->value_type);
     }
@@ -154,12 +191,18 @@ public:
 
             auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), this->type->size(module));
 
-            builder.CreateMemCpy(lvalue, 8, rvalue, 8, llvm::cast<llvm::Value>(size));
+            builder.CreateMemCpy(lvalue, 1, rvalue, 1, llvm::cast<llvm::Value>(size));
+        }
+        else if (this->type->is_pointer())
+        {
+            builder.CreateStore(this->value, target->value);
         }
         else
         {
+            std::cout << "it's something else" << std::endl;
+
             auto rvalue = this->load(builder)->cast(target->type, builder);
-            builder.CreateStore(this->value, target->value);
+            builder.CreateStore(rvalue->value, target->value);
         }
     }
 };

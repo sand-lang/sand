@@ -98,9 +98,10 @@ classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;
 classInstantiationProperty: VariableName ('=' expression)?;
 
-type: typeQualifier* typeName typeDimensions*;
+type: typeQualifier* typeName typeDimensions* typeReference?;
 typeQualifier: Const;
 typeDimensions: '[' ']';
+typeReference: '&';
 
 typeName: primaryTypeName | scopeResolver? classTypeName;
 primaryTypeName:
