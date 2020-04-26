@@ -23,7 +23,7 @@ public:
     This = 43, Dot = 44, Namespace = 45, ScopeResolver = 46, VariableDeclarator = 47, 
     If = 48, Else = 49, While = 50, Break = 51, Function = 52, Extern = 53, 
     Return = 54, Comma = 55, Colon = 56, InstructionsSeparator = 57, VariableName = 58, 
-    StringLiteral = 59, CharLiteral = 60, IntegerLiteral = 61, DecimalLiteral = 62, 
+    StringLiteral = 59, CharLiteral = 60, DecimalLiteral = 61, FloatingLiteral = 62, 
     ZeroLiteral = 63, HexadecimalLiteral = 64, BinaryLiteral = 65, Comment = 66, 
     WhiteSpace = 67, LineTerminator = 68
   };
@@ -33,18 +33,18 @@ public:
     RuleMultiplicativeOperatorStatement = 4, RuleOperatorStatement = 5, 
     RuleBitwiseOperatorStatement = 6, RuleConditionalOperatorStatement = 7, 
     RuleComparisonOperatorStatement = 8, RuleEqualityOperatorStatement = 9, 
-    RuleLiteral = 10, RuleVariableDeclaration = 11, RuleFunctionCallArguments = 12, 
-    RuleFunctionCallArgument = 13, RuleFunction = 14, RuleFunctionDeclaration = 15, 
-    RuleFunctionArguments = 16, RuleFunctionArgument = 17, RuleFunctionArgumentVariable = 18, 
-    RuleFunctionArgumentVariadic = 19, RuleReturnStatement = 20, RuleIfStatement = 21, 
-    RuleElseStatement = 22, RuleWhileStatement = 23, RuleBreakStatement = 24, 
-    RuleClassStatement = 25, RuleClassGenerics = 26, RuleClassExtends = 27, 
-    RuleClassBody = 28, RuleClassProperty = 29, RuleClassMethod = 30, RuleClassInstantiationProperties = 31, 
-    RuleClassInstantiationProperty = 32, RuleType = 33, RuleTypeQualifier = 34, 
-    RuleTypeDimensions = 35, RuleTypeReference = 36, RuleTypeName = 37, 
-    RulePrimaryTypeName = 38, RuleFunctionType = 39, RuleClassTypeName = 40, 
-    RuleClassTypeNameGenerics = 41, RuleNamespaceStatement = 42, RuleScopeResolver = 43, 
-    RuleEos = 44
+    RuleLiteral = 10, RuleIntegerLiteral = 11, RuleFloatingLiteral = 12, 
+    RuleVariableDeclaration = 13, RuleFunctionCallArguments = 14, RuleFunctionCallArgument = 15, 
+    RuleFunction = 16, RuleFunctionDeclaration = 17, RuleFunctionArguments = 18, 
+    RuleFunctionArgument = 19, RuleFunctionArgumentVariable = 20, RuleFunctionArgumentVariadic = 21, 
+    RuleReturnStatement = 22, RuleIfStatement = 23, RuleElseStatement = 24, 
+    RuleWhileStatement = 25, RuleBreakStatement = 26, RuleClassStatement = 27, 
+    RuleClassGenerics = 28, RuleClassExtends = 29, RuleClassBody = 30, RuleClassProperty = 31, 
+    RuleClassMethod = 32, RuleClassInstantiationProperties = 33, RuleClassInstantiationProperty = 34, 
+    RuleType = 35, RuleTypeQualifier = 36, RuleTypeDimensions = 37, RuleTypeReference = 38, 
+    RuleTypeName = 39, RulePrimaryTypeName = 40, RuleFunctionType = 41, 
+    RuleClassTypeName = 42, RuleClassTypeNameGenerics = 43, RuleNamespaceStatement = 44, 
+    RuleScopeResolver = 45, RuleEos = 46
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -68,6 +68,8 @@ public:
   class ComparisonOperatorStatementContext;
   class EqualityOperatorStatementContext;
   class LiteralContext;
+  class IntegerLiteralContext;
+  class FloatingLiteralContext;
   class VariableDeclarationContext;
   class FunctionCallArgumentsContext;
   class FunctionCallArgumentContext;
@@ -440,7 +442,8 @@ public:
   public:
     LiteralContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *IntegerLiteral();
+    IntegerLiteralContext *integerLiteral();
+    FloatingLiteralContext *floatingLiteral();
     antlr4::tree::TerminalNode *StringLiteral();
     antlr4::tree::TerminalNode *CharLiteral();
 
@@ -450,6 +453,37 @@ public:
   };
 
   LiteralContext* literal();
+
+  class  IntegerLiteralContext : public antlr4::ParserRuleContext {
+  public:
+    IntegerLiteralContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *DecimalLiteral();
+    antlr4::tree::TerminalNode *ZeroLiteral();
+    antlr4::tree::TerminalNode *HexadecimalLiteral();
+    antlr4::tree::TerminalNode *BinaryLiteral();
+    antlr4::tree::TerminalNode *Sub();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  IntegerLiteralContext* integerLiteral();
+
+  class  FloatingLiteralContext : public antlr4::ParserRuleContext {
+  public:
+    FloatingLiteralContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *FloatingLiteral();
+    antlr4::tree::TerminalNode *Sub();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FloatingLiteralContext* floatingLiteral();
 
   class  VariableDeclarationContext : public antlr4::ParserRuleContext {
   public:

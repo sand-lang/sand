@@ -23,7 +23,7 @@ public:
     This = 43, Dot = 44, Namespace = 45, ScopeResolver = 46, VariableDeclarator = 47, 
     If = 48, Else = 49, While = 50, Break = 51, Function = 52, Extern = 53, 
     Return = 54, Comma = 55, Colon = 56, InstructionsSeparator = 57, VariableName = 58, 
-    StringLiteral = 59, CharLiteral = 60, IntegerLiteral = 61, DecimalLiteral = 62, 
+    StringLiteral = 59, CharLiteral = 60, DecimalLiteral = 61, FloatingLiteral = 62, 
     ZeroLiteral = 63, HexadecimalLiteral = 64, BinaryLiteral = 65, Comment = 66, 
     WhiteSpace = 67, LineTerminator = 68
   };

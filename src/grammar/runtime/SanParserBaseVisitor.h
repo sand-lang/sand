@@ -119,6 +119,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitIntegerLiteral(SanParser::IntegerLiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFloatingLiteral(SanParser::FloatingLiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *ctx) override {
     return visitChildren(ctx);
   }

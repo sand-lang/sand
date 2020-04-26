@@ -99,13 +99,12 @@ CharLiteral: '\'' StringChar+ '\'';
 
 fragment StringChar: ~ ["\\\r\n] | Escape;
 
-IntegerLiteral:
-	DecimalLiteral
-	| ZeroLiteral
-	| HexadecimalLiteral
-	| BinaryLiteral;
-
 DecimalLiteral: NONZERODIGIT (DIGITSEPARATOR? DIGIT)*;
+
+FloatingLiteral:
+	(DecimalLiteral | ZeroLiteral)? '.' (
+		DIGIT (DIGITSEPARATOR? DIGIT)*
+	)?;
 
 ZeroLiteral: '0';
 

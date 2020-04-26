@@ -71,6 +71,10 @@ public:
 
     virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) = 0;
 
+    virtual antlrcpp::Any visitIntegerLiteral(SanParser::IntegerLiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitFloatingLiteral(SanParser::FloatingLiteralContext *context) = 0;
+
     virtual antlrcpp::Any visitVariableDeclaration(SanParser::VariableDeclarationContext *context) = 0;
 
     virtual antlrcpp::Any visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context) = 0;

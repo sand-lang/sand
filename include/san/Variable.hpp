@@ -136,9 +136,60 @@ public:
                     value = builder.CreateICmpNE(value, llvm::ConstantInt::get(value->getType(), 0));
                 }
             }
+            else if (dest->is_floating_point())
+            {
+                if (type->qualifiers.is_signed)
+                {
+                    value = builder.CreateSIToFP(value, dest->ref);
+                }
+                else
+                {
+                    value = builder.CreateUIToFP(value, dest->ref);
+                }
+            }
             else if (dest->is_pointer())
             {
                 value = builder.CreateIntToPtr(value, dest->ref);
+            }
+
+            return new Variable(new Type(*dest), value, VariableValueType::Simple);
+        }
+        else if (type->is_double())
+        {
+            if (dest->is_float())
+            {
+                value = builder.CreateFPTrunc(value, dest->ref);
+            }
+            else if (dest->is_integer())
+            {
+                if (dest->qualifiers.is_signed)
+                {
+                    value = builder.CreateFPToSI(value, dest->ref);
+                }
+                else
+                {
+                    value = builder.CreateFPToUI(value, dest->ref);
+                }
+            }
+
+            return new Variable(new Type(*dest), value, VariableValueType::Simple);
+        }
+        else if (type->is_float())
+        {
+            if (dest->is_double())
+            {
+                value = builder.CreateFPExt(value, dest->ref);
+            }
+            else if (dest->is_integer())
+            {
+                if (dest->qualifiers.is_signed)
+                {
+                    value = builder.CreateFPToSI(value, dest->ref);
+                }
+                else
+                {
+                    value = builder.CreateFPToUI(value, dest->ref);
+                }
             }
 
             return new Variable(new Type(*dest), value, VariableValueType::Simple);

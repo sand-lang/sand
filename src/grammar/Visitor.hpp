@@ -700,25 +700,40 @@ public:
 
         if (opt->Mul())
         {
-            if (lvar->type->is_integer() && lvar->type->is_integer())
+            if (lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateNSWMul(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFMul(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Div())
         {
-            if (lvar->type->is_integer() && lvar->type->is_integer())
+            if (lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSDiv(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFDiv(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Mod())
         {
-            if (lvar->type->is_integer() && lvar->type->is_integer())
+            if (lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSRem(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFRem(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
@@ -741,17 +756,27 @@ public:
 
         if (opt->Add())
         {
-            if (lvar->type->is_integer() && lvar->type->is_integer())
+            if (lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateAdd(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFAdd(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
         else if (opt->Sub())
         {
-            if (lvar->type->is_integer() && lvar->type->is_integer())
+            if (lvar->type->is_integer())
             {
                 const auto value = this->env.builder.CreateSub(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType()), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFSub(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType()), value));
             }
         }
@@ -818,49 +843,79 @@ public:
 
         if (opt->EqualTo())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpEQ(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpOEQ(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
         else if (opt->NotEqualTo())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpNE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpUNE(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
         else if (opt->LessThan())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpSLT(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpOLT(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
         else if (opt->LessThanOrEqualTo())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpSLE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpOLE(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
         else if (opt->GreaterThan())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpSGT(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpOGT(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
         else if (opt->GreaterThanOrEqualTo())
         {
-            if ((lvar->type->is_integer() && lvar->type->is_integer()) || (lvar->type->is_pointer() && lvar->type->is_pointer()))
+            if (lvar->type->is_integer() || lvar->type->is_pointer())
             {
                 const auto value = this->env.builder.CreateICmpSGE(lvar->value, rvar->value);
+                return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
+            }
+            else if (lvar->type->is_floating_point())
+            {
+                const auto value = this->env.builder.CreateFCmpOGE(lvar->value, rvar->value);
                 return scope->add(new Variable(new Type(value->getType(), qualifiers), value));
             }
         }
@@ -1281,12 +1336,13 @@ public:
     {
         auto &scope = this->scopes.top();
 
-        if (const auto literal = context->IntegerLiteral())
+        if (const auto literal = context->integerLiteral())
         {
-            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
-            const auto value = llvm::ConstantInt::get(type, std::stoi(literal->getText()), true);
-
-            return scope->add(new Variable(new Type(value->getType()), value));
+            return this->visitIntegerLiteral(literal);
+        }
+        else if (const auto literal = context->floatingLiteral())
+        {
+            return this->visitFloatingLiteral(literal);
         }
         else if (const auto literal = context->StringLiteral())
         {
@@ -1334,6 +1390,102 @@ public:
         }
 
         return nullptr;
+    }
+
+    antlrcpp::Any visitIntegerLiteral(SanParser::IntegerLiteralContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        const auto remove_digit_separators = [](std::string &str) {
+            str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+            str.erase(std::remove(str.begin(), str.end(), '\''), str.end());
+        };
+
+        if (auto literal = context->DecimalLiteral())
+        {
+            auto str = literal->toString();
+            remove_digit_separators(str);
+
+            auto integer = std::stol(str);
+
+            if (context->Sub())
+            {
+                integer *= -1;
+            }
+
+            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
+            const auto value = llvm::ConstantInt::get(type, integer, true);
+
+            return scope->add(new Variable(new Type(value->getType()), value));
+        }
+        else if (context->ZeroLiteral())
+        {
+            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
+            const auto value = llvm::ConstantInt::get(type, 0, true);
+
+            return scope->add(new Variable(new Type(value->getType()), value));
+        }
+        else if (auto literal = context->HexadecimalLiteral())
+        {
+            auto str = literal->toString();
+            remove_digit_separators(str);
+
+            auto integer = std::stol(str, nullptr, 16);
+
+            if (context->Sub())
+            {
+                integer *= -1;
+            }
+
+            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
+            const auto value = llvm::ConstantInt::get(type, integer, false);
+
+            return scope->add(new Variable(new Type(value->getType()), value));
+        }
+        else if (auto literal = context->BinaryLiteral())
+        {
+            auto str = literal->toString().substr(2);
+            remove_digit_separators(str);
+
+            auto integer = std::stol(str, nullptr, 2);
+
+            if (context->Sub())
+            {
+                integer *= -1;
+            }
+
+            const auto type = llvm::Type::getInt32Ty(this->env.llvm_context);
+            const auto value = llvm::ConstantInt::get(type, integer, false);
+
+            return scope->add(new Variable(new Type(value->getType()), value));
+        }
+
+        return nullptr;
+    }
+
+    antlrcpp::Any visitFloatingLiteral(SanParser::FloatingLiteralContext *context) override
+    {
+        auto &scope = this->scopes.top();
+
+        const auto remove_digit_separators = [](std::string &str) {
+            str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+            str.erase(std::remove(str.begin(), str.end(), '\''), str.end());
+        };
+
+        auto str = context->FloatingLiteral()->toString();
+        remove_digit_separators(str);
+
+        auto floating = std::stod(str);
+
+        if (context->Sub())
+        {
+            floating *= -1;
+        }
+
+        const auto type = llvm::Type::getDoubleTy(this->env.llvm_context);
+        const auto value = llvm::ConstantFP::get(type, floating);
+
+        return scope->add(new Variable(new Type(value->getType()), value));
     }
 
     antlrcpp::Any visitIfStatement(SanParser::IfStatementContext *context) override

@@ -51,7 +51,21 @@ comparisonOperatorStatement:
 	| GreaterThan;
 equalityOperatorStatement: Equal;
 
-literal: IntegerLiteral | StringLiteral | CharLiteral;
+literal:
+	integerLiteral
+	| floatingLiteral
+	| StringLiteral
+	| CharLiteral;
+
+integerLiteral:
+	Sub? (
+		DecimalLiteral
+		| ZeroLiteral
+		| HexadecimalLiteral
+		| BinaryLiteral
+	);
+
+floatingLiteral: Sub? FloatingLiteral;
 
 variableDeclaration:
 	VariableDeclarator VariableName (

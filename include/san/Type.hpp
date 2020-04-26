@@ -97,6 +97,21 @@ public:
         return this->ref->isIntegerTy();
     }
 
+    inline bool is_double() const
+    {
+        return this->ref->isDoubleTy();
+    }
+
+    inline bool is_float() const
+    {
+        return this->ref->isFloatTy();
+    }
+
+    inline bool is_floating_point() const
+    {
+        return this->ref->isFloatingPointTy();
+    }
+
     inline bool is_pointer() const
     {
         return this->ref->isPointerTy();
