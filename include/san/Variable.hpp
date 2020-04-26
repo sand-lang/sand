@@ -80,7 +80,14 @@ public:
             value_type = VariableValueType::Load;
         }
 
-        return new Variable(new Type(*this->type), this->get(builder), value_type);
+        auto type = this->type;
+
+        if (this->type->is_reference())
+        {
+            type = type->base;
+        }
+
+        return new Variable(new Type(*type), this->get(builder), value_type);
     }
 
     Variable *cast(const Type *dest, llvm::IRBuilder<> &builder, const bool &load = true)
