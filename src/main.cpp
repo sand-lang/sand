@@ -110,19 +110,19 @@ int main(int argc, char **argv)
 
     auto elapsed_bytecode = debug.end_timer("bytecode");
 
-    std::string bytecode = "";
-    llvm::raw_string_ostream out_stream(bytecode);
-    out_stream << *visitor.env.module;
-    out_stream.flush();
-
-    debug.out << out_stream.str() << std::endl;
-
     debug.start_timer("objects");
 
     San::Compiler compiler(visitor.env.module);
     auto objects = compiler.generate_objects();
 
     auto elapsed_objects = debug.end_timer("objects");
+
+    std::string bytecode = "";
+    llvm::raw_string_ostream out_stream(bytecode);
+    out_stream << *visitor.env.module;
+    out_stream.flush();
+
+    debug.out << out_stream.str() << std::endl;
 
     for (const auto &object : objects)
         debug.out << object << std::endl;

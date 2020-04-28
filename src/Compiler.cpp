@@ -1,6 +1,8 @@
 #include <san/Compiler.hpp>
 
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/PassBuilder.h>
 
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/TargetRegistry.h>
@@ -49,6 +51,21 @@ std::vector<std::string> San::Compiler::generate_objects()
         llvm::errs() << "Could not open file: " << error_code.message();
         return {};
     }
+
+    llvm::PassBuilder builder;
+    llvm::LoopAnalysisManager loop_analisys_manager(false);
+    llvm::FunctionAnalysisManager function_analisys_manager(false);
+    llvm::CGSCCAnalysisManager CGSCC_analisys_manager(false);
+    llvm::ModuleAnalysisManager module_analisys_manager(false);
+
+    builder.registerModuleAnalyses(module_analisys_manager);
+    builder.registerCGSCCAnalyses(CGSCC_analisys_manager);
+    builder.registerFunctionAnalyses(function_analisys_manager);
+    builder.registerLoopAnalyses(loop_analisys_manager);
+    builder.crossRegisterProxies(loop_analisys_manager, function_analisys_manager, CGSCC_analisys_manager, module_analisys_manager);
+
+    llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(llvm::PassBuilder::OptimizationLevel::O3);
+    module_pass_manager.run(*module, module_analisys_manager);
 
     llvm::legacy::PassManager pass;
 
