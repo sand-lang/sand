@@ -30,15 +30,10 @@ public:
     {
         auto ref = this->get_ref();
 
-        std::cout << "a" << std::endl;
-
         if (dest->is_reference)
         {
-            std::cout << "b" << std::endl;
             dest = dest->base;
         }
-
-        std::cout << "constant - " << this->to_string() << " -> " << dest->to_string() << std::endl;
 
         if (type->is_integer())
         {

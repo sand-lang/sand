@@ -104,10 +104,7 @@ public:
     {
         for (size_t i = 0; i < this->properties.size(); i++)
         {
-            std::cout << "blip" << std::endl;
             auto property = this->properties[i];
-            std::cout << "blip2" << std::endl;
-            std::cout << (size_t)property << std::endl;
 
             if (property->name == name)
             {

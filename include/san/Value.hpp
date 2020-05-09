@@ -49,9 +49,6 @@ public:
             lvalue = lvalue->load_reference(builder);
         }
 
-        std::cout << "value = " << (size_t)value << std::endl;
-        std::cout << "value->type = " << (size_t)value->type << std::endl;
-
         if (this->type->is_struct() && value->type->is_struct())
         {
             auto i8ptr = Type::i8(builder.getContext())->pointer();
@@ -65,10 +62,7 @@ public:
         }
         else
         {
-            std::cout << "casting rvalue (" << value->to_string() << ")" << std::endl;
             auto rvalue = value->cast(lvalue_type, builder, value->is_alloca);
-            std::cout << "lvalue = " << lvalue->to_string() << std::endl;
-            std::cout << "rvalue = " << rvalue->to_string() << std::endl;
             builder.CreateStore(rvalue->get_ref(), lvalue->get_ref());
         }
     }
@@ -162,7 +156,7 @@ public:
             llvm::ConstantInt::get(Type::llvm_i32(context), 0),
             llvm::ConstantInt::get(Type::llvm_i32(context), index),
         };
-        std::cout << "gep - " << this->to_string() << std::endl;
+
         auto value = builder.CreateInBoundsGEP(this->get_ref(), idxs, name);
 
         return new Value(name, property_type, value, true);
