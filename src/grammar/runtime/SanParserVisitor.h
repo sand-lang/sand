@@ -31,9 +31,9 @@ public:
 
     virtual antlrcpp::Any visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context) = 0;
 
-    virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) = 0;
+    virtual antlrcpp::Any visitNameExpression(SanParser::NameExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *context) = 0;
+    virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitIndex(SanParser::IndexContext *context) = 0;
 
@@ -57,6 +57,12 @@ public:
 
     virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitScopedName(SanParser::ScopedNameContext *context) = 0;
+
+    virtual antlrcpp::Any visitName(SanParser::NameContext *context) = 0;
+
+    virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context) = 0;
+
     virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
@@ -70,6 +76,8 @@ public:
     virtual antlrcpp::Any visitEqualityOperatorStatement(SanParser::EqualityOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitBooleanLiteral(SanParser::BooleanLiteralContext *context) = 0;
 
     virtual antlrcpp::Any visitIntegerLiteral(SanParser::IntegerLiteralContext *context) = 0;
 
@@ -85,13 +93,11 @@ public:
 
     virtual antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionVariadicArgument(SanParser::FunctionVariadicArgumentContext *context) = 0;
+
     virtual antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) = 0;
 
     virtual antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *context) = 0;
-
-    virtual antlrcpp::Any visitFunctionArgumentVariable(SanParser::FunctionArgumentVariableContext *context) = 0;
-
-    virtual antlrcpp::Any visitFunctionArgumentVariadic(SanParser::FunctionArgumentVariadicContext *context) = 0;
 
     virtual antlrcpp::Any visitReturnStatement(SanParser::ReturnStatementContext *context) = 0;
 
@@ -129,8 +135,6 @@ public:
 
     virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
-    virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *context) = 0;
-
     virtual antlrcpp::Any visitFunctionType(SanParser::FunctionTypeContext *context) = 0;
 
     virtual antlrcpp::Any visitClassTypeName(SanParser::ClassTypeNameContext *context) = 0;
@@ -138,8 +142,6 @@ public:
     virtual antlrcpp::Any visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context) = 0;
 
     virtual antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *context) = 0;
-
-    virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *context) = 0;
 
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 

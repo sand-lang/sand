@@ -1,222 +1,177 @@
 #pragma once
 
+#include <san/Environment.hpp>
+#include <san/Loop.hpp>
+#include <san/Name.hpp>
+#include <san/NameArray.hpp>
 #include <san/Type.hpp>
-#include <san/Variable.hpp>
-
-#include <llvm/IR/IRBuilder.h>
+#include <san/Value.hpp>
+#include <san/Values/Function.hpp>
 
 #include <map>
-#include <memory>
-#include <string>
-#include <unordered_map>
 
 namespace San
 {
-class Function;
-
 class Scope
 {
-private:
-    bool _is_loop = false;
-
 public:
-    llvm::LLVMContext &llvm_context;
-    llvm::IRBuilder<> &builder;
-    std::unique_ptr<llvm::Module> &module;
+    Environment &env;
 
-    std::shared_ptr<Scope> parent = nullptr;
+    Scope *parent = nullptr;
 
-    std::unordered_map<std::string, Variable *> variables;
-    std::unordered_map<std::string, Type *> types;
+    Values::Function *function = nullptr;
+    Loop *loop = nullptr;
 
-    std::unordered_map<std::string, std::shared_ptr<Scope>> namespaces;
+    std::multimap<std::string, Name *> names;
 
-    Function *function = nullptr;
+    Scope(Environment &env_) : env(env_) {}
+    Scope(Scope *parent_, Values::Function *function_ = nullptr) : env(parent_->env), parent(parent_), function(function_) {}
 
-    llvm::BasicBlock *loop_end_label = nullptr;
-
-    bool is_generating_properties = false;
-
-    Scope(llvm::LLVMContext &llvm_context_,
-          llvm::IRBuilder<> &builder_,
-          std::unique_ptr<llvm::Module> &module_,
-          Function *function_ = nullptr)
-        : llvm_context(llvm_context_),
-          builder(builder_),
-          module(module_),
-          function(function_) {}
-
-    Scope(std::shared_ptr<Scope> parent_, Function *function = nullptr) : Scope(parent_->llvm_context,
-                                                                                parent_->builder,
-                                                                                parent_->module,
-                                                                                (function != nullptr ? function : parent_->function))
+    llvm::IRBuilder<> &builder()
     {
-        this->parent = parent_;
+        return this->env.builder;
     }
 
-    ~Scope()
+    llvm::LLVMContext &context()
     {
-        for (auto &[key, value] : this->variables)
+        return this->env.llvm_context;
+    }
+
+    std::unique_ptr<llvm::Module> &module()
+    {
+        return this->env.module;
+    }
+
+    void set_loop(Loop *loop)
+    {
+        this->loop = loop;
+    }
+
+    bool in_loop() const
+    {
+        if (this->loop != nullptr)
         {
-            delete value;
-            this->variables.erase(key);
-        }
-    }
-
-    Type *get_type(const std::string &name, const std::vector<Type *> &generics = {});
-
-    Variable *add(Variable *variable, const std::string &name = "")
-    {
-        const auto pair = std::pair(name.empty() ? std::to_string(this->variables_count()) : name, variable);
-        this->variables.insert(pair);
-
-        return variable;
-    }
-
-    Type *add_type(Type *type, const std::string &name = "")
-    {
-        const auto pair = std::pair(name, type);
-        this->types.insert(pair);
-
-        return type;
-    }
-
-    std::shared_ptr<Scope> add_namespace(std::shared_ptr<Scope> scope, const std::string &name)
-    {
-        const auto pair = std::make_pair(name, scope);
-        this->namespaces.insert(pair);
-
-        return scope;
-    }
-
-    std::shared_ptr<Scope> &get_namespace(const std::string &name)
-    {
-        if (this->namespaces.find(name) != this->namespaces.end())
-        {
-            if (auto &scope = this->namespaces.at(name))
-            {
-                return scope;
-            }
+            return true;
         }
 
-        if (!this->is_root())
+        if (this->parent != nullptr)
         {
-            return this->parent->get_namespace(name);
+            return this->parent->in_loop();
         }
 
-        throw std::out_of_range("Undefined namespace " + name);
+        return false;
     }
 
-    Variable *get_var(const std::string &name)
+    Loop *get_loop()
     {
-        auto it = this->variables.find(name);
-
-        if (it != this->variables.end())
+        if (this->loop != nullptr)
         {
-            return it->second;
+            return this->loop;
         }
 
-        if (!this->is_root())
+        if (this->parent != nullptr)
         {
-            return this->parent->get_var(name);
+            return this->parent->get_loop();
         }
 
         return nullptr;
     }
 
-    size_t variables_count() const
+    bool in_function() const
     {
-        size_t count = this->variables.size();
-
-        if (!this->is_root())
+        if (this->function != nullptr)
         {
-            count += this->parent->variables_count();
+            return true;
         }
 
-        return count;
-    }
-
-    inline bool is_root() const
-    {
-        return parent == nullptr;
-    }
-
-    bool is_loop() const
-    {
-        if (!this->_is_loop && !this->is_root())
+        if (this->parent != nullptr)
         {
-            return this->parent->is_loop();
+            return this->parent->in_function();
         }
 
-        return this->_is_loop;
+        return false;
     }
 
-    llvm::BasicBlock *get_loop_end_label()
+    Values::Function *get_function()
     {
-        auto label = this->loop_end_label;
-
-        if (!label && !this->is_root())
+        if (this->function != nullptr)
         {
-            return this->parent->get_loop_end_label();
+            return this->function;
         }
 
-        return label;
+        if (this->parent != nullptr)
+        {
+            return this->parent->get_function();
+        }
+
+        return nullptr;
     }
 
-    inline void is_loop(const bool &value)
+    void add_name(const std::string &name, Name *value, const bool &must_be_unique = false)
     {
-        this->_is_loop = value;
+        this->names.insert(std::make_pair(name, value));
     }
 
-private:
-    Type *get_primary_type(const std::string &name) const
+    NameArray *get_names(const std::string &name)
     {
-        llvm::Type *ref = nullptr;
-        bool is_signed = true;
+        if (auto type = this->get_primary_type(name))
+        {
+            return new NameArray({type});
+        }
+
+        auto [start, end] = this->names.equal_range(name);
+
+        std::vector<Name *> names;
+        std::transform(start, end, std::back_inserter(names), [](std::pair<std::string, Name *> element) {
+            return element.second;
+        });
+
+        auto array = new NameArray(names);
+
+        if (this->parent != nullptr)
+        {
+            auto parent_names = this->parent->get_names(name);
+            array->merge(parent_names);
+        }
+
+        return array;
+    }
+
+    Type *get_primary_type(const std::string &name)
+    {
+        auto &context = this->env.llvm_context;
 
         if (name == "void")
         {
-            ref = llvm::Type::getVoidTy(this->llvm_context);
+            return Type::voidt(context);
         }
         else if (name == "bool" || name == "i1")
         {
-            ref = llvm::Type::getInt1Ty(this->llvm_context);
+            return Type::i1(context);
         }
         else if (name == "i8" || name == "u8")
         {
-            ref = llvm::Type::getInt8Ty(this->llvm_context);
+            return Type::i8(context, name == "u8");
         }
         else if (name == "i16" || name == "u16")
         {
-            ref = llvm::Type::getInt16Ty(this->llvm_context);
+            return Type::i16(context, name == "i16");
         }
         else if (name == "i32" || name == "u32")
         {
-            ref = llvm::Type::getInt32Ty(this->llvm_context);
+            return Type::i32(context, name == "i32");
         }
         else if (name == "i64" || name == "u64")
         {
-            ref = llvm::Type::getInt64Ty(this->llvm_context);
+            return Type::i64(context, name == "i64");
         }
         else if (name == "f32")
         {
-            ref = llvm::Type::getFloatTy(this->llvm_context);
+            return Type::f32(context);
         }
         else if (name == "f64")
         {
-            ref = llvm::Type::getDoubleTy(this->llvm_context);
-        }
-
-        if (ref)
-        {
-            TypeQualifiers qualifiers;
-
-            if (name == "u8" || name == "u16" || name == "u32" || name == "u64")
-            {
-                qualifiers.is_signed = false;
-            }
-
-            return new Type(ref, qualifiers);
+            return Type::f64(context);
         }
 
         return nullptr;

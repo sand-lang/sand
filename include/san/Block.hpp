@@ -1,23 +1,54 @@
 #pragma once
 
-#include <san/Scope.hpp>
+#include <san/Name.hpp>
 #include <san/StatementStatus.hpp>
+#include <san/Value.hpp>
+
+#include <llvm/IR/IRBuilder.h>
+
+#include <string>
 
 namespace San
 {
-class Block
+class Block : public Name
 {
 public:
-    std::shared_ptr<Scope> scope = nullptr;
-    llvm::BasicBlock *bb = nullptr;
+    llvm::BasicBlock *ref = nullptr;
 
     StatementStatus status = StatementStatus::None;
 
-    Block(std::shared_ptr<Scope> scope_, const std::string &name = "", llvm::Function *function = nullptr, bool direct_insert = true) : scope(scope_)
+    Block(const std::string &name, llvm::BasicBlock *ref_) : Name(name), ref(ref_) {}
+
+    static Block *create(llvm::IRBuilder<> &builder, const std::string &name = "")
     {
-        this->bb = llvm::BasicBlock::Create(this->scope->llvm_context, name, direct_insert ? function : nullptr);
+        auto ref = llvm::BasicBlock::Create(builder.getContext(), name);
+        return new Block(name, ref);
     }
 
-    inline Block(std::shared_ptr<Scope> scope_, llvm::Function *function, bool direct_insert = true) : Block(scope_, (function == nullptr ? "" : "entry"), function, direct_insert) {}
+    void set_name(const std::string &name)
+    {
+        this->name = name;
+        this->ref->setName(name);
+    }
+
+    llvm::BasicBlock *get_ref()
+    {
+        return this->ref;
+    }
+
+    void insert_point(llvm::IRBuilder<> &builder)
+    {
+        builder.SetInsertPoint(this->ref);
+    }
+
+    void br(llvm::IRBuilder<> &builder)
+    {
+        builder.CreateBr(this->ref);
+    }
+
+    void conditional_br(llvm::IRBuilder<> &builder, Value *value, Block *false_block)
+    {
+        builder.CreateCondBr(value->get_ref(), this->get_ref(), false_block->get_ref());
+    }
 };
 } // namespace San

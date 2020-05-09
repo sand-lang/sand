@@ -22,9 +22,9 @@ statement:
 
 expression:
 	'(' expression ')'										# InParenExpression
-	| 'sizeof' type											# SizeofExpression
+	| 'sizeof' (expression | type)							# SizeofExpression
 	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
-	| expression '.' VariableName classTypeNameGenerics?	# PropertyExpression
+	| expression '.' name									# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression '[' expression ']'							# Index
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
@@ -35,8 +35,13 @@ expression:
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| expression 'as' type									# TypeCast
 	| 'this'												# ThisExpression
-	| scopeResolver? VariableName classTypeNameGenerics?	# VariableExpression
+	| scopedName											# NameExpression
 	| literal												# LiteralDeclaration;
+
+scopedName: scopeResolver? name;
+name: VariableName classTypeNameGenerics?;
+
+scopeResolver: name '::' scopeResolver?;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
 operatorStatement: Add | Sub;
@@ -52,10 +57,13 @@ comparisonOperatorStatement:
 equalityOperatorStatement: Equal;
 
 literal:
-	integerLiteral
+	booleanLiteral
+	| integerLiteral
 	| floatingLiteral
 	| StringLiteral
 	| CharLiteral;
+
+booleanLiteral: True | False;
 
 integerLiteral:
 	Sub? (
@@ -77,18 +85,18 @@ functionCallArguments:
 	functionCallArgument (',' functionCallArgument)*;
 functionCallArgument: expression;
 
-function: functionDeclaration body?;
+function: Extern? functionDeclaration body?;
 functionDeclaration:
-	Extern? Function VariableName classGenerics? '(' functionArguments? ')' (
-		':' type
-	)?;
+	Extern? // to remove (moved in function rule)
+	Function VariableName classGenerics? '(' (
+		functionArguments (',' functionVariadicArgument)?
+		| functionVariadicArgument?
+	) ')' (':' type)?;
+
+functionVariadicArgument: '...';
 
 functionArguments: functionArgument (',' functionArgument)*;
-functionArgument:
-	functionArgumentVariable
-	| functionArgumentVariadic;
-functionArgumentVariable: (VariableName ':')? type;
-functionArgumentVariadic: '...';
+functionArgument: (VariableName ':')? type;
 
 returnStatement: 'return' expression?;
 
@@ -117,32 +125,13 @@ typeQualifier: Const;
 typeDimensions: '[' ']';
 typeReference: '&';
 
-typeName:
-	primaryTypeName
-	| functionType
-	| (scopeResolver? classTypeName);
-
-primaryTypeName:
-	Int8
-	| Int16
-	| Int32
-	| Int64
-	| UInt8
-	| UInt16
-	| UInt32
-	| UInt64
-	| Float32
-	| Float64
-	| Void
-	| Bool;
+typeName: scopedName | functionType;
 
 functionType: 'fn' '(' functionArguments? ')' (':' type)?;
 
-classTypeName: VariableName classTypeNameGenerics?;
+classTypeName: scopedName;
 classTypeNameGenerics: '<' type (',' type)* '>';
 
 namespaceStatement: Namespace VariableName '{' statement* '}';
-
-scopeResolver: (VariableName | classTypeName) '::' scopeResolver?;
 
 eos: (EOF | LineTerminator);

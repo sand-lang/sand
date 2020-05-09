@@ -39,11 +39,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *ctx) override {
+  virtual antlrcpp::Any visitNameExpression(SanParser::NameExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVariableExpression(SanParser::VariableExpressionContext *ctx) override {
+  virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -91,6 +91,18 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitScopedName(SanParser::ScopedNameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitName(SanParser::NameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitMultiplicativeOperatorStatement(SanParser::MultiplicativeOperatorStatementContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -116,6 +128,10 @@ public:
   }
 
   virtual antlrcpp::Any visitLiteral(SanParser::LiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitBooleanLiteral(SanParser::BooleanLiteralContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -147,19 +163,15 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitFunctionVariadicArgument(SanParser::FunctionVariadicArgumentContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *ctx) override {
     return visitChildren(ctx);
   }
 
   virtual antlrcpp::Any visitFunctionArgument(SanParser::FunctionArgumentContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitFunctionArgumentVariable(SanParser::FunctionArgumentVariableContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitFunctionArgumentVariadic(SanParser::FunctionArgumentVariadicContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -235,10 +247,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitPrimaryTypeName(SanParser::PrimaryTypeNameContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitFunctionType(SanParser::FunctionTypeContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -252,10 +260,6 @@ public:
   }
 
   virtual antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *ctx) override {
     return visitChildren(ctx);
   }
 

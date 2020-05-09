@@ -1,6 +1,6 @@
 #pragma once
 
-#include <san/Scope.hpp>
+#include <san/Debugger.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
@@ -13,10 +13,9 @@ public:
     llvm::IRBuilder<> builder;
     std::unique_ptr<llvm::Module> module;
 
-    std::shared_ptr<Scope> scope = nullptr;
+    Debugger debugger;
 
     Environment(std::string name) : builder(this->llvm_context),
-                                    module(std::make_unique<llvm::Module>(name, this->llvm_context)),
-                                    scope(std::make_shared<Scope>(this->llvm_context, this->builder, this->module)) {}
+                                    module(std::make_unique<llvm::Module>(name, this->llvm_context)) {}
 };
 } // namespace San

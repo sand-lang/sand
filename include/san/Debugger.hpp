@@ -1,9 +1,7 @@
 #pragma once
 
-#include <san/utils/has_insertion_operator.hpp>
-
 #include <chrono>
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -34,6 +32,13 @@ public:
         timers.erase(timer);
 
         return now - start;
+    }
+
+    template <typename T>
+    std::ostream &operator<<(const T &value)
+    {
+        this->out << value;
+        return this->out;
     }
 };
 } // namespace San

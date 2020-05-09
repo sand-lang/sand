@@ -17,15 +17,13 @@ public:
     LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
-    Void = 25, Bool = 26, Int8 = 27, Int16 = 28, Int32 = 29, Int64 = 30, 
-    UInt8 = 31, UInt16 = 32, UInt32 = 33, UInt64 = 34, Float32 = 35, Float64 = 36, 
-    As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, Static = 42, 
-    This = 43, Dot = 44, Namespace = 45, ScopeResolver = 46, VariableDeclarator = 47, 
-    If = 48, Else = 49, While = 50, Break = 51, Function = 52, Extern = 53, 
-    Return = 54, Comma = 55, Colon = 56, InstructionsSeparator = 57, VariableName = 58, 
-    StringLiteral = 59, CharLiteral = 60, DecimalLiteral = 61, FloatingLiteral = 62, 
-    ZeroLiteral = 63, HexadecimalLiteral = 64, BinaryLiteral = 65, Comment = 66, 
-    WhiteSpace = 67, LineTerminator = 68
+    As = 25, SizeOf = 26, Const = 27, Class = 28, Extends = 29, Static = 30, 
+    This = 31, Dot = 32, Namespace = 33, ScopeResolver = 34, VariableDeclarator = 35, 
+    If = 36, Else = 37, While = 38, Break = 39, Function = 40, Extern = 41, 
+    Return = 42, Comma = 43, Colon = 44, True = 45, False = 46, InstructionsSeparator = 47, 
+    VariableName = 48, StringLiteral = 49, CharLiteral = 50, DecimalLiteral = 51, 
+    FloatingLiteral = 52, ZeroLiteral = 53, HexadecimalLiteral = 54, BinaryLiteral = 55, 
+    Comment = 56, WhiteSpace = 57, LineTerminator = 58
   };
 
   SanLexer(antlr4::CharStream *input);

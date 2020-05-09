@@ -5,8 +5,10 @@
 #include <Parser.h>
 
 #include <san/Compiler.hpp>
-#include <san/Debugger.hpp>
 #include <san/Linker.hpp>
+#include <san/Debugger.hpp>
+
+#include <san/Exceptions/CompilationException.hpp>
 
 #include "grammar/runtime/SanLexer.h"
 #include "grammar/runtime/SanParser.h"
@@ -106,7 +108,16 @@ int main(int argc, char **argv)
     }
 
     San::Visitor visitor;
-    antlrcpp::Any program = visitor.visitInstructions(tree);
+
+    try
+    {
+        visitor.visitInstructions(tree);
+    }
+    catch (San::CompilationException &e)
+    {
+        debug.err << e.what() << std::endl;
+        return 1;
+    }
 
     auto elapsed_bytecode = debug.end_timer("bytecode");
 

@@ -1,79 +1,97 @@
 #pragma once
 
-#include <llvm/IR/IRBuilder.h>
+#include <san/Name.hpp>
 
-#include <string>
-#include <vector>
+#include <llvm/IR/IRBuilder.h>
 
 namespace San
 {
-struct TypeQualifiers
-{
-    bool is_signed = true;
-    bool is_mutable = true;
-};
-
-class Type
+class Type : public Name
 {
 public:
-    llvm::Type *ref = nullptr;
+    bool is_constant = false;
+    bool is_signed = true;
+    bool is_reference = false;
 
-    TypeQualifiers qualifiers;
-
+    llvm::Type *ref;
     Type *base = nullptr;
 
-    bool is_sret = false;
-    std::vector<Type *> args;
-    bool is_variadic = false;
-    Type *return_type = nullptr;
-
-private:
-    bool _is_reference = false;
-
-public:
-    Type(llvm::Type *ref_ = nullptr, const TypeQualifiers &qualifiers_ = TypeQualifiers()) : ref(ref_), qualifiers(qualifiers_)
+    Type(const std::string &name,
+         llvm::Type *ref_,
+         Type *base_ = nullptr,
+         const bool &is_signed_ = true,
+         const bool &is_constant_ = false,
+         const bool &is_reference_ = false) : Name(name),
+                                              is_constant(is_constant_),
+                                              is_signed(is_signed_),
+                                              is_reference(is_reference_),
+                                              ref(ref_),
+                                              base(base_)
     {
     }
 
-    virtual ~Type() {}
-
-    size_t size(std::unique_ptr<llvm::Module> &module) const;
-
-    Type *pointer()
+    virtual llvm::Type *get_ref()
     {
-        auto llvm_type = reinterpret_cast<llvm::Type *>(this->ref->getPointerTo());
-
-        auto type = new Type(llvm_type, this->qualifiers);
-        type->base = this;
-
-        return type;
+        return this->ref;
     }
 
-    llvm::Constant *default_value()
+    Type *behind_reference()
     {
-        if (this->ref->isIntegerTy())
-        {
-            return llvm::ConstantInt::get(this->ref, 0);
-        }
-
-        return llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(this->ref));
-    }
-
-    Type *get_base(const bool &root = true)
-    {
-        if (this->base == nullptr)
-        {
-            return this;
-        }
-        else if (!root)
+        if (this->is_reference)
         {
             return this->base;
         }
 
-        return this->base->get_base();
+        return this;
     }
 
-    const Type *get_base(const bool &root = true) const
+    std::string to_string()
+    {
+        std::string str;
+        llvm::raw_string_ostream stream(str);
+        this->ref->print(stream);
+
+        return stream.str();
+    }
+
+    Type *pointer()
+    {
+        auto ref = this->get_ref();
+        return new Type(this->name + "[]", ref->getPointerTo(), this);
+    }
+
+    Type *copy() const
+    {
+        return new Type(*this);
+    }
+
+    llvm::Constant *default_value()
+    {
+        if (this->is_integer())
+        {
+            return llvm::ConstantInt::get(this->ref, 0);
+        }
+        else if (this->is_floating_point())
+        {
+            return llvm::ConstantFP::get(this->ref, 0.0);
+        }
+        else
+        {
+            return llvm::ConstantPointerNull::get(reinterpret_cast<llvm::PointerType *>(this->ref));
+        }
+    }
+
+    virtual size_t size(std::unique_ptr<llvm::Module> &module)
+    {
+        if (this->is_pointer())
+        {
+            return module->getDataLayout().getPointerSize();
+        }
+
+        return this->ref->getScalarSizeInBits() / 8;
+    }
+
+    Type *get_base(const bool &root = true)
     {
         if (this->base == nullptr)
         {
@@ -95,6 +113,11 @@ public:
     inline bool is_integer() const
     {
         return this->ref->isIntegerTy();
+    }
+
+    inline bool is_integer(const unsigned int &bits) const
+    {
+        return this->ref->isIntegerTy(bits);
     }
 
     inline bool is_double() const
@@ -132,14 +155,84 @@ public:
         return this->ref->isStructTy();
     }
 
-    inline bool is_reference() const
+    static Type *voidt(llvm::LLVMContext &context)
     {
-        return this->_is_reference;
+        return new Type("void", Type::llvm_void(context));
     }
 
-    inline void set_is_reference(const bool &is_reference)
+    static Type *i1(llvm::LLVMContext &context)
     {
-        this->_is_reference = is_reference;
+        return new Type("i1", Type::llvm_i1(context));
+    }
+
+    static Type *i8(llvm::LLVMContext &context, const bool &is_signed = true)
+    {
+        return new Type("i8", Type::llvm_i8(context), nullptr, is_signed);
+    }
+
+    static Type *i16(llvm::LLVMContext &context, const bool &is_signed = true)
+    {
+        return new Type("i16", Type::llvm_i16(context), nullptr, is_signed);
+    }
+
+    static Type *i32(llvm::LLVMContext &context, const bool &is_signed = true)
+    {
+        return new Type("i32", Type::llvm_i32(context), nullptr, is_signed);
+    }
+
+    static Type *i64(llvm::LLVMContext &context, const bool &is_signed = true)
+    {
+        return new Type("i64", Type::llvm_i64(context), nullptr, is_signed);
+    }
+
+    static Type *f32(llvm::LLVMContext &context)
+    {
+        return new Type("f32", Type::llvm_f32(context));
+    }
+
+    static Type *f64(llvm::LLVMContext &context)
+    {
+        return new Type("f64", Type::llvm_f64(context));
+    }
+
+    static llvm::Type *llvm_void(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getVoidTy(context);
+    }
+
+    static llvm::Type *llvm_i1(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getInt1Ty(context);
+    }
+
+    static llvm::Type *llvm_i8(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getInt8Ty(context);
+    }
+
+    static llvm::Type *llvm_i16(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getInt16Ty(context);
+    }
+
+    static llvm::Type *llvm_i32(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getInt32Ty(context);
+    }
+
+    static llvm::Type *llvm_i64(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getInt64Ty(context);
+    }
+
+    static llvm::Type *llvm_f32(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getFloatTy(context);
+    }
+
+    static llvm::Type *llvm_f64(llvm::LLVMContext &context)
+    {
+        return llvm::Type::getDoubleTy(context);
     }
 
     inline bool equals(const Type *right) const
@@ -160,8 +253,8 @@ public:
         if (left == right)
             return true;
 
-        if (left->getTypeID() == right->getTypeID())
-            return true;
+        // if (left->getTypeID() == right->getTypeID())
+        //     return true;
 
         switch (left->getTypeID())
         {
