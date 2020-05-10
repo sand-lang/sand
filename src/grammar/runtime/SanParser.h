@@ -39,9 +39,9 @@ public:
     RuleWhileStatement = 28, RuleBreakStatement = 29, RuleClassStatement = 30, 
     RuleClassGenerics = 31, RuleClassExtends = 32, RuleClassBody = 33, RuleClassProperty = 34, 
     RuleClassMethod = 35, RuleClassInstantiationProperties = 36, RuleClassInstantiationProperty = 37, 
-    RuleType = 38, RuleTypeQualifier = 39, RuleTypeDimensions = 40, RuleTypeReference = 41, 
-    RuleTypeName = 42, RuleFunctionType = 43, RuleClassTypeName = 44, RuleClassTypeNameGenerics = 45, 
-    RuleNamespaceStatement = 46, RuleEos = 47
+    RuleType = 38, RuleTypeQualifier = 39, RuleTypeDimensions = 40, RuleTypePointer = 41, 
+    RuleTypeReference = 42, RuleTypeName = 43, RuleFunctionType = 44, RuleClassTypeName = 45, 
+    RuleClassTypeNameGenerics = 46, RuleNamespaceStatement = 47, RuleEos = 48
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -95,6 +95,7 @@ public:
   class TypeContext;
   class TypeQualifierContext;
   class TypeDimensionsContext;
+  class TypePointerContext;
   class TypeReferenceContext;
   class TypeNameContext;
   class FunctionTypeContext;
@@ -884,6 +885,8 @@ public:
     TypeQualifierContext* typeQualifier(size_t i);
     std::vector<TypeDimensionsContext *> typeDimensions();
     TypeDimensionsContext* typeDimensions(size_t i);
+    std::vector<TypePointerContext *> typePointer();
+    TypePointerContext* typePointer(size_t i);
     TypeReferenceContext *typeReference();
 
 
@@ -911,6 +914,7 @@ public:
     TypeDimensionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OpeningBracket();
+    ExpressionContext *expression();
     antlr4::tree::TerminalNode *ClosingBracket();
 
 
@@ -919,6 +923,19 @@ public:
   };
 
   TypeDimensionsContext* typeDimensions();
+
+  class  TypePointerContext : public antlr4::ParserRuleContext {
+  public:
+    TypePointerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Mul();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  TypePointerContext* typePointer();
 
   class  TypeReferenceContext : public antlr4::ParserRuleContext {
   public:

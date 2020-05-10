@@ -1904,7 +1904,7 @@ public:
     {
         auto type = this->visitTypeName(context->typeName());
 
-        for (const auto &dimension : context->typeDimensions())
+        for (const auto &pointer : context->typePointer())
         {
             type = type->pointer();
         }

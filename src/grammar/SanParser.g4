@@ -120,9 +120,11 @@ classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;
 classInstantiationProperty: VariableName ('=' expression)?;
 
-type: typeQualifier* typeName typeDimensions* typeReference?;
+type:
+	typeQualifier* typeName typeDimensions* typePointer* typeReference?;
 typeQualifier: Const;
-typeDimensions: '[' ']';
+typeDimensions: '[' expression ']';
+typePointer: '*';
 typeReference: '&';
 
 typeName: scopedName | functionType;
