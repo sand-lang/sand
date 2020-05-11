@@ -318,6 +318,12 @@ public:
         {
             if (auto nsp = dynamic_cast<Namespace *>(names->last()))
             {
+                this->scopes.push(nsp->scope);
+
+                this->visitStatements(context->statement());
+
+                this->scopes.pop();
+
                 return nsp;
             }
         }
