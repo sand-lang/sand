@@ -15,10 +15,6 @@ public:
     static GlobalVariable *create(const std::string &name, std::unique_ptr<llvm::Module> &module, Type *type, Constant *value = nullptr, const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::PrivateLinkage)
     {
         auto global = new llvm::GlobalVariable(*module, type->get_ref(), false, linkage, value ? value->get_ref() : type->default_value(), name);
-
-        type = type->pointer();
-        type->is_reference = true;
-
         return new GlobalVariable(name, type, global);
     }
 
