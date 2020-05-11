@@ -611,7 +611,6 @@ public:
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
     FunctionArgumentsContext *functionArguments();
-    antlr4::tree::TerminalNode *Extern();
     ClassGenericsContext *classGenerics();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();

@@ -87,7 +87,6 @@ functionCallArgument: expression;
 
 function: Extern? functionDeclaration body?;
 functionDeclaration:
-	Extern? // to remove (moved in function rule)
 	Function VariableName classGenerics? '(' (
 		functionArguments (',' functionVariadicArgument)?
 		| functionVariadicArgument?
