@@ -1032,20 +1032,57 @@ public:
 
         auto var = Values::Variable::create(type->name + ".inst", type, scope->builder());
 
+        std::vector<std::string> assigned_properties;
+
         if (auto properties = context->classInstantiationProperties())
         {
-            this->visitClassInstantiationProperties(properties, var);
+            assigned_properties = this->visitClassInstantiationProperties(properties, var);
+        }
+
+        auto class_properties = type->get_all_properties(scope->module());
+        for (auto &class_property : class_properties)
+        {
+            if (class_property->property->default_value == nullptr)
+            {
+                continue;
+            }
+
+            auto is_defined = std::find(assigned_properties.begin(), assigned_properties.end(), class_property->property->name) != assigned_properties.end();
+
+            if (!is_defined)
+            {
+                Value *container = var;
+
+                if (class_property->from != nullptr)
+                {
+                    container = container->struct_cast(class_property->from, class_property->padding, scope->builder());
+                }
+
+                auto ptr = container->struct_gep(class_property->property->name, class_property->property->type, class_property->index, scope->builder());
+
+                ptr->store(class_property->property->default_value, scope->builder(), scope->module(), true);
+            }
         }
 
         return var;
     }
 
-    void visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context, Values::Variable *var)
+    std::vector<std::string> visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context, Values::Variable *var)
     {
+        auto scope = this->scopes.top();
+        auto type = static_cast<Types::ClassType *>(var->type);
+
+        std::vector<std::string> assigned_properties;
+
         for (auto &property : context->classInstantiationProperty())
         {
             this->visitClassInstantiationProperty(property, var);
+
+            auto name = property->VariableName()->getText();
+            assigned_properties.push_back(name);
         }
+
+        return assigned_properties;
     }
 
     void visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context, Values::Variable *var)

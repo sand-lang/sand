@@ -149,6 +149,37 @@ public:
         return nullptr;
     }
 
+    std::vector<ClassPropertyIndex *> get_all_properties(std::unique_ptr<llvm::Module> &module)
+    {
+        std::vector<ClassPropertyIndex *> properties;
+
+        for (size_t i = 0; i < this->properties.size(); i++)
+        {
+            auto property = this->properties[i];
+
+            auto info = new ClassPropertyIndex(property, this, i + this->parents.size(), this->parents_size(module));
+            properties.push_back(info);
+        }
+
+        size_t padding = 0;
+
+        for (auto &parent : this->parents)
+        {
+            auto parent_properties = parent->get_all_properties(module);
+
+            for (auto &property : parent_properties)
+            {
+                property->padding += padding;
+            }
+
+            properties.insert(properties.end(), parent_properties.begin(), parent_properties.end());
+
+            padding += parent->size(module);
+        }
+
+        return properties;
+    }
+
     size_t parents_size(std::unique_ptr<llvm::Module> &module)
     {
         size_t size = 0;
