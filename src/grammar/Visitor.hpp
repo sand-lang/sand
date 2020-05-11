@@ -154,7 +154,6 @@ public:
         }
         else if (auto generic_type = dynamic_cast<Types::GenericFunctionType *>(type))
         {
-            std::cout << "it's a generic" << std::endl;
             generic_type->context = context;
         }
 
@@ -776,7 +775,7 @@ public:
             else
             {
                 auto variable = Values::GlobalVariable::create(property->name, this->env.module, property->type);
-                type->scope->add_name(property->name, variable);
+                type->static_scope->add_name(property->name, variable);
             }
         }
 
@@ -1046,16 +1045,13 @@ public:
             value = this->valueFromName(named_value, context);
         }
 
-        std::cout << "1" << std::endl;
         auto property_position = type->get_property(name, this->env.module);
 
-        std::cout << "2" << std::endl;
         if (property_position == nullptr)
         {
             throw PropertyNotFoundException(context->VariableName()->getSymbol(), type);
         }
 
-        std::cout << "3" << std::endl;
         Value *container = var;
 
         if (property_position->from != nullptr)
@@ -1063,10 +1059,8 @@ public:
             container = container->struct_cast(property_position->from, property_position->padding, scope->builder());
         }
 
-        std::cout << "4" << std::endl;
         auto ptr = container->struct_gep(property_position->property->name, property_position->property->type, property_position->index, scope->builder());
 
-        std::cout << "5" << std::endl;
         ptr->store(value, scope->builder(), scope->module(), true);
     }
 
@@ -1510,10 +1504,8 @@ public:
     {
         auto scope = this->scopes.top();
 
-        std::cout << "property!" << std::endl;
         auto expr = this->valueFromExpression(context->expression())->load_reference(scope->builder());
 
-        std::cout << "property 2!" << std::endl;
         if (auto class_type = dynamic_cast<Types::ClassType *>(expr->type))
         {
             auto names = this->visitName(context->name(), expr);
@@ -1543,8 +1535,6 @@ public:
 
     Value *valueFromName(Name *name, antlr4::ParserRuleContext *context)
     {
-        std::cout << "NAME: " << name->name << std::endl;
-
         if (auto array = dynamic_cast<NameArray *>(name))
         {
             if (array->size() > 1 && !dynamic_cast<Values::Variable *>(array->get(0)))
@@ -1552,10 +1542,8 @@ public:
                 throw MultipleInstancesException(context->getStart());
             }
 
-            std::cout << "FOUND NAME: " << array->last()->name << std::endl;
             if (auto value = dynamic_cast<Value *>(array->last()))
             {
-                std::cout << "it's a value" << std::endl;
                 return value;
             }
         }
@@ -1633,6 +1621,8 @@ public:
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);
+
+        std::cout << "name = " << name << std::endl;
 
         if (!names->empty())
         {
