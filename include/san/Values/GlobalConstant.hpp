@@ -13,11 +13,13 @@ public:
 
     GlobalConstant(const std::string &name, Type *type, llvm::GlobalVariable *ref) : Constant(name, type, ref->getInitializer()), global(ref)
     {
+        this->is_alloca = true;
     }
 
     static GlobalConstant *create(const std::string &name, Type *type, llvm::Constant *constant, std::unique_ptr<llvm::Module> &module)
     {
-        auto global = new llvm::GlobalVariable(*module, type->get_ref(), false, llvm::GlobalValue::PrivateLinkage, constant, ".str");
+        auto global = new llvm::GlobalVariable(*module, type->get_ref(), true, llvm::GlobalValue::PrivateLinkage, constant, ".str");
+        global->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
         global->setAlignment(1);
 
         return new GlobalConstant(name, type, global);

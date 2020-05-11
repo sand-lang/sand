@@ -1781,7 +1781,7 @@ public:
 
             auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
 
-            auto type = scope->get_primary_type("i8")->pointer();
+            auto type = scope->get_primary_type("i8")->array(str.size() + 1);
             return Values::GlobalConstant::create(".str", type, constant, scope->module());
         }
         else if (const auto literal = context->CharLiteral())

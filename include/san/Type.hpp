@@ -57,7 +57,13 @@ public:
     Type *pointer()
     {
         auto ref = this->get_ref();
-        return new Type(this->name + "[]", ref->getPointerTo(), this);
+        return new Type(this->name + "*", ref->getPointerTo(), this);
+    }
+
+    Type *array(const size_t &size)
+    {
+        auto ref = this->get_ref();
+        return new Type(this->name + "[" + std::to_string(size) + "]", llvm::ArrayType::get(ref, size), this);
     }
 
     Type *copy() const
@@ -138,6 +144,11 @@ public:
     inline bool is_pointer() const
     {
         return this->ref->isPointerTy();
+    }
+
+    inline bool is_array() const
+    {
+        return this->ref->isArrayTy();
     }
 
     inline bool is_function() const
