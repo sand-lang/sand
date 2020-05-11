@@ -780,7 +780,7 @@ public:
             }
             else
             {
-                auto variable = Values::GlobalVariable::create(property->name, this->env.module, property->type);
+                auto variable = Values::GlobalVariable::create(property->name, this->env.module, property->type, property->default_value);
                 type->static_scope->add_name(property->name, variable);
             }
         }
@@ -859,7 +859,23 @@ public:
         auto name = context->VariableName()->getText();
         auto type = this->visitType(context->type());
 
-        return new Types::ClassProperty(name, type);
+        Values::Constant *default_value = nullptr;
+
+        if (auto expression_context = context->expression())
+        {
+            auto value = this->valueFromExpression(context->expression());
+
+            if (auto constant = dynamic_cast<Values::Constant *>(value))
+            {
+                default_value = constant;
+            }
+            else
+            {
+                throw InvalidRightValueException(expression_context->getStart());
+            }
+        }
+
+        return new Types::ClassProperty(name, type, default_value);
     }
 
     /**

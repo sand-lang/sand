@@ -13,8 +13,9 @@ struct ClassProperty
 {
     std::string name;
     Type *type;
+    Values::Constant *default_value;
 
-    ClassProperty(const std::string &name_, Type *type_) : name(name_), type(type_) {}
+    ClassProperty(const std::string &name_, Type *type_, Values::Constant *default_value_ = nullptr) : name(name_), type(type_), default_value(default_value_) {}
 };
 
 struct ClassPropertyIndex
