@@ -1129,7 +1129,7 @@ public:
                 }
                 else
                 {
-                    auto value = arg->load(scope->builder(), true);
+                    auto value = arg->load_alloca_and_reference(scope->builder());
                     args_values.push_back(value->get_ref());
                 }
             }
