@@ -27,6 +27,18 @@ public:
     Scope(Environment &env_) : env(env_) {}
     Scope(Scope *parent_, Values::Function *function_ = nullptr) : env(parent_->env), parent(parent_), function(function_) {}
 
+    static Scope *from(Environment &env, const std::vector<Scope *> &scopes)
+    {
+        auto scope = new Scope(env);
+
+        for (const auto &parent : scopes)
+        {
+            scope->names.insert(parent->names.begin(), parent->names.end());
+        }
+
+        return scope;
+    }
+
     llvm::IRBuilder<> &builder()
     {
         return this->env.builder;

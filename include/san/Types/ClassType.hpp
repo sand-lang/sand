@@ -87,7 +87,27 @@ public:
             return new NameArray({property});
         }
 
-        return this->scope->get_names(name);
+        auto names = this->scope->get_names(name);
+
+        for (auto &parent : this->parents)
+        {
+            auto parent_names = parent->get_names(name, value, builder, module);
+            names->merge(parent_names);
+        }
+
+        return names;
+    }
+
+    Scope *get_static_scope()
+    {
+        std::vector<Scope *> scopes = {this->static_scope};
+
+        for (auto &parent : this->parents)
+        {
+            scopes.push_back(parent->static_scope);
+        }
+
+        return Scope::from(this->static_scope->env, scopes);
     }
 
     static ClassType *create(Scope *scope, const std::string &name = "", const std::vector<Type *> &generics = {})

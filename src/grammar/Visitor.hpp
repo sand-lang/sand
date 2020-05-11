@@ -1619,7 +1619,7 @@ public:
         Scope *resolved_scope = nullptr;
         if (auto class_type = dynamic_cast<Types::ClassType *>(name))
         {
-            resolved_scope = class_type->static_scope;
+            resolved_scope = class_type->get_static_scope();
         }
         else if (auto nsp = dynamic_cast<Namespace *>(name))
         {
@@ -1643,8 +1643,6 @@ public:
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);
-
-        std::cout << "name = " << name << std::endl;
 
         if (!names->empty())
         {
