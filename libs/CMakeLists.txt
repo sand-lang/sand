@@ -9,16 +9,20 @@ set(ANTLR4_WITH_STATIC_CRT OFF)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/llvm")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CLI11")
 
 add_definitions(${LLVM_DEFINITIONS})
 
 set(DEPENDENCIES_HEADERS
+  ${ANTLR4_INCLUDE_DIRS}
+  "${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp/runtime/src"
+
   ${LLVM_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/llvm/include"
   "${CMAKE_BINARY_DIR}/libs/llvm/include"
 
   ${ANTLR4_INCLUDE_DIRS}
-  "${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp/runtime/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/CLI11/include"
 
   PARENT_SCOPE
 )
