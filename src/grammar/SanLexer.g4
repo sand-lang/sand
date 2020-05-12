@@ -81,9 +81,10 @@ fragment Name: [a-zA-Z_] [a-zA-Z0-9_]*;
 
 // Literals
 StringLiteral: '"' StringChar* '"';
-CharLiteral: '\'' StringChar+ '\'';
+CharLiteral: '\'' CharChar+ '\'';
 
 fragment StringChar: ~ ["\\\r\n] | Escape;
+fragment CharChar: ~ ['\\\r\n] | Escape;
 
 DecimalLiteral: NONZERODIGIT (DIGITSEPARATOR? DIGIT)*;
 
