@@ -33,6 +33,8 @@ ClosingBracket: ']';
 
 // Ranges
 Variadic: '...';
+InclusiveRange: '..=';
+ExclusiveRange: '..';
 
 // Casting
 As: 'as';
@@ -63,6 +65,9 @@ Else: 'else';
 
 While: 'while';
 Break: 'break';
+
+For: 'for';
+In: 'in';
 
 // Others
 Function: 'fn';

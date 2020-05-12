@@ -191,6 +191,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitForStatement(SanParser::ForStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitBreakStatement(SanParser::BreakStatementContext *ctx) override {
     return visitChildren(ctx);
   }

@@ -17,6 +17,7 @@ statement:
 	| returnStatement InstructionsSeparator
 	| ifStatement
 	| whileStatement
+	| forStatement
 	| breakStatement InstructionsSeparator
 	| classStatement;
 
@@ -104,6 +105,7 @@ ifStatement:
 elseStatement: 'else' statement;
 
 whileStatement: 'while' expression statement;
+forStatement: 'for' VariableName 'in' expression statement;
 breakStatement: 'break';
 
 classStatement:

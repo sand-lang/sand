@@ -39,6 +39,8 @@ public:
         return !!llvm::isa<llvm::AllocaInst>(ref) || !!llvm::isa<llvm::GlobalVariable>(ref);
     }
 
+    Value *call(llvm::IRBuilder<> &builder, std::vector<Value *> args = {});
+
     void store(Value *value, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &overwrite_reference = false)
     {
         auto lvalue = this;
@@ -308,6 +310,60 @@ public:
         }
 
         return value;
+    }
+
+    static Value *add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        if (lvalue->type->is_integer())
+        {
+            auto value = builder.CreateAdd(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("add", lvalue->type, value);
+        }
+        else if (lvalue->type->is_floating_point())
+        {
+            auto value = builder.CreateFAdd(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("add", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *add(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::add(builder, this->load_alloca_and_reference(builder), rvalue->load_alloca_and_reference(builder)))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        if (lvalue->type->is_integer())
+        {
+            auto value = builder.CreateSub(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("sub", lvalue->type, value);
+        }
+        else if (lvalue->type->is_floating_point())
+        {
+            auto value = builder.CreateFSub(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("sub", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *sub(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::sub(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return result;
+        }
+
+        return nullptr;
     }
 
     Value *not_equal(llvm::IRBuilder<> &builder, Value *rvalue)

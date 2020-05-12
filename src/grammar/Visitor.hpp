@@ -22,6 +22,7 @@
 
 #include <san/Exceptions/ExpressionHasNotClassTypeException.hpp>
 #include <san/Exceptions/InvalidLeftValueException.hpp>
+#include <san/Exceptions/InvalidRangeException.hpp>
 #include <san/Exceptions/InvalidRightValueException.hpp>
 #include <san/Exceptions/InvalidTypeException.hpp>
 #include <san/Exceptions/InvalidValueException.hpp>
@@ -115,6 +116,10 @@ public:
         else if (auto while_statement = context->whileStatement())
         {
             this->visitWhileStatement(while_statement);
+        }
+        else if (auto for_statement = context->forStatement())
+        {
+            this->visitForStatement(for_statement);
         }
         else if (auto class_statement = context->classStatement())
         {
@@ -631,7 +636,7 @@ public:
         auto value = this->valueFromExpression(context->expression());
         if (!value->type->is_boolean())
         {
-            value = value->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+            value = value->load_alloca_and_reference(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
         }
 
         while_body->conditional_br(scope->builder(), value, while_end);
@@ -654,6 +659,89 @@ public:
         while_end->insert_point(scope->builder());
 
         this->scopes.pop();
+    }
+
+    void visitForStatement(SanParser::ForStatementContext *context)
+    {
+        this->scopes.push(new Scope(this->scopes.top()));
+        auto scope = this->scopes.top();
+
+        auto for_cond = Block::create(scope->builder(), "for.cond");
+        auto for_body = Block::create(scope->builder(), "for.body");
+        auto for_end = Block::create(scope->builder(), "for.end");
+
+        auto loop = new Loop(for_end);
+        scope->set_loop(loop);
+
+        auto value = this->valueFromExpression(context->expression());
+        auto type = dynamic_cast<Types::ClassType *>(value->type);
+
+        if (type)
+        {
+            auto begin_functions = type->get_names("begin", value, scope->builder(), scope->module());
+            auto end_functions = type->get_names("end", value, scope->builder(), scope->module());
+
+            if (begin_functions->size() > 0 && end_functions->size() > 0)
+            {
+                auto begin = dynamic_cast<Values::Function *>(begin_functions->last());
+                auto end = dynamic_cast<Values::Function *>(end_functions->last());
+
+                begin->calling_variable = value;
+                end->calling_variable = value;
+
+                if (begin != nullptr && end != nullptr)
+                {
+                    auto begin_value = begin->call(scope->builder())->load_alloca_and_reference(scope->builder());
+
+                    auto iterator_name = context->VariableName()->getText();
+                    auto iterator = Values::Variable::create(iterator_name, begin_value->type, scope->builder());
+                    iterator->store(begin_value, scope->builder(), scope->module(), true);
+                    scope->add_name(iterator_name, iterator);
+
+                    for_cond->br(scope->builder());
+
+                    scope->get_function()->insert(for_cond);
+                    for_cond->insert_point(scope->builder());
+
+                    auto end_value = end->call(scope->builder())->load_alloca_and_reference(scope->builder());
+
+                    auto condition = iterator->load_alloca_and_reference(scope->builder())->not_equal(scope->builder(), end_value);
+                    for_body->conditional_br(scope->builder(), condition, for_end);
+
+                    scope->get_function()->insert(for_body);
+                    for_body->insert_point(scope->builder());
+
+                    for_body->status = this->visitStatements({context->statement()});
+
+                    if (for_body->status == StatementStatus::Breaked)
+                    {
+                        for_end->br(scope->builder());
+                    }
+                    else if (for_body->status != StatementStatus::Returned)
+                    {
+                        // Temporary before operator overloads
+                        auto type = Type::i32(scope->context());
+                        auto value = llvm::ConstantInt::get(type->get_ref(), 1, true);
+                        auto constant = new Values::Constant("literal_i32", type, value);
+
+                        iterator->add(scope->module(), scope->builder(), constant);
+
+                        for_cond->br(scope->builder());
+                    }
+
+                    scope->get_function()->insert(for_end);
+                    for_end->insert_point(scope->builder());
+
+                    this->scopes.pop();
+
+                    return;
+                }
+            }
+        }
+
+        this->scopes.pop();
+
+        throw InvalidRangeException(context->expression()->getStart());
     }
 
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
@@ -1126,68 +1214,12 @@ public:
     Value *visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context)
     {
         auto scope = this->scopes.top();
-        auto lvalue = this->valueFromExpression(context->expression());
-
-        if (lvalue == nullptr)
-        {
-            throw InvalidLeftValueException(context->expression()->getStart());
-        }
-
-        if (lvalue->type->is_pointer() && lvalue->type->base->is_function())
-        {
-            lvalue = lvalue->load(scope->builder());
-        }
+        auto lvalue = this->valueFromExpression(context->expression())->load_alloca_and_reference(scope->builder());
 
         if (lvalue->type->is_function())
         {
             std::vector<Value *> args = this->visitFunctionCallArguments(context->functionCallArguments());
-            std::vector<llvm::Value *> args_values;
-
-            if (auto function = dynamic_cast<Values::Function *>(lvalue))
-            {
-                if (function->calling_variable != nullptr)
-                {
-                    args_values.push_back(function->calling_variable->get_ref());
-                }
-            }
-
-            auto function_type = static_cast<Types::FunctionType *>(lvalue->type);
-
-            for (size_t i = 0; i < args.size(); i++)
-            {
-                auto arg = args[i];
-
-                if (i <= (function_type->args.size() - (function_type->is_variadic ? 1 : 0)))
-                {
-                    auto target_type = function_type->args[i].type;
-                    Value *value = arg->cast(target_type, scope->builder());
-
-                    args_values.push_back(value->get_ref());
-                }
-                else
-                {
-                    auto value = arg->load_alloca_and_reference(scope->builder());
-                    args_values.push_back(value->get_ref());
-                }
-            }
-
-            if (function_type->is_sret)
-            {
-                auto tmp = Values::Variable::create("tmp", function_type->return_type, scope->builder());
-                tmp->can_be_taken = true;
-
-                args_values.insert(args_values.begin(), tmp->get_ref());
-
-                auto call = scope->builder().CreateCall(lvalue->get_ref(), args_values);
-                call->addAttribute(1, llvm::Attribute::StructRet);
-
-                return tmp;
-            }
-            else
-            {
-                auto ret = scope->builder().CreateCall(lvalue->get_ref(), args_values);
-                return new Value("call", function_type->return_type, static_cast<llvm::Value *>(ret));
-            }
+            return lvalue->call(scope->builder(), args);
         }
 
         throw NotAFunctionException(context->expression()->getStart(), context->expression()->getText());
@@ -1234,32 +1266,20 @@ public:
 
         if (opt->Add())
         {
-            if (lvalue->type->is_integer())
+            if (auto value = Value::add(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateAdd(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("add", lvalue->type, value);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFAdd(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("add", lvalue->type, value);
+                return value;
             }
         }
         else if (opt->Sub())
         {
-            if (lvalue->type->is_integer())
+            if (auto value = Value::sub(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateSub(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("sub", lvalue->type, value);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFSub(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("sub", lvalue->type, value);
+                return value;
             }
         }
 
-        return nullptr;
+        throw InvalidRightValueException(rexpr_context->getStart());
     }
 
     Value *visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context)
