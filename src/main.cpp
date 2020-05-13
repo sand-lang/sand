@@ -5,8 +5,8 @@
 #include <Parser.h>
 
 #include <san/Compiler.hpp>
-#include <san/Linker.hpp>
 #include <san/Debugger.hpp>
+#include <san/Linker.hpp>
 
 #include <san/Exceptions/CompilationException.hpp>
 
@@ -14,6 +14,10 @@
 #include "grammar/runtime/SanParser.h"
 
 #include "grammar/Visitor.hpp"
+
+#include <CLI/CLI.hpp>
+
+#include <llvm/Passes/PassBuilder.h>
 
 using namespace antlr4;
 
@@ -79,15 +83,20 @@ public:
     }
 };
 
-int main(int argc, char **argv)
+void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
 {
-    San::Debugger debug;
+    std::string bytecode = "";
+    llvm::raw_string_ostream out_stream(bytecode);
+    out_stream << *module;
+    out_stream.flush();
 
-    std::string pwd = std::filesystem::current_path().string();
-    std::string path = argc > 1 ? argv[1] : "test.sn";
+    debug.out << out_stream.str() << std::endl;
+}
 
+bool compile(const std::string &entry_file, const std::string &output_file, const char &optimization_level, const bool &print_llvm, const bool &timer, San::Debugger &debug)
+{
     std::ifstream stream;
-    stream.open(pwd + '/' + path);
+    stream.open(entry_file);
 
     ANTLRInputStream *input = new ANTLRInputStream(stream);
     SanLexer lexer(input);
@@ -98,57 +107,146 @@ int main(int argc, char **argv)
     auto error_listener = new ParserErrorListener(debug);
     parser.addErrorListener(error_listener);
 
-    debug.start_timer("bytecode");
+    SanParser::InstructionsContext *context = parser.instructions();
 
-    SanParser::InstructionsContext *tree = parser.instructions();
-
-    if (error_listener->errors_count > 0)
+    if (context == nullptr)
     {
-        return 1;
+        return false;
     }
 
     San::Visitor visitor;
 
+    debug.start_timer("bytecode");
+
     try
     {
-        visitor.visitInstructions(tree);
+        visitor.visitInstructions(context);
     }
     catch (San::CompilationException &e)
     {
         debug.err << e.what() << std::endl;
-        return 1;
+        return false;
     }
 
     auto elapsed_bytecode = debug.end_timer("bytecode");
 
+    if (print_llvm && optimization_level == 'd')
+    {
+        print_bytecode(visitor.env.module, debug);
+    }
+
+    auto llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O0;
+
+    switch (optimization_level)
+    {
+    case '1':
+        llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O1;
+    case '2':
+        llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O2;
+    case '3':
+        llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O3;
+    case 's':
+        llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::Os;
+    case 'z':
+        llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::Oz;
+    }
+
     debug.start_timer("objects");
 
     San::Compiler compiler(visitor.env.module);
-    auto objects = compiler.generate_objects();
+    auto objects = compiler.generate_objects(llvm_optimization_level);
 
     auto elapsed_objects = debug.end_timer("objects");
 
-    std::string bytecode = "";
-    llvm::raw_string_ostream out_stream(bytecode);
-    out_stream << *visitor.env.module;
-    out_stream.flush();
-
-    debug.out << out_stream.str() << std::endl;
-
-    for (const auto &object : objects)
-        debug.out << object << std::endl;
+    // for (const auto &object : objects)
+    //     debug.out << object << std::endl;
 
     debug.start_timer("linking");
 
     San::Linker linker;
-    linker.prepare(objects);
+    linker.prepare(objects, output_file);
     linker.execute();
 
     auto elapsed_linking = debug.end_timer("linking");
 
-    debug.out << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
-    debug.out << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
-    debug.out << "Finished linking in " << elapsed_linking.count() << " secs" << std::endl;
+    if (print_llvm && optimization_level != 'd')
+    {
+        print_bytecode(visitor.env.module, debug);
+    }
+
+    if (timer)
+    {
+        debug.out << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
+        debug.out << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
+        debug.out << "Finished linking in " << elapsed_linking.count() << " secs" << std::endl;
+    }
+
+    return true;
+}
+
+int main(int argc, char **argv)
+{
+    San::Debugger debug;
+
+    CLI::App app{"App description"};
+
+    {
+        struct
+        {
+            std::string entry_file;
+            std::string output_file = "out";
+
+            std::string optimization_level = "0";
+
+            bool print_llvm = false;
+            bool timer = false;
+        } options;
+
+        CLI::App *run = app.add_subcommand("build", "Build sources");
+        run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
+
+        run->add_option("-O", options.optimization_level, "Optimization level");
+        run->add_option("-o,--output", options.output_file, "The output file");
+
+        run->add_flag("--print-llvm", options.print_llvm, "Print generated LLVM bytecode");
+        run->add_flag("--timer", options.timer, "Output the elapsed build time");
+
+        run->callback([&]() {
+            if (!compile(options.entry_file, options.output_file, options.optimization_level[0], options.print_llvm, options.timer, debug))
+            {
+                exit(1);
+            }
+        });
+    }
+
+    {
+        struct
+        {
+            std::string entry_file;
+
+            std::string optimization_level = "0";
+        } options;
+
+        CLI::App *run = app.add_subcommand("run", "Run sources");
+        run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
+
+        run->add_option("-O", options.optimization_level, "Optimization level");
+
+        std::string output_file = std::tmpnam(nullptr);
+
+        run->callback([&]() {
+            if (!compile(options.entry_file, output_file, options.optimization_level[0], false, false, debug))
+            {
+                exit(1);
+            }
+            else
+            {
+                std::system((output_file).c_str());
+            }
+        });
+    }
+
+    CLI11_PARSE(app, argc, argv);
 
     return 0;
 }

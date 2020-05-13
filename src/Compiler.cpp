@@ -14,7 +14,7 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 
-std::vector<std::string> San::Compiler::generate_objects()
+std::vector<std::string> San::Compiler::generate_objects(const llvm::PassBuilder::OptimizationLevel &optimization_level)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -64,7 +64,7 @@ std::vector<std::string> San::Compiler::generate_objects()
     builder.registerLoopAnalyses(loop_analisys_manager);
     builder.crossRegisterProxies(loop_analisys_manager, function_analisys_manager, CGSCC_analisys_manager, module_analisys_manager);
 
-    llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(llvm::PassBuilder::OptimizationLevel::O3);
+    llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(optimization_level);
     module_pass_manager.run(*module, module_analisys_manager);
 
     llvm::legacy::PassManager pass;

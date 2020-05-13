@@ -56,10 +56,10 @@ class Linker
 public:
     std::string command = "";
 
-    std::string prepare(const std::vector<std::string> &objects)
+    std::string prepare(const std::vector<std::string> &objects, const std::string &output_file)
     {
         std::string objects_str = this->join_objects(objects);
-        return this->command = (LINKER_PATH " " LINKER_OPTIONS " " + objects_str + " -o output");
+        return this->command = (LINKER_PATH " " LINKER_OPTIONS " " + objects_str + " -o " + output_file);
     }
 
     inline int execute() const
