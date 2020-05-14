@@ -271,6 +271,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitImportStatement(SanParser::ImportStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitEos(SanParser::EosContext *ctx) override {
     return visitChildren(ctx);
   }

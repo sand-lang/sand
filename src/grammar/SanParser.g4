@@ -19,7 +19,8 @@ statement:
 	| whileStatement
 	| forStatement
 	| breakStatement InstructionsSeparator
-	| classStatement;
+	| classStatement
+	| importStatement;
 
 expression:
 	'(' expression ')'										# InParenExpression
@@ -136,5 +137,7 @@ classTypeName: scopedName;
 classTypeNameGenerics: '<' type (',' type)* '>';
 
 namespaceStatement: Namespace VariableName '{' statement* '}';
+
+importStatement: Import StringLiteral;
 
 eos: (EOF | LineTerminator);

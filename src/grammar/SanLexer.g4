@@ -76,6 +76,8 @@ Return: 'return';
 Comma: ',';
 Colon: ':';
 
+Import: 'import';
+
 True: 'true';
 False: 'false';
 

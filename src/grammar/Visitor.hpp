@@ -2,6 +2,8 @@
 
 #include "runtime/SanParserBaseVisitor.h"
 
+#include "ParserErrorListener.hpp"
+
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Transforms/Utils/Evaluator.h>
 
@@ -34,7 +36,10 @@
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
 
+#include <filesystem>
 #include <regex>
+
+namespace fs = std::filesystem;
 
 namespace San
 {
@@ -42,14 +47,66 @@ class Visitor
 {
 public:
     Environment env;
+    std::vector<std::string> include_paths;
 
     std::stack<Scope *> scopes;
+    std::stack<fs::path> files;
+
     size_t generating_properties_stack = 0;
 
-    Visitor() : env("output")
+    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_)
     {
         auto scope = new Scope(this->env);
         this->scopes.push(scope);
+    }
+
+    void from_file(std::string path)
+    {
+        if (!this->files.empty())
+        {
+            if (path.rfind("./", 0) == 0)
+            {
+                auto from = this->files.top();
+                path = from.replace_filename(path + ".sn");
+            }
+            else if (path.rfind("/", 0) == 0)
+            {
+            }
+            else
+            {
+                for (const auto &include_path : include_paths)
+                {
+                    auto separator = (include_path[include_path.size() - 1] != '/' ? "/" : "");
+                    auto fullpath = include_path + separator + path + ".sn";
+
+                    if (fs::exists(fullpath))
+                    {
+                        path = fullpath;
+                    }
+                }
+            }
+        }
+
+        auto fullpath = fs::absolute(path);
+        files.push(fullpath);
+
+        std::ifstream stream;
+        stream.open(fullpath);
+
+        auto input = new ANTLRInputStream(stream);
+        auto lexer = new SanLexer(input);
+        auto tokens = new CommonTokenStream(lexer);
+        auto parser = new SanParser(tokens);
+        parser->removeErrorListeners();
+
+        auto error_listener = new ParserErrorListener(this->env.debugger);
+        parser->addErrorListener(error_listener);
+
+        SanParser::InstructionsContext *context = parser->instructions();
+
+        this->visitInstructions(context);
+
+        files.pop();
     }
 
     void visitInstructions(SanParser::InstructionsContext *context)
@@ -124,6 +181,10 @@ public:
         else if (auto class_statement = context->classStatement())
         {
             return this->visitClassStatement(class_statement);
+        }
+        else if (auto import_statement = context->importStatement())
+        {
+            this->visitImportStatement(import_statement);
         }
 
         return nullptr;
@@ -742,6 +803,12 @@ public:
         this->scopes.pop();
 
         throw InvalidRangeException(context->expression()->getStart());
+    }
+
+    void visitImportStatement(SanParser::ImportStatementContext *context)
+    {
+        auto str = this->stringLiteralToString(context->StringLiteral()->getText());
+        this->from_file(str);
     }
 
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
@@ -1820,20 +1887,7 @@ public:
         }
         else if (const auto literal = context->StringLiteral())
         {
-            auto str = literal->getSymbol()->getText();
-            str = str.substr(1, str.size() - 2);
-
-            str = std::regex_replace(str, std::regex("\\\\a"), "\a");
-            str = std::regex_replace(str, std::regex("\\\\b"), "\b");
-            str = std::regex_replace(str, std::regex("\\\\f"), "\f");
-            str = std::regex_replace(str, std::regex("\\\\n"), "\n");
-            str = std::regex_replace(str, std::regex("\\\\r"), "\r");
-            str = std::regex_replace(str, std::regex("\\\\t"), "\t");
-            str = std::regex_replace(str, std::regex("\\\\t"), "\t");
-            str = std::regex_replace(str, std::regex("\\\\v"), "\v");
-            str = std::regex_replace(str, std::regex("\\\\\\?"), "\?");
-            str = std::regex_replace(str, std::regex("\\\\(.)"), "$1");
-
+            auto str = this->stringLiteralToString(literal->getSymbol()->getText());
             auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
 
             auto type = scope->get_primary_type("i8")->array(str.size() + 1);
@@ -1857,6 +1911,24 @@ public:
         }
 
         return nullptr;
+    }
+
+    std::string stringLiteralToString(const std::string &literal)
+    {
+        auto str = literal.substr(1, literal.size() - 2);
+
+        str = std::regex_replace(str, std::regex("\\\\a"), "\a");
+        str = std::regex_replace(str, std::regex("\\\\b"), "\b");
+        str = std::regex_replace(str, std::regex("\\\\f"), "\f");
+        str = std::regex_replace(str, std::regex("\\\\n"), "\n");
+        str = std::regex_replace(str, std::regex("\\\\r"), "\r");
+        str = std::regex_replace(str, std::regex("\\\\t"), "\t");
+        str = std::regex_replace(str, std::regex("\\\\t"), "\t");
+        str = std::regex_replace(str, std::regex("\\\\v"), "\v");
+        str = std::regex_replace(str, std::regex("\\\\\\?"), "\?");
+        str = std::regex_replace(str, std::regex("\\\\(.)"), "$1");
+
+        return str;
     }
 
     Values::Constant *visitBooleanLiteral(SanParser::BooleanLiteralContext *context)

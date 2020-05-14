@@ -147,6 +147,8 @@ public:
 
     virtual antlrcpp::Any visitNamespaceStatement(SanParser::NamespaceStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitImportStatement(SanParser::ImportStatementContext *context) = 0;
+
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 
 
