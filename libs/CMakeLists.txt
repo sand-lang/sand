@@ -9,6 +9,11 @@ set(ANTLR4_WITH_STATIC_CRT OFF)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/llvm")
+
+set(CLI11_BUILD_DOCS OFF)
+set(CLI11_BUILD_TESTS OFF)
+set(CLI11_BUILD_EXAMPLES OFF)
+set(CLI11_BUILD_EXAMPLES_JSON OFF)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CLI11")
 
 add_definitions(${LLVM_DEFINITIONS})
