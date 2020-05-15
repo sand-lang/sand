@@ -106,66 +106,54 @@ int main(int argc, char **argv)
 
     CLI::App app{"App description"};
 
+    struct
     {
-        struct
+        std::string entry_file;
+        std::string output_file = "out";
+        std::vector<std::string> include_paths;
+
+        std::string optimization_level = "0";
+
+        bool print_llvm = false;
+        bool timer = false;
+    } options;
+
+    CLI::App *build = app.add_subcommand("build", "Build sources");
+    build->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
+
+    build->add_option("-O", options.optimization_level, "Optimization level", true);
+    build->add_option("-I", options.include_paths, "Include paths", true);
+
+    build->add_option("-o,--output", options.output_file, "The output file", true);
+
+    build->add_flag("--print-llvm", options.print_llvm, "Print generated LLVM bytecode");
+    build->add_flag("--timer", options.timer, "Output the elapsed build time");
+
+    build->callback([&]() {
+        if (!compile(options.entry_file, options.output_file, options.include_paths, options.optimization_level[0], options.print_llvm, options.timer, debug))
         {
-            std::string entry_file;
-            std::string output_file = "out";
-            std::vector<std::string> include_paths = {};
+            exit(1);
+        }
+    });
 
-            std::string optimization_level = "0";
+    CLI::App *run = app.add_subcommand("run", "Run sources");
+    run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
 
-            bool print_llvm = false;
-            bool timer = false;
-        } options;
+    run->add_option("-O", options.optimization_level, "Optimization level");
+    run->add_option("-I", options.include_paths, "Include paths");
 
-        CLI::App *run = app.add_subcommand("build", "Build sources");
-        run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
+    std::string output_file = std::tmpnam(nullptr);
 
-        run->add_option("-O", options.optimization_level, "Optimization level");
-        run->add_option("-I", options.include_paths, "Include paths");
-
-        run->add_option("-o,--output", options.output_file, "The output file");
-
-        run->add_flag("--print-llvm", options.print_llvm, "Print generated LLVM bytecode");
-        run->add_flag("--timer", options.timer, "Output the elapsed build time");
-
-        run->callback([&]() {
-            if (!compile(options.entry_file, options.output_file, options.include_paths, options.optimization_level[0], options.print_llvm, options.timer, debug))
-            {
-                exit(1);
-            }
-        });
-    }
-
-    {
-        struct
+    run->callback([&]() {
+        if (!compile(options.entry_file, output_file, options.include_paths, options.optimization_level[0], false, false, debug))
         {
-            std::string entry_file;
-            std::vector<std::string> include_paths = {};
-
-            std::string optimization_level = "0";
-        } options;
-
-        CLI::App *run = app.add_subcommand("run", "Run sources");
-        run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
-
-        run->add_option("-O", options.optimization_level, "Optimization level");
-        run->add_option("-I", options.include_paths, "Include paths");
-
-        std::string output_file = std::tmpnam(nullptr);
-
-        run->callback([&]() {
-            if (!compile(options.entry_file, output_file, options.include_paths, options.optimization_level[0], false, false, debug))
-            {
-                exit(1);
-            }
-            else
-            {
-                std::system((output_file).c_str());
-            }
-        });
-    }
+            exit(1);
+        }
+        else
+        {
+            std::system((output_file).c_str());
+        }
+    });
 
     CLI11_PARSE(app, argc, argv);
 
