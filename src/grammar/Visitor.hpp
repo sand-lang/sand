@@ -67,7 +67,7 @@ public:
             if (path.rfind("./", 0) == 0)
             {
                 auto from = this->files.top();
-                path = from.replace_filename(path + ".sn");
+                path = from.replace_filename(path + ".sn").u8string();
             }
             else if (path.rfind("/", 0) == 0)
             {
