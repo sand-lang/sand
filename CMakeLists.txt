@@ -9,7 +9,12 @@ project(san
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS=On)
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS=On)
+
+    set(LLVM_USE_CRT_RELEASE MT)
+    set(LLVM_USE_CRT_DEBUG MTd)
+endif()
 
 set(TARGET_WebAssembly WebAssemblyCodeGen WebAssemblyAsmParser WebAssemblyDesc WebAssemblyInfo)
 set(TARGET_XCore XCoreCodeGen XCoreDesc XCoreInfo)
@@ -41,6 +46,10 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    target_compile_options(${PROJECT_NAME} PUBLIC "/MT")
+endif()
 
 set(INCLUDES 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -115,6 +124,6 @@ set(NATIVE_LIBRARIES)
 
 if(Linux)
     list(APPEND NATIVE_LIBRARIES "stdc++fs")
-endif(Linux)
+endif()
 
 target_link_libraries(${PROJECT_NAME} ${NATIVE_LIBRARIES} antlr4_static ${llvm_libs})

@@ -5,7 +5,7 @@ set(LLVM_INCLUDE_TESTS OFF)
 set(LLVM_INCLUDE_BENCHMARKS OFF)
 
 add_definitions(-DANTLR4CPP_STATIC)
-set(WITH_STATIC_CRT OFF)
+set(WITH_STATIC_CRT ON)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/llvm")
