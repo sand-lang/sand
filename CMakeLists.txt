@@ -9,6 +9,8 @@ project(san
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS=On)
+
 set(TARGET_WebAssembly WebAssemblyCodeGen WebAssemblyAsmParser WebAssemblyDesc WebAssemblyInfo)
 set(TARGET_XCore XCoreCodeGen XCoreDesc XCoreInfo)
 set(TARGET_SystemZ SystemZCodeGen SystemZAsmParser SystemZDesc SystemZInfo) 
