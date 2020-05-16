@@ -4,6 +4,8 @@
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <iostream>
+
 namespace San
 {
 class Type : public Name
@@ -253,6 +255,16 @@ public:
 
     static bool equals(const Type *left, const Type *right)
     {
+        if (left->is_reference)
+        {
+            if (right->is_reference)
+            {
+                return equals(left->base, right->base);
+            }
+
+            return equals(left->base, right);
+        }
+
         return Type::equals(left->ref, right->ref);
     }
 
@@ -285,8 +297,16 @@ public:
             return true;
 
         case llvm::Type::PointerTyID:
-            assert(left_ptr && right_ptr && "Both types must be pointers here.");
-            return left_ptr->getAddressSpace() == right_ptr->getAddressSpace();
+            if (right_ptr)
+            {
+                return Type::equals(left_ptr->getElementType(), right_ptr->getElementType());
+            }
+            else if (auto right_sequential = llvm::dyn_cast<llvm::SequentialType>(right))
+            {
+                return Type::equals(left_ptr->getElementType(), right_sequential->getElementType());
+            }
+
+            return false;
 
         case llvm::Type::StructTyID:
         {
@@ -335,12 +355,20 @@ public:
         case llvm::Type::VectorTyID:
         {
             auto left_sequential = llvm::cast<llvm::SequentialType>(left);
-            auto right_sequential = llvm::cast<llvm::SequentialType>(right);
 
-            if (left_sequential->getNumElements() != right_sequential->getNumElements())
-                return false;
+            if (auto right_sequential = llvm::dyn_cast<llvm::SequentialType>(right))
+            {
+                if (left_sequential->getNumElements() != right_sequential->getNumElements())
+                    return false;
 
-            return Type::equals(left_sequential->getElementType(), right_sequential->getElementType());
+                return Type::equals(left_sequential->getElementType(), right_sequential->getElementType());
+            }
+            else if (auto right_pointer = llvm::dyn_cast<llvm::PointerType>(right))
+            {
+                return Type::equals(left_sequential->getElementType(), right_pointer->getElementType());
+            }
+
+            return false;
         }
 
         default:

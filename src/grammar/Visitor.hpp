@@ -29,9 +29,9 @@
 #include <san/Exceptions/InvalidTypeException.hpp>
 #include <san/Exceptions/InvalidValueException.hpp>
 #include <san/Exceptions/MultipleInstancesException.hpp>
+#include <san/Exceptions/NoFunctionMatchException.hpp>
 #include <san/Exceptions/NotAClassException.hpp>
 #include <san/Exceptions/NotAClassOrNamespaceException.hpp>
-#include <san/Exceptions/NotAFunctionException.hpp>
 #include <san/Exceptions/NotAGenericException.hpp>
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
@@ -281,7 +281,7 @@ public:
             if (auto generics_context = context->classGenerics())
             {
                 auto generics = this->visitClassGenerics(generics_context);
-                return new Types::GenericFunctionType(new Scope(scope), name, generics);
+                return new Types::GenericFunctionType(new Scope(scope), name, generics, parent);
             }
         }
 
@@ -309,7 +309,7 @@ public:
             return_type = Type::voidt(scope->context());
         }
 
-        return Types::FunctionType::create(scope->builder(), scope->module(), name, return_type, args, is_variadic);
+        return Types::FunctionType::create(scope->builder(), scope->module(), name, return_type, args, is_variadic, parent != nullptr);
     }
 
     std::vector<Types::FunctionArgument> visitFunctionArguments(SanParser::FunctionArgumentsContext *context)
@@ -1281,15 +1281,33 @@ public:
     Value *visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context)
     {
         auto scope = this->scopes.top();
-        auto lvalue = this->valueFromExpression(context->expression())->load_alloca_and_reference(scope->builder());
+        auto lvalue = this->visitExpression(context->expression());
+        auto args = this->visitFunctionCallArguments(context->functionCallArguments());
 
-        if (lvalue->type->is_function())
+        if (auto value = dynamic_cast<Value *>(lvalue))
         {
-            std::vector<Value *> args = this->visitFunctionCallArguments(context->functionCallArguments());
-            return lvalue->call(scope->builder(), args);
+            value = value->load_alloca_and_reference(scope->builder());
+
+            if (auto type = dynamic_cast<Types::FunctionType *>(value->type))
+            {
+                if (type->compare_args(args))
+                {
+                    return value->call(scope->builder(), args);
+                }
+            }
+        }
+        else if (auto names = dynamic_cast<NameArray *>(lvalue))
+        {
+            if (auto function = names->get_function(args))
+            {
+                if (auto value = dynamic_cast<Value *>(function))
+                {
+                    return value->call(scope->builder(), args);
+                }
+            }
         }
 
-        throw NotAFunctionException(context->expression()->getStart(), context->expression()->getText());
+        throw NoFunctionMatchException(context->expression()->getStart(), args);
     }
 
     std::vector<Value *> visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context)
@@ -1640,6 +1658,13 @@ public:
     Value *visitThisExpression(SanParser::ThisExpressionContext *context)
     {
         auto scope = this->scopes.top();
+        auto function = scope->get_function();
+
+        if (function == nullptr || !function->get_type()->is_method)
+        {
+            throw UnknownNameException(context->getStart());
+        }
+
         auto names = scope->get_names("this");
         auto value = this->valueFromName(names, context);
 
@@ -1654,15 +1679,7 @@ public:
 
         if (auto class_type = dynamic_cast<Types::ClassType *>(expr->type))
         {
-            auto names = this->visitName(context->name(), expr);
-
-            if (auto value = dynamic_cast<Value *>(names->last()))
-            {
-                value->calling_variable = expr;
-                return value;
-            }
-
-            throw PropertyNotFoundException(context->name()->getStart(), class_type);
+            return this->visitName(context->name(), expr);
         }
 
         throw NotAClassException(context->expression()->getStart());
@@ -1772,36 +1789,7 @@ public:
         {
             if (auto generics_context = context->classTypeNameGenerics())
             {
-                auto name = names->last();
-
-                if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
-                {
-                    auto generics = this->visitClassTypeNameGenerics(generics_context);
-
-                    if (auto type = generic_class->get_child(generics))
-                    {
-                        return new NameArray({type});
-                    }
-
-                    auto type = this->generateGenericClassType(generic_class, generics);
-
-                    return new NameArray({type});
-                }
-                else if (auto generic_function = dynamic_cast<Types::GenericFunctionType *>(name))
-                {
-                    auto generics = this->visitClassTypeNameGenerics(generics_context);
-
-                    if (auto type = generic_function->get_child(generics))
-                    {
-                        return new NameArray({type});
-                    }
-
-                    auto type = this->generateGenericFunction(generic_function, generics);
-
-                    return new NameArray({type});
-                }
-
-                throw NotAGenericException(context->VariableName()->getSymbol());
+                return this->visitTypeNameClassGenerics(generics_context, names);
             }
 
             return names;
@@ -1823,36 +1811,15 @@ public:
             {
                 if (auto generics_context = context->classTypeNameGenerics())
                 {
-                    auto name = names->last();
+                    names = this->visitTypeNameClassGenerics(generics_context, names);
+                }
 
-                    if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
+                for (auto &name : names->names)
+                {
+                    if (auto name_value = dynamic_cast<Value *>(name))
                     {
-                        auto generics = this->visitClassTypeNameGenerics(generics_context);
-
-                        if (auto type = generic_class->get_child(generics))
-                        {
-                            return new NameArray({type});
-                        }
-
-                        auto type = this->generateGenericClassType(generic_class, generics);
-
-                        return new NameArray({type});
+                        name_value->calling_variable = value;
                     }
-                    else if (auto generic_function = dynamic_cast<Types::GenericFunctionType *>(name))
-                    {
-                        auto generics = this->visitClassTypeNameGenerics(generics_context);
-
-                        if (auto type = generic_function->get_child(generics))
-                        {
-                            return new NameArray({type});
-                        }
-
-                        auto type = this->generateGenericFunction(generic_function, generics);
-
-                        return new NameArray({type});
-                    }
-
-                    throw NotAGenericException(context->VariableName()->getSymbol());
                 }
 
                 return names;
@@ -1862,6 +1829,52 @@ public:
         }
 
         throw ExpressionHasNotClassTypeException(context->getStart());
+    }
+
+    NameArray *visitTypeNameClassGenerics(SanParser::ClassTypeNameGenericsContext *context, NameArray *names)
+    {
+        auto array = new NameArray();
+
+        for (auto it = names->vector().rbegin(); it != names->vector().rend(); it++)
+        {
+            auto &name = *it;
+
+            if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
+            {
+                auto generics = this->visitClassTypeNameGenerics(context);
+
+                if (auto type = generic_class->get_child(generics))
+                {
+                    array->add(type);
+                }
+                else
+                {
+                    auto generated = this->generateGenericClassType(generic_class, generics);
+                    array->add(generated);
+                }
+            }
+            else if (auto generic_function = dynamic_cast<Types::GenericFunctionType *>(name))
+            {
+                auto generics = this->visitClassTypeNameGenerics(context);
+
+                if (auto type = generic_function->get_child(generics))
+                {
+                    array->add(type);
+                }
+                else
+                {
+                    auto generated = this->generateGenericFunction(generic_function, generics);
+                    array->add(generated);
+                }
+            }
+
+            if (array->empty())
+            {
+                throw NotAGenericException(context->getStart());
+            }
+        }
+
+        return array;
     }
 
     Values::Constant *visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context)

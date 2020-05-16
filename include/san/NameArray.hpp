@@ -14,6 +14,16 @@ public:
 
     NameArray(const std::vector<Name *> &names_ = {}) : Name("name_array"), names(names_) {}
 
+    inline auto vector() -> decltype(this->names) &
+    {
+        return this->names;
+    }
+
+    void add(Name *name)
+    {
+        this->names.push_back(name);
+    }
+
     void merge(const NameArray *array)
     {
         this->names.insert(this->names.begin(), array->names.begin(), array->names.end());
@@ -52,40 +62,38 @@ public:
         return nullptr;
     }
 
-    Values::Function *get_function(std::vector<Type *> generics, std::vector<Type *> args)
+    Name *get_function(const std::vector<Value *> &args)
     {
-        for (auto &name : this->names)
+        std::vector<Type *> args_types;
+
+        for (auto &arg : args)
         {
-            if (auto function = dynamic_cast<Values::Function *>(name))
+            args_types.push_back(arg->type);
+        }
+
+        return this->get_function({}, args_types);
+    }
+
+    /** Return a pointer of Value or FunctionType */
+    Name *get_function(const std::vector<Type *> &generics, const std::vector<Type *> &args)
+    {
+        for (auto it = this->names.rbegin(); it != this->names.rend(); it++)
+        {
+            auto name = *it;
+
+            if (auto value = dynamic_cast<Value *>(name))
             {
-                auto function_type = function->get_type();
-                auto &function_args = function_type->args;
-
-                if (function_args.size() < args.size())
+                if (auto type = dynamic_cast<Types::FunctionType *>(value->type->behind_reference()))
                 {
-                    continue;
-                }
-
-                if (function_args.size() > args.size() && function_args[args.size()].default_value == nullptr)
-                {
-                    continue;
-                }
-
-                auto found = true;
-                for (size_t i = 0; i < function_args.size(); i++)
-                {
-                    if (!function_args[i].type->equals(args[i]))
+                    if (type->compare_args(args))
                     {
-                        found = false;
-                        break;
+                        return value;
                     }
                 }
-
-                if (found)
-                {
-                    return function;
-                }
             }
+            // else if (auto value = dynamic_cast<Types::GenericFunctionType *>(name))
+            // {
+            // }
         }
 
         return nullptr;
