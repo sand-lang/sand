@@ -17,13 +17,14 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::vector<Value *> args)
         llvm_args.push_back(this->calling_variable->get_ref());
     }
 
+    size_t start = type->is_method ? 1 : 0;
     for (size_t i = 0; i < args.size(); i++)
     {
         auto arg = args[i];
 
-        if (i <= (type->args.size() - (type->is_variadic ? 1 : 0)))
+        if (i <= (type->args.size() - (type->is_variadic ? 1 : 0) - start))
         {
-            auto casted = arg->cast(type->args[i].type, builder);
+            auto casted = arg->cast(type->args[i + start].type, builder);
             llvm_args.push_back(casted->get_ref());
         }
         else
