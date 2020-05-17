@@ -18,32 +18,35 @@ public:
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
-    Class = 30, Extends = 31, Static = 32, This = 33, Dot = 34, Namespace = 35, 
-    ScopeResolver = 36, VariableDeclarator = 37, If = 38, Else = 39, While = 40, 
-    Break = 41, For = 42, In = 43, Function = 44, Extern = 45, Return = 46, 
-    Comma = 47, Colon = 48, Import = 49, True = 50, False = 51, InstructionsSeparator = 52, 
-    VariableName = 53, StringLiteral = 54, CharLiteral = 55, DecimalLiteral = 56, 
-    FloatingLiteral = 57, ZeroLiteral = 58, HexadecimalLiteral = 59, BinaryLiteral = 60, 
-    Comment = 61, WhiteSpace = 62, LineTerminator = 63
+    Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
+    Namespace = 36, ScopeResolver = 37, VariableDeclarator = 38, If = 39, 
+    Else = 40, While = 41, Break = 42, For = 43, In = 44, Function = 45, 
+    Extern = 46, Return = 47, Comma = 48, Colon = 49, Import = 50, True = 51, 
+    False = 52, InstructionsSeparator = 53, VariableName = 54, StringLiteral = 55, 
+    CharLiteral = 56, DecimalLiteral = 57, FloatingLiteral = 58, ZeroLiteral = 59, 
+    HexadecimalLiteral = 60, BinaryLiteral = 61, Comment = 62, WhiteSpace = 63, 
+    LineTerminator = 64
   };
 
   enum {
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
-    RuleScopedName = 4, RuleName = 5, RuleScopeResolver = 6, RuleMultiplicativeOperatorStatement = 7, 
-    RuleOperatorStatement = 8, RuleBitwiseOperatorStatement = 9, RuleConditionalOperatorStatement = 10, 
-    RuleComparisonOperatorStatement = 11, RuleEqualityOperatorStatement = 12, 
-    RuleLiteral = 13, RuleBooleanLiteral = 14, RuleIntegerLiteral = 15, 
-    RuleFloatingLiteral = 16, RuleVariableDeclaration = 17, RuleFunctionCallArguments = 18, 
-    RuleFunctionCallArgument = 19, RuleFunction = 20, RuleFunctionDeclaration = 21, 
-    RuleFunctionVariadicArgument = 22, RuleFunctionArguments = 23, RuleFunctionArgument = 24, 
-    RuleReturnStatement = 25, RuleIfStatement = 26, RuleElseStatement = 27, 
-    RuleWhileStatement = 28, RuleForStatement = 29, RuleBreakStatement = 30, 
-    RuleClassStatement = 31, RuleClassGenerics = 32, RuleClassExtends = 33, 
-    RuleClassBody = 34, RuleClassProperty = 35, RuleClassMethod = 36, RuleClassInstantiationProperties = 37, 
-    RuleClassInstantiationProperty = 38, RuleType = 39, RuleTypeQualifier = 40, 
-    RuleTypeDimensions = 41, RuleTypePointer = 42, RuleTypeReference = 43, 
-    RuleTypeName = 44, RuleFunctionType = 45, RuleClassTypeName = 46, RuleClassTypeNameGenerics = 47, 
-    RuleNamespaceStatement = 48, RuleImportStatement = 49, RuleEos = 50
+    RuleScopedName = 4, RuleName = 5, RuleScopedNameNoGeneric = 6, RuleNameNoGeneric = 7, 
+    RuleScopeResolver = 8, RuleMultiplicativeOperatorStatement = 9, RuleOperatorStatement = 10, 
+    RuleBitwiseOperatorStatement = 11, RuleConditionalOperatorStatement = 12, 
+    RuleComparisonOperatorStatement = 13, RuleEqualityOperatorStatement = 14, 
+    RuleLiteral = 15, RuleBooleanLiteral = 16, RuleIntegerLiteral = 17, 
+    RuleFloatingLiteral = 18, RuleVariableDeclaration = 19, RuleFunctionCallArguments = 20, 
+    RuleFunctionCallArgument = 21, RuleFunction = 22, RuleFunctionDeclaration = 23, 
+    RuleFunctionVariadicArgument = 24, RuleFunctionArguments = 25, RuleFunctionArgument = 26, 
+    RuleReturnStatement = 27, RuleIfStatement = 28, RuleElseStatement = 29, 
+    RuleWhileStatement = 30, RuleForStatement = 31, RuleBreakStatement = 32, 
+    RuleSpecialClassStatement = 33, RuleClassStatement = 34, RuleClassGenerics = 35, 
+    RuleClassExtends = 36, RuleClassBody = 37, RuleClassProperty = 38, RuleClassMethod = 39, 
+    RuleClassInstantiationProperties = 40, RuleClassInstantiationProperty = 41, 
+    RuleType = 42, RuleTypeQualifier = 43, RuleTypeDimensions = 44, RuleTypePointer = 45, 
+    RuleTypeReference = 46, RuleTypeName = 47, RuleFunctionType = 48, RuleClassTypeName = 49, 
+    RuleClassTypeNameGenerics = 50, RuleNamespaceStatement = 51, RuleImportStatement = 52, 
+    RuleEos = 53
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -62,6 +65,8 @@ public:
   class ExpressionContext;
   class ScopedNameContext;
   class NameContext;
+  class ScopedNameNoGenericContext;
+  class NameNoGenericContext;
   class ScopeResolverContext;
   class MultiplicativeOperatorStatementContext;
   class OperatorStatementContext;
@@ -87,6 +92,7 @@ public:
   class WhileStatementContext;
   class ForStatementContext;
   class BreakStatementContext;
+  class SpecialClassStatementContext;
   class ClassStatementContext;
   class ClassGenericsContext;
   class ClassExtendsContext;
@@ -154,6 +160,7 @@ public:
     WhileStatementContext *whileStatement();
     ForStatementContext *forStatement();
     BreakStatementContext *breakStatement();
+    SpecialClassStatementContext *specialClassStatement();
     ClassStatementContext *classStatement();
     ImportStatementContext *importStatement();
 
@@ -379,6 +386,33 @@ public:
   };
 
   NameContext* name();
+
+  class  ScopedNameNoGenericContext : public antlr4::ParserRuleContext {
+  public:
+    ScopedNameNoGenericContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    NameNoGenericContext *nameNoGeneric();
+    ScopeResolverContext *scopeResolver();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ScopedNameNoGenericContext* scopedNameNoGeneric();
+
+  class  NameNoGenericContext : public antlr4::ParserRuleContext {
+  public:
+    NameNoGenericContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *VariableName();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  NameNoGenericContext* nameNoGeneric();
 
   class  ScopeResolverContext : public antlr4::ParserRuleContext {
   public:
@@ -763,6 +797,25 @@ public:
   };
 
   BreakStatementContext* breakStatement();
+
+  class  SpecialClassStatementContext : public antlr4::ParserRuleContext {
+  public:
+    SpecialClassStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Special();
+    antlr4::tree::TerminalNode *Class();
+    ScopedNameNoGenericContext *scopedNameNoGeneric();
+    ClassTypeNameGenericsContext *classTypeNameGenerics();
+    ClassBodyContext *classBody();
+    antlr4::tree::TerminalNode *Extends();
+    ClassExtendsContext *classExtends();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  SpecialClassStatementContext* specialClassStatement();
 
   class  ClassStatementContext : public antlr4::ParserRuleContext {
   public:

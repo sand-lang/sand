@@ -98,5 +98,7 @@ public:
 
         return nullptr;
     }
+
+    NameArray *get_generic_classes();
 };
 } // namespace San

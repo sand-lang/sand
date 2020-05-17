@@ -18,13 +18,14 @@ public:
     Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
-    Class = 30, Extends = 31, Static = 32, This = 33, Dot = 34, Namespace = 35, 
-    ScopeResolver = 36, VariableDeclarator = 37, If = 38, Else = 39, While = 40, 
-    Break = 41, For = 42, In = 43, Function = 44, Extern = 45, Return = 46, 
-    Comma = 47, Colon = 48, Import = 49, True = 50, False = 51, InstructionsSeparator = 52, 
-    VariableName = 53, StringLiteral = 54, CharLiteral = 55, DecimalLiteral = 56, 
-    FloatingLiteral = 57, ZeroLiteral = 58, HexadecimalLiteral = 59, BinaryLiteral = 60, 
-    Comment = 61, WhiteSpace = 62, LineTerminator = 63
+    Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
+    Namespace = 36, ScopeResolver = 37, VariableDeclarator = 38, If = 39, 
+    Else = 40, While = 41, Break = 42, For = 43, In = 44, Function = 45, 
+    Extern = 46, Return = 47, Comma = 48, Colon = 49, Import = 50, True = 51, 
+    False = 52, InstructionsSeparator = 53, VariableName = 54, StringLiteral = 55, 
+    CharLiteral = 56, DecimalLiteral = 57, FloatingLiteral = 58, ZeroLiteral = 59, 
+    HexadecimalLiteral = 60, BinaryLiteral = 61, Comment = 62, WhiteSpace = 63, 
+    LineTerminator = 64
   };
 
   SanLexer(antlr4::CharStream *input);

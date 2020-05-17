@@ -99,6 +99,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitScopedNameNoGeneric(SanParser::ScopedNameNoGenericContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitNameNoGeneric(SanParser::NameNoGenericContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitScopeResolver(SanParser::ScopeResolverContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -196,6 +204,10 @@ public:
   }
 
   virtual antlrcpp::Any visitBreakStatement(SanParser::BreakStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSpecialClassStatement(SanParser::SpecialClassStatementContext *ctx) override {
     return visitChildren(ctx);
   }
 

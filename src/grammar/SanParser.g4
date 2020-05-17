@@ -19,6 +19,7 @@ statement:
 	| whileStatement
 	| forStatement
 	| breakStatement InstructionsSeparator
+	| specialClassStatement
 	| classStatement
 	| importStatement;
 
@@ -41,14 +42,23 @@ expression:
 	| literal												# LiteralDeclaration;
 
 scopedName: scopeResolver? name;
+
 name: VariableName classTypeNameGenerics?;
+
+scopedNameNoGeneric: scopeResolver? nameNoGeneric;
+
+nameNoGeneric: VariableName;
 
 scopeResolver: name '::' scopeResolver?;
 
 multiplicativeOperatorStatement: Mul | Div | Mod;
+
 operatorStatement: Add | Sub;
+
 bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
+
 conditionalOperatorStatement: ConditionalOr | ConditionalAnd;
+
 comparisonOperatorStatement:
 	EqualTo
 	| NotEqualTo
@@ -56,6 +66,7 @@ comparisonOperatorStatement:
 	| GreaterThanOrEqualTo
 	| LessThan
 	| GreaterThan;
+
 equalityOperatorStatement: Equal;
 
 literal:
@@ -85,9 +96,11 @@ variableDeclaration:
 
 functionCallArguments:
 	functionCallArgument (',' functionCallArgument)*;
+
 functionCallArgument: expression;
 
 function: Extern? functionDeclaration body?;
+
 functionDeclaration:
 	Function VariableName classGenerics? '(' (
 		functionArguments (',' functionVariadicArgument)?
@@ -97,36 +110,55 @@ functionDeclaration:
 functionVariadicArgument: '...';
 
 functionArguments: functionArgument (',' functionArgument)*;
+
 functionArgument: (VariableName ':')? type;
 
 returnStatement: 'return' expression?;
 
 ifStatement:
 	'if' (expression | variableDeclaration) statement elseStatement?;
+
 elseStatement: 'else' statement;
 
 whileStatement: 'while' expression statement;
+
 forStatement: 'for' VariableName 'in' expression statement;
+
 breakStatement: 'break';
+
+specialClassStatement:
+	Special 'class' scopedNameNoGeneric classTypeNameGenerics (
+		Extends classExtends
+	)? classBody;
 
 classStatement:
 	'class' VariableName classGenerics? (Extends classExtends)? classBody;
+
 classGenerics: '<' VariableName (',' VariableName)* '>';
+
 classExtends: classTypeName (',' classTypeName)*;
+
 classBody: '{' (classProperty | classMethod)* '}';
+
 classProperty:
 	Static? VariableName ':' type ('=' expression)? InstructionsSeparator;
+
 classMethod: Static? function;
 
 classInstantiationProperties:
 	classInstantiationProperty (',' classInstantiationProperty)* ','?;
+
 classInstantiationProperty: VariableName ('=' expression)?;
 
 type:
 	typeQualifier* typeName typeDimensions* typePointer* typeReference?;
+
 typeQualifier: Const;
+
 typeDimensions: '[' expression ']';
+
 typePointer: '*';
+
 typeReference: '&';
 
 typeName: scopedName | functionType;
@@ -134,6 +166,7 @@ typeName: scopedName | functionType;
 functionType: 'fn' '(' functionArguments? ')' (':' type)?;
 
 classTypeName: scopedName;
+
 classTypeNameGenerics: '<' type (',' type)* '>';
 
 namespaceStatement: Namespace VariableName '{' statement* '}';

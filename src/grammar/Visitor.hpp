@@ -178,6 +178,10 @@ public:
         {
             this->visitForStatement(for_statement);
         }
+        else if (auto special_class_statement = context->specialClassStatement())
+        {
+            return this->visitSpecialClassStatement(special_class_statement);
+        }
         else if (auto class_statement = context->classStatement())
         {
             return this->visitClassStatement(class_statement);
@@ -809,6 +813,55 @@ public:
     {
         auto str = this->stringLiteralToString(context->StringLiteral()->getText());
         this->from_file(str);
+    }
+
+    Types::ClassType *visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context)
+    {
+        auto scope = this->scopes.top();
+        auto class_scope = new Scope(scope);
+
+        auto scoped_name_context = context->scopedNameNoGeneric();
+        auto names = this->visitScopedNameNoGeneric(scoped_name_context);
+        auto classes = names->get_generic_classes();
+
+        if (!classes->empty())
+        {
+            // Temporary take the first generic
+            if (auto base = dynamic_cast<Types::GenericClassType *>(classes->last()))
+            {
+                Position position;
+
+                if (this->scopes.top()->in_function())
+                {
+                    position = Position::save(this->scopes.top()->builder());
+                }
+
+                this->scopes.push(class_scope);
+
+                class_scope->add_name("base", base);
+
+                auto generics = this->visitClassTypeNameGenerics(context->classTypeNameGenerics());
+
+                auto type = Types::ClassType::create(class_scope, base->name, generics);
+
+                if (auto extends = context->classExtends())
+                {
+                    type->parents = this->visitClassExtends(extends);
+                }
+
+                base->children.push_back(type);
+
+                this->visitClassBody(context->classBody(), type->parents, type);
+
+                this->scopes.pop();
+
+                position.load(this->scopes.top()->builder());
+
+                return type;
+            }
+        }
+
+        throw NotAGenericException(scoped_name_context->getStart());
     }
 
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
@@ -1747,6 +1800,18 @@ public:
         return this->visitName(context->name(), scope);
     }
 
+    NameArray *visitScopedNameNoGeneric(SanParser::ScopedNameNoGenericContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        if (auto scope_resolver_context = context->scopeResolver())
+        {
+            scope = this->visitScopeResolver(scope_resolver_context);
+        }
+
+        return this->visitNameNoGeneric(context->nameNoGeneric(), scope);
+    }
+
     Scope *visitScopeResolver(SanParser::ScopeResolverContext *context, Scope *scope = nullptr)
     {
         if (scope == nullptr)
@@ -1829,6 +1894,19 @@ public:
         }
 
         throw ExpressionHasNotClassTypeException(context->getStart());
+    }
+
+    NameArray *visitNameNoGeneric(SanParser::NameNoGenericContext *context, Scope *scope)
+    {
+        auto name = context->VariableName()->getText();
+        auto names = scope->get_names(name);
+
+        if (!names->empty())
+        {
+            return names;
+        }
+
+        throw UnknownNameException(context->VariableName()->getSymbol());
     }
 
     NameArray *visitTypeNameClassGenerics(SanParser::ClassTypeNameGenericsContext *context, NameArray *names)
