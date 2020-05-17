@@ -248,21 +248,46 @@ public:
         return llvm::Type::getDoubleTy(context);
     }
 
-    inline bool equals(const Type *right) const
+    inline bool equals(Type *right)
     {
         return Type::equals(this, right);
     }
 
-    static bool equals(const Type *left, const Type *right)
+    static bool equals(Type *left, Type *right)
     {
         if (left->is_reference)
         {
-            if (right->is_reference)
+            return equals(left->base, right);
+        }
+
+        if (right->is_reference)
+        {
+            return equals(left, right->base);
+        }
+
+        if (left->is_pointer())
+        {
+            if (!right->is_pointer() && !right->is_array())
             {
-                return equals(left->base, right->base);
+                return false;
             }
 
-            return equals(left->base, right);
+            return Type::equals(left->base, right->base);
+        }
+
+        if (left->is_integer())
+        {
+            if (!right->is_integer())
+            {
+                return false;
+            }
+
+            if (left->is_signed != right->is_signed)
+            {
+                return false;
+            }
+
+            return left->get_ref()->getIntegerBitWidth() == right->get_ref()->getIntegerBitWidth();
         }
 
         return Type::equals(left->ref, right->ref);
