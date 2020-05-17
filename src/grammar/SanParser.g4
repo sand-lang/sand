@@ -99,7 +99,8 @@ functionCallArguments:
 
 functionCallArgument: expression;
 
-function: Extern? functionDeclaration body?;
+function:
+	Extern? functionDeclaration (body | InstructionsSeparator);
 
 functionDeclaration:
 	Function VariableName classGenerics? '(' (

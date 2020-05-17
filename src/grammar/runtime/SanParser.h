@@ -632,8 +632,9 @@ public:
     FunctionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     FunctionDeclarationContext *functionDeclaration();
-    antlr4::tree::TerminalNode *Extern();
     BodyContext *body();
+    antlr4::tree::TerminalNode *InstructionsSeparator();
+    antlr4::tree::TerminalNode *Extern();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
