@@ -9,6 +9,7 @@
 
 #include <san/Debugger.hpp>
 #include <san/Environment.hpp>
+#include <san/Helpers.hpp>
 
 #include <san/NameArray.hpp>
 #include <san/Namespace.hpp>
@@ -23,6 +24,7 @@
 #include <san/Values/Variable.hpp>
 
 #include <san/Exceptions/ExpressionHasNotClassTypeException.hpp>
+#include <san/Exceptions/ImportException.hpp>
 #include <san/Exceptions/InvalidLeftValueException.hpp>
 #include <san/Exceptions/InvalidRangeException.hpp>
 #include <san/Exceptions/InvalidRightValueException.hpp>
@@ -64,34 +66,48 @@ public:
     {
         if (!this->files.empty())
         {
-            if (path.rfind("./", 0) == 0)
+            if (Helpers::starts_with(path, "./"))
             {
                 auto from = this->files.top();
-                path = from.replace_filename(path + ".sn").u8string();
+                path = from.replace_filename(path).u8string();
             }
-            else if (path.rfind("/", 0) == 0)
+            else if (Helpers::starts_with(path, "/"))
             {
+                // nothing to do here, this condition exists in case of future implementation
+                // the compiler will optimize this anyway
             }
             else
             {
                 for (const auto &include_path : include_paths)
                 {
                     auto separator = (include_path[include_path.size() - 1] != '/' ? "/" : "");
-                    auto fullpath = include_path + separator + path + ".sn";
+                    auto fullpath = fs::absolute(include_path + separator + path + ".sn");
 
                     if (fs::exists(fullpath))
                     {
                         path = fullpath;
+                        break;
                     }
                 }
             }
         }
 
         auto fullpath = fs::absolute(path);
-        files.push(fullpath);
+
+        if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath, ".sn"))
+        {
+            fullpath += ".sn";
+        }
+
+        if (!fs::exists(fullpath))
+        {
+            throw FileNotFoundException();
+        }
 
         std::ifstream stream;
         stream.open(fullpath);
+
+        files.push(fullpath);
 
         auto input = new ANTLRInputStream(stream);
         auto lexer = new SanLexer(input);
@@ -812,7 +828,15 @@ public:
     void visitImportStatement(SanParser::ImportStatementContext *context)
     {
         auto str = this->stringLiteralToString(context->StringLiteral()->getText());
-        this->from_file(str);
+
+        try
+        {
+            this->from_file(str);
+        }
+        catch (FileNotFoundException e)
+        {
+            throw ImportException(context->StringLiteral()->getSymbol());
+        }
     }
 
     Types::ClassType *visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context)
