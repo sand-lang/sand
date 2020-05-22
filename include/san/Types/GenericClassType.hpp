@@ -11,11 +11,11 @@ class GenericClassType : public GenericType
 {
 public:
     SanParser::ClassStatementContext *context = nullptr;
-    Scope *scope = nullptr;
+    std::shared_ptr<Scope> scope = nullptr;
 
     std::vector<ClassType *> children;
 
-    GenericClassType(Scope *scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::ClassStatementContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
+    GenericClassType(std::shared_ptr<Scope> scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::ClassStatementContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
 
     ClassType *get_child(const std::vector<Type *> generics)
     {

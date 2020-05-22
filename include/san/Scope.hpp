@@ -17,7 +17,7 @@ class Scope
 public:
     Environment &env;
 
-    Scope *parent = nullptr;
+    std::shared_ptr<Scope> parent = nullptr;
 
     Values::Function *function = nullptr;
     Loop *loop = nullptr;
@@ -25,11 +25,11 @@ public:
     std::multimap<std::string, Name *> names;
 
     Scope(Environment &env_) : env(env_) {}
-    Scope(Scope *parent_, Values::Function *function_ = nullptr) : env(parent_->env), parent(parent_), function(function_) {}
+    Scope(std::shared_ptr<Scope> &parent_, Values::Function *function_ = nullptr) : env(parent_->env), parent(parent_), function(function_) {}
 
-    static Scope *from(Environment &env, const std::vector<Scope *> &scopes)
+    static std::shared_ptr<Scope> from(Environment &env, const std::vector<std::shared_ptr<Scope>> &scopes)
     {
-        auto scope = new Scope(env);
+        auto scope = Scope::create(env);
 
         for (const auto &parent : scopes)
         {
@@ -37,6 +37,16 @@ public:
         }
 
         return scope;
+    }
+
+    static std::shared_ptr<Scope> create(Environment &env)
+    {
+        return std::make_shared<Scope>(env);
+    }
+
+    static std::shared_ptr<Scope> create(std::shared_ptr<Scope> parent = nullptr, Values::Function *function = nullptr)
+    {
+        return std::make_shared<Scope>(parent, function);
     }
 
     llvm::IRBuilder<> &builder()

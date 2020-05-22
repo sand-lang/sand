@@ -14,6 +14,7 @@
 #include <san/NameArray.hpp>
 #include <san/Namespace.hpp>
 #include <san/Scope.hpp>
+#include <san/ScopeStack.hpp>
 #include <san/StatementStatus.hpp>
 #include <san/Types/ClassType.hpp>
 #include <san/Types/GenericClassType.hpp>
@@ -51,16 +52,12 @@ public:
     Environment env;
     std::vector<std::string> include_paths;
 
-    std::stack<Scope *> scopes;
+    ScopeStack scopes;
     std::stack<fs::path> files;
 
     size_t generating_properties_stack = 0;
 
-    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_)
-    {
-        auto scope = new Scope(this->env);
-        this->scopes.push(scope);
-    }
+    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_), scopes(this->env) {}
 
     void from_file(std::string path)
     {
@@ -271,7 +268,7 @@ public:
 
     Values::Function *generateFunctionBody(SanParser::FunctionContext *context, Values::Function *base)
     {
-        this->scopes.push(new Scope(this->scopes.top(), base));
+        this->scopes.create(base);
 
         if (auto body = context->body())
         {
@@ -301,7 +298,7 @@ public:
             if (auto generics_context = context->classGenerics())
             {
                 auto generics = this->visitClassGenerics(generics_context);
-                return new Types::GenericFunctionType(new Scope(scope), name, generics, parent);
+                return new Types::GenericFunctionType(Scope::create(scope), name, generics, parent);
             }
         }
 
@@ -414,7 +411,7 @@ public:
             }
         }
 
-        auto nsp_scope = new Scope(scope);
+        auto nsp_scope = Scope::create(scope);
         auto nsp = new Namespace(name, nsp_scope);
 
         scope->add_name(name, nsp);
@@ -430,8 +427,7 @@ public:
 
     Block *visitBody(SanParser::BodyContext *context, Values::Function *function = nullptr)
     {
-        auto scope = new Scope(this->scopes.top());
-        this->scopes.push(scope);
+        auto scope = this->scopes.create();
 
         auto block = Block::create(scope->builder(), "entry");
 
@@ -626,8 +622,7 @@ public:
 
     void visitIfStatement(SanParser::IfStatementContext *context)
     {
-        this->scopes.push(new Scope(this->scopes.top()));
-        auto scope = this->scopes.top();
+        auto scope = this->scopes.create();
 
         auto if_then = Block::create(scope->builder(), "if.then");
         auto if_end = Block::create(scope->builder(), "if.end");
@@ -699,8 +694,7 @@ public:
 
     void visitWhileStatement(SanParser::WhileStatementContext *context)
     {
-        this->scopes.push(new Scope(this->scopes.top()));
-        auto scope = this->scopes.top();
+        auto scope = this->scopes.create();
 
         auto while_cond = Block::create(scope->builder(), "while.cond");
         auto while_body = Block::create(scope->builder(), "while.body");
@@ -744,8 +738,7 @@ public:
 
     void visitForStatement(SanParser::ForStatementContext *context)
     {
-        this->scopes.push(new Scope(this->scopes.top()));
-        auto scope = this->scopes.top();
+        auto scope = this->scopes.create();
 
         auto for_cond = Block::create(scope->builder(), "for.cond");
         auto for_body = Block::create(scope->builder(), "for.body");
@@ -842,7 +835,7 @@ public:
     Types::ClassType *visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context)
     {
         auto scope = this->scopes.top();
-        auto class_scope = new Scope(scope);
+        auto class_scope = Scope::create(scope);
 
         auto scoped_name_context = context->scopedNameNoGeneric();
         auto names = this->visitScopedNameNoGeneric(scoped_name_context);
@@ -891,7 +884,7 @@ public:
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
     {
         auto scope = this->scopes.top();
-        auto class_scope = new Scope(scope);
+        auto class_scope = Scope::create(scope);
 
         auto name = context->VariableName()->getText();
 
@@ -1814,13 +1807,13 @@ public:
 
     NameArray *visitScopedName(SanParser::ScopedNameContext *context)
     {
-        auto scope = this->scopes.top();
-
         if (auto scope_resolver_context = context->scopeResolver())
         {
-            scope = this->visitScopeResolver(scope_resolver_context);
+            auto scope = this->visitScopeResolver(scope_resolver_context);
+            return this->visitName(context->name(), scope);
         }
 
+        auto scope = this->scopes.top();
         return this->visitName(context->name(), scope);
     }
 
@@ -1836,25 +1829,31 @@ public:
         return this->visitNameNoGeneric(context->nameNoGeneric(), scope);
     }
 
-    Scope *visitScopeResolver(SanParser::ScopeResolverContext *context, Scope *scope = nullptr)
+    std::shared_ptr<Scope> visitScopeResolver(SanParser::ScopeResolverContext *context)
     {
-        if (scope == nullptr)
-        {
-            scope = this->scopes.top();
-        }
+        return this->visitScopeResolver(context, this->scopes.top());
+    }
 
-        auto names = this->visitName(context->name(), scope);
-        auto name = names->last();
-
-        Scope *resolved_scope = nullptr;
+    std::shared_ptr<Scope> scopeFromName(Name *name)
+    {
         if (auto class_type = dynamic_cast<Types::ClassType *>(name))
         {
-            resolved_scope = class_type->get_static_scope();
+            return class_type->get_static_scope();
         }
         else if (auto nsp = dynamic_cast<Namespace *>(name))
         {
-            resolved_scope = nsp->scope;
+            return nsp->scope;
         }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<Scope> visitScopeResolver(SanParser::ScopeResolverContext *context, std::shared_ptr<Scope> scope)
+    {
+        auto names = this->visitName(context->name(), scope);
+        auto name = names->last();
+
+        std::shared_ptr<Scope> resolved_scope = this->scopeFromName(name);
 
         if (resolved_scope != nullptr)
         {
@@ -1869,7 +1868,7 @@ public:
         throw NotAClassOrNamespaceException(context->name()->getStart());
     }
 
-    NameArray *visitName(SanParser::NameContext *context, Scope *scope)
+    NameArray *visitName(SanParser::NameContext *context, std::shared_ptr<Scope> &scope)
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);
@@ -1920,7 +1919,7 @@ public:
         throw ExpressionHasNotClassTypeException(context->getStart());
     }
 
-    NameArray *visitNameNoGeneric(SanParser::NameNoGenericContext *context, Scope *scope)
+    NameArray *visitNameNoGeneric(SanParser::NameNoGenericContext *context, std::shared_ptr<Scope> &scope)
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);

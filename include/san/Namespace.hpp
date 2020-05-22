@@ -10,8 +10,8 @@ namespace San
 class Namespace : public Name
 {
 public:
-    Scope *scope = nullptr;
+    std::shared_ptr<Scope> scope = nullptr;
 
-    Namespace(const std::string &name, Scope *scope_) : Name(name), scope(scope_) {}
+    Namespace(const std::string &name, std::shared_ptr<Scope> &scope_) : Name(name), scope(scope_) {}
 };
 } // namespace San

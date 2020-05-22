@@ -32,8 +32,8 @@ struct ClassPropertyIndex
 class ClassType : public Type
 {
 public:
-    Scope *static_scope = nullptr;
-    Scope *scope = nullptr;
+    std::shared_ptr<Scope> static_scope = nullptr;
+    std::shared_ptr<Scope> scope = nullptr;
 
     std::vector<Type *> generics;
 
@@ -44,11 +44,11 @@ public:
 
     ClassType(const std::string &name,
               llvm::StructType *ref,
-              Scope *static_scope_,
+              std::shared_ptr<Scope> static_scope_,
               const std::vector<Type *> &generics_ = {})
         : Type(name, ref),
           static_scope(static_scope_),
-          scope(new Scope(static_scope_->env)),
+          scope(Scope::create(static_scope_->env)),
           generics(generics_)
     {
     }
@@ -98,9 +98,9 @@ public:
         return names;
     }
 
-    Scope *get_static_scope()
+    std::shared_ptr<Scope> get_static_scope()
     {
-        std::vector<Scope *> scopes = {this->static_scope};
+        std::vector<std::shared_ptr<Scope>> scopes = {this->static_scope};
 
         for (auto &parent : this->parents)
         {
@@ -110,7 +110,7 @@ public:
         return Scope::from(this->static_scope->env, scopes);
     }
 
-    static ClassType *create(Scope *scope, const std::string &name = "", const std::vector<Type *> &generics = {})
+    static ClassType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Type *> &generics = {})
     {
         auto ref = llvm::StructType::create(scope->context(), name + ".class");
         return new ClassType(name, ref, scope, generics);

@@ -10,13 +10,13 @@ class GenericFunctionType : public GenericType
 {
 public:
     SanParser::FunctionContext *context = nullptr;
-    Scope *scope = nullptr;
+    std::shared_ptr<Scope> scope = nullptr;
 
     ClassType *parent = nullptr;
 
     std::vector<Values::Function *> children;
 
-    GenericFunctionType(Scope *scope_,
+    GenericFunctionType(std::shared_ptr<Scope> scope_,
                         const std::string &name,
                         const std::vector<Generic *> &generics,
                         ClassType *parent_ = nullptr)
