@@ -53,6 +53,8 @@ Static: 'static';
 This: 'this';
 Dot: '.';
 
+Destructor: '@destructor';
+
 // Namespaces
 Namespace: 'namespace';
 ScopeResolver: '::';

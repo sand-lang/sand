@@ -103,10 +103,13 @@ function:
 	Extern? functionDeclaration (body | InstructionsSeparator);
 
 functionDeclaration:
-	Function VariableName classGenerics? '(' (
-		functionArguments (',' functionVariadicArgument)?
-		| functionVariadicArgument?
-	) ')' (':' type)?;
+	Function (
+		VariableName classGenerics? '(' (
+			functionArguments (',' functionVariadicArgument)?
+			| functionVariadicArgument?
+		) ')' (':' type)?
+	)
+	| '@destructor' '(' ')';
 
 functionVariadicArgument: '...';
 
