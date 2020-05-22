@@ -1,0 +1,7 @@
+namespace std {
+    extern fn printf(i8*, ...) : i32;
+
+    fn print(str: i8*) {
+        printf("%s\n", str);
+    }
+}

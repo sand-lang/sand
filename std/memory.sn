@@ -1,0 +1,9 @@
+namespace std {
+    namespace memory {
+        extern fn calloc(u64, u64) : void*;
+
+        fn allocate<T>(count: u64) : T* {
+            return calloc(count, sizeof T) as T*;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+namespace std {
+    class range<T> {
+        _start: T;
+        _end: T;
+
+        static fn new(_start: T, _end: T) : range<T> {
+            return range<T> {
+                _start,
+                _end,
+            };
+        }
+
+        fn begin() : T& {
+            return this._start;
+        }
+
+        fn end() : T& {
+            return this._end;
+        }
+    }
+}
