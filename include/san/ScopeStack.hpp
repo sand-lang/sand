@@ -1,6 +1,7 @@
 #pragma once
 
 #include <san/Scope.hpp>
+#include <san/Types/ClassType.hpp>
 #include <san/Values/Function.hpp>
 
 #include <memory>
@@ -60,7 +61,41 @@ public:
 
     void pop()
     {
+        this->call_destructors(this->top());
         this->scopes.pop();
+    }
+
+    void pop_no_destruct()
+    {
+        this->scopes.pop();
+    }
+
+    void call_destructors(std::shared_ptr<Scope> &scope)
+    {
+        for (auto &[_, name] : scope->names)
+        {
+            if (auto variable = dynamic_cast<Value *>(name))
+            {
+                if (auto class_type = dynamic_cast<Types::ClassType *>(variable->type))
+                {
+                    if (class_type->is_pointer() || class_type->is_array())
+                    {
+                        continue;
+                    }
+
+                    auto destructors = class_type->get_names("@destructor", variable, scope->builder(), scope->module());
+
+                    for (auto &name : destructors->names)
+                    {
+                        if (auto destructor = dynamic_cast<Values::Function *>(name))
+                        {
+                            destructor->calling_variable = variable;
+                            destructor->call(scope->builder());
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 } // namespace San

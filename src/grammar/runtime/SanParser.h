@@ -651,13 +651,13 @@ public:
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
+    antlr4::tree::TerminalNode *Destructor();
     FunctionArgumentsContext *functionArguments();
     ClassGenericsContext *classGenerics();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
     antlr4::tree::TerminalNode *Comma();
     FunctionVariadicArgumentContext *functionVariadicArgument();
-    antlr4::tree::TerminalNode *Destructor();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

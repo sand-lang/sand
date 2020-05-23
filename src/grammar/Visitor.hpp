@@ -292,6 +292,10 @@ public:
         {
             name = variable_name->getText();
         }
+        else if (context->Destructor())
+        {
+            name = "@destructor";
+        }
 
         if (!bypass_generics)
         {
@@ -505,7 +509,13 @@ public:
         {
             scope->get_loop()->end_label->br(scope->builder());
         }
-        else if (function != nullptr)
+
+        if (block->status != StatementStatus::Returned)
+        {
+            this->scopes.call_destructors(scope);
+        }
+
+        if (function != nullptr)
         {
             if (block->status != StatementStatus::Returned)
             {
@@ -529,7 +539,7 @@ public:
             }
         }
 
-        this->scopes.pop();
+        this->scopes.pop_no_destruct();
 
         return block;
     }
@@ -560,11 +570,16 @@ public:
 
         if (scope->in_function())
         {
-            // if (rexpr->can_be_taken && rexpr->type->equals(type))
-            // {
-            //     rexpr->value->setName(name);
-            //     return scope->add(rexpr, name);
-            // }
+            if (auto variable = dynamic_cast<Values::Variable *>(rvalue))
+            {
+                if (variable->can_be_taken && variable->type->equals(type))
+                {
+                    variable->get_ref()->setName(name);
+                    scope->add_name(name, variable);
+
+                    return variable;
+                }
+            }
 
             auto var = Values::Variable::create(name, type, scope->builder());
 
@@ -617,6 +632,7 @@ public:
             function->return_value->store(rvalue, scope->builder(), scope->module(), true);
         }
 
+        this->scopes.call_destructors(scope);
         function->return_block->br(scope->builder());
     }
 
@@ -1210,12 +1226,7 @@ public:
 
             if (auto names = dynamic_cast<NameArray *>(expression))
             {
-                if (names->size() > 1)
-                {
-                    throw MultipleInstancesException(expression_context->getStart());
-                }
-
-                auto name = names->get(0);
+                auto name = names->last();
 
                 if (auto type_name = dynamic_cast<Type *>(name))
                 {
@@ -1362,7 +1373,10 @@ public:
             {
                 if (type->compare_args(args))
                 {
-                    return value->call(scope->builder(), args);
+                    auto return_value = value->call(scope->builder(), args);
+                    scope->add_name("", return_value);
+
+                    return return_value;
                 }
             }
         }
@@ -1372,7 +1386,10 @@ public:
             {
                 if (auto value = dynamic_cast<Value *>(function))
                 {
-                    return value->call(scope->builder(), args);
+                    auto return_value = value->call(scope->builder(), args);
+                    scope->add_name("", return_value);
+
+                    return return_value;
                 }
             }
         }

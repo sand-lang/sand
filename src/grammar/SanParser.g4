@@ -104,12 +104,14 @@ function:
 
 functionDeclaration:
 	Function (
-		VariableName classGenerics? '(' (
-			functionArguments (',' functionVariadicArgument)?
-			| functionVariadicArgument?
-		) ')' (':' type)?
-	)
-	| '@destructor' '(' ')';
+		(
+			VariableName classGenerics? '(' (
+				functionArguments (',' functionVariadicArgument)?
+				| functionVariadicArgument?
+			) ')' (':' type)?
+		)
+		| (Destructor '(' ')')
+	);
 
 functionVariadicArgument: '...';
 
