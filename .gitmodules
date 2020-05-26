@@ -4,9 +4,6 @@
 [submodule "libs/llvm"]
 	path = libs/llvm
 	url = https://git.llvm.org/git/llvm.git
-[submodule "libs/lld"]
-	path = libs/lld
-	url = https://git.llvm.org/git/lld.git
 [submodule "libs/CLI11"]
 	path = libs/CLI11
 	url = https://github.com/CLIUtils/CLI11.git
