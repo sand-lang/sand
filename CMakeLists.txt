@@ -126,4 +126,14 @@ if(Linux)
     list(APPEND NATIVE_LIBRARIES "stdc++fs")
 endif()
 
-target_link_libraries(${PROJECT_NAME} ${NATIVE_LIBRARIES} antlr4_static ${llvm_libs})
+target_link_libraries(${PROJECT_NAME} 
+    ${NATIVE_LIBRARIES} 
+    antlr4_static 
+    ${llvm_libs} 
+    lldCommon
+    lldCOFF
+    lldDriver
+    lldELF
+    lldMinGW
+    lldWasm
+)
