@@ -18,6 +18,21 @@
 
 #include <llvm/Passes/PassBuilder.h>
 
+struct Options
+{
+    std::string entry_file;
+    std::string output_file = "out";
+    std::vector<std::string> include_paths;
+
+    std::vector<std::string> libraries;
+    std::string args;
+
+    std::string optimization_level = "0";
+
+    bool print_llvm = false;
+    bool timer = false;
+};
+
 void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
 {
     std::string bytecode = "";
@@ -28,15 +43,15 @@ void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
     debug.out << out_stream.str() << std::endl;
 }
 
-bool compile(const std::string &entry_file, const std::string &output_file, const std::vector<std::string> &include_paths, const char &optimization_level, const bool &print_llvm, const bool &timer, San::Debugger &debug)
+bool compile(const Options &options, San::Debugger &debug)
 {
-    San::Visitor visitor(include_paths);
+    San::Visitor visitor(options.include_paths);
 
     debug.start_timer("bytecode");
 
     try
     {
-        visitor.from_file(entry_file);
+        visitor.from_file(options.entry_file);
     }
     catch (San::CompilationException &e)
     {
@@ -46,14 +61,14 @@ bool compile(const std::string &entry_file, const std::string &output_file, cons
 
     auto elapsed_bytecode = debug.end_timer("bytecode");
 
-    if (print_llvm && optimization_level == 'd')
+    if (options.print_llvm && options.optimization_level[0] == 'd')
     {
         print_bytecode(visitor.env.module, debug);
     }
 
     auto llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O0;
 
-    switch (optimization_level)
+    switch (options.optimization_level[0])
     {
     case '1':
         llvm_optimization_level = llvm::PassBuilder::OptimizationLevel::O1;
@@ -79,18 +94,16 @@ bool compile(const std::string &entry_file, const std::string &output_file, cons
 
     debug.start_timer("linking");
 
-    San::Linker linker;
-    linker.prepare(objects, output_file);
-    linker.execute();
+    San::Linker::link(objects, options.libraries, options.args, options.output_file);
 
     auto elapsed_linking = debug.end_timer("linking");
 
-    if (print_llvm && optimization_level != 'd')
+    if (options.print_llvm && options.optimization_level[0] != 'd')
     {
         print_bytecode(visitor.env.module, debug);
     }
 
-    if (timer)
+    if (options.timer)
     {
         debug.out << "Finished generating IR in " << elapsed_bytecode.count() << " secs" << std::endl;
         debug.out << "Finished generating object files in " << elapsed_objects.count() << " secs" << std::endl;
@@ -106,17 +119,7 @@ int main(int argc, char **argv)
 
     CLI::App app{"App description"};
 
-    struct
-    {
-        std::string entry_file;
-        std::string output_file = "out";
-        std::vector<std::string> include_paths;
-
-        std::string optimization_level = "0";
-
-        bool print_llvm = false;
-        bool timer = false;
-    } options;
+    Options options;
 
     CLI::App *build = app.add_subcommand("build", "Build sources");
     build->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
@@ -124,13 +127,16 @@ int main(int argc, char **argv)
     build->add_option("-O", options.optimization_level, "Optimization level", true);
     build->add_option("-I", options.include_paths, "Include paths", true);
 
+    build->add_option("-l", options.libraries, "Libraries to link with");
+    build->add_option("--args", options.args, "Custom linker arguments");
+
     build->add_option("-o,--output", options.output_file, "The output file", true);
 
     build->add_flag("--print-llvm", options.print_llvm, "Print generated LLVM bytecode");
     build->add_flag("--timer", options.timer, "Output the elapsed build time");
 
     build->callback([&]() {
-        if (!compile(options.entry_file, options.output_file, options.include_paths, options.optimization_level[0], options.print_llvm, options.timer, debug))
+        if (!compile(options, debug))
         {
             exit(1);
         }
@@ -142,16 +148,19 @@ int main(int argc, char **argv)
     run->add_option("-O", options.optimization_level, "Optimization level");
     run->add_option("-I", options.include_paths, "Include paths");
 
-    std::string output_file = std::tmpnam(nullptr);
+    run->add_option("-l", options.libraries, "Libraries to link with");
+    run->add_option("--args", options.args, "Custom linker arguments");
 
     run->callback([&]() {
-        if (!compile(options.entry_file, output_file, options.include_paths, options.optimization_level[0], false, false, debug))
+        options.output_file = std::tmpnam(nullptr);
+
+        if (!compile(options, debug))
         {
             exit(1);
         }
         else
         {
-            std::system((output_file).c_str());
+            std::system((options.output_file).c_str());
         }
     });
 
