@@ -82,7 +82,7 @@ public:
 
                     if (fs::exists(fullpath))
                     {
-                        path = fullpath;
+                        path = fullpath.u8string();
                         break;
                     }
                 }
@@ -91,7 +91,7 @@ public:
 
         auto fullpath = fs::absolute(path);
 
-        if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath, ".sn"))
+        if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath.u8string(), ".sn"))
         {
             fullpath += ".sn";
         }
