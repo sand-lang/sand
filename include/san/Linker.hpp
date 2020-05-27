@@ -1,49 +1,15 @@
 #pragma once
 
-#if !defined(LINKER_PATH) && !defined(LINKER_OPTIONS)
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#ifdef _WIN64
-
-#else
-
-#endif
-#elif __APPLE__
-#include <TargetConditionals.h>
-#if TARGET_IPHONE_SIMULATOR
-
-#elif TARGET_OS_IPHONE
-
-#elif TARGET_OS_MAC
-#define LINKER_PATH "ld"
-#define LINKER_OPTIONS "-lSystem"
-#else
-#error "Unknown Apple platform"
-#endif
-#elif __linux__
-#define LINKER_PATH "ld"
-#define LINKER_OPTIONS "--hash-style=both --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker "              \
-                       "/lib64/ld-linux-x86-64.so.2 -o a.out "                                                   \
-                       "/usr/lib/x86_64-linux-gnu/crt1.o "                                                       \
-                       "/usr/lib/x86_64-linux-gnu/crti.o "                                                       \
-                       "/usr/lib/gcc/x86_64-linux-gnu/8/crtbegin.o "                                             \
-                       "-L/usr/lib/gcc/x86_64-linux-gnu/8 "                                                      \
-                       "-L/usr/lib/x86_64-linux-gnu "                                                            \
-                       "-L/lib/x86_64-linux-gnu -L/lib64 -L/usr/lib/x86_64-linux-gnu "                           \
-                       "-L/usr/lib "                                                                             \
-                       "-L/usr/lib/llvm-7/lib "                                                                  \
-                       "-L/lib "                                                                                 \
-                       "-L/usr/lib "                                                                             \
-                       " -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed " \
-                       "/usr/lib/gcc/x86_64-linux-gnu/8/crtend.o "                                               \
-                       "/usr/lib/x86_64-linux-gnu/crtn.o"
-#elif __unix__
-#define LINKER_PATH "ld"
-#elif defined(_POSIX_VERSION)
-#define LINKER_PATH "ld"
-#else
-#error "Unknown platform"
-#endif
-#endif
+#include <lld/Common/Driver.h>
+#include <lld/Common/Memory.h>
+#include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringSwitch.h>
+#include <llvm/ADT/Triple.h>
+#include <llvm/ADT/Twine.h>
+#include <llvm/Support/CommandLine.h>
+#include <llvm/Support/InitLLVM.h>
+#include <llvm/Support/Path.h>
 
 #include <cstdlib>
 #include <string>
@@ -54,35 +20,47 @@ namespace San
 class Linker
 {
 public:
-    std::string command = "";
-
-    std::string prepare(const std::vector<std::string> &objects, const std::string &output_file)
+    static bool link(const std::vector<std::string> &objects, const std::vector<std::string> &libraries, const std::string &args, const std::string &output_file)
     {
-        std::string objects_str = this->join_objects(objects);
-        return this->command = (LINKER_PATH " " LINKER_OPTIONS " " + objects_str + " -o " + output_file);
-    }
+        std::vector<const char *> raw_args = {"lld"};
 
-    inline int execute() const
-    {
-        return std::system(this->command.c_str());
-    }
-
-private:
-    std::string join_objects(const std::vector<std::string> &objects) const
-    {
-        std::string str = "";
-
-        for (auto it = objects.begin(); it != objects.end(); it++)
+        for (auto &library : libraries)
         {
-            if (it != objects.begin())
-            {
-                str += " ";
-            }
+            auto option = "-l" + library;
 
-            str += *it;
+            auto s = new char[option.size() + 1];
+            strcpy(s, option.c_str());
+
+            raw_args.push_back(s);
         }
 
-        return str;
+        std::istringstream iss(args);
+        std::vector<std::string> vectorized_args(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
+
+        for (auto &arg : vectorized_args)
+        {
+            raw_args.push_back(arg.c_str());
+        }
+
+        raw_args.push_back("-o");
+        raw_args.push_back(output_file.c_str());
+
+        for (auto &object : objects)
+        {
+            raw_args.push_back(object.c_str());
+        }
+
+        std::string passed_args = "";
+
+        for (const auto &arg : raw_args)
+        {
+            passed_args += arg;
+            passed_args += ' ';
+        }
+
+        std::cout << "Linking with LLD: " << passed_args << std::endl;
+
+        return lld::mach_o::link(raw_args, false);
     }
 };
 } // namespace San
