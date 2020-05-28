@@ -57,3 +57,7 @@ dist/
 
 # Generated files
 /output
+
+# Internal libraries
+!/internal/**/*.a
+!/internal/**/*.def
