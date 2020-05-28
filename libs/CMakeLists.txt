@@ -50,6 +50,12 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lld")
 
 add_definitions(${LLVM_DEFINITIONS})
 
+set(DEPENDENCIES_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c"
+
+  PARENT_SCOPE
+)
+
 set(DEPENDENCIES_HEADERS
   ${ANTLR4_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp/runtime/src"
@@ -62,6 +68,8 @@ set(DEPENDENCIES_HEADERS
 
   "${CMAKE_CURRENT_SOURCE_DIR}/lld/include"
   "${CMAKE_BINARY_DIR}/libs/lld"
+
+  "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src"
 
   PARENT_SCOPE
 )
