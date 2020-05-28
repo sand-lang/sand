@@ -19,6 +19,12 @@
 
 #include <filesystem>
 
+#ifdef _WIN32
+#define DIRECTORY_SEPARATOR "\\"
+#else
+#define DIRECTORY_SEPARATOR "/"
+#endif
+
 namespace fs = std::filesystem;
 
 namespace San
@@ -45,29 +51,29 @@ public:
         // }
 
         raw_args.push_back("/nodefaultlib");
-        raw_args.push_bakc("/entry:main");
+        raw_args.push_back("/entry:main");
 
-        auto option = "/out:" + library;
+        auto option = "/out:" + output_file;
         raw_args.push_back(option.c_str());
 
         auto internal = get_internal_directory("windows", "x86_64").u8string();
 
-        auto kernel32_def = internal + "/kernel32.def";
-        auto ntdll_def = internal + "/ntdll.def";
+        auto ntdll_def = "/def:" + internal + (DIRECTORY_SEPARATOR "ntdll.def");
+        auto kernel32_def = "/def:" + internal + (DIRECTORY_SEPARATOR "kernel32.def");
 
-        auto kernel32_lib = internal + "/libwinapi_kernel32.a";
-        auto ntdll_lib = internal + "/libwinapi_ntdll.a";
+        auto ntdll_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_ntdll.a");
+        auto kernel32_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_kernel32.a");
 
-        raw_args.push_back(kernel32_def.c_str());
         raw_args.push_back(ntdll_def.c_str());
+        raw_args.push_back(kernel32_def.c_str());
 
         for (auto &arg : vectorized_args)
         {
             raw_args.push_back(arg.c_str());
         }
 
-        raw_args.push_back(kernel32_lib.c_str());
         raw_args.push_back(ntdll_lib.c_str());
+        raw_args.push_back(kernel32_lib.c_str());
 
         for (auto &object : objects)
         {
@@ -133,13 +139,14 @@ private:
 
         delete path;
 
-        return fs::absolute(str);
+        return fs::absolute(str).remove_filename();
     }
 
     static fs::path get_internal_directory(const std::string &operating_system, const std::string &arch)
     {
         auto bin = get_bin_directory();
-        return bin.append("../internal/" + operating_system + "/" + arch);
+
+        return fs::absolute(bin.append((".." DIRECTORY_SEPARATOR "internal" DIRECTORY_SEPARATOR) + operating_system + "/" + arch));
     }
 };
 } // namespace San
