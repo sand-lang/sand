@@ -1,7 +1,21 @@
+#[target_os = "darwin"]
 namespace std {
     extern fn printf(i8*, ...) : i32;
 
-    fn print(str: i8*) {
+    fn print(str: i8*&) {
         printf("%s\n", str);
+    }
+}
+
+#[target_os = "windows"]
+namespace std {
+    extern fn WriteConsoleA(i8*, i8*, u64, u64*, i8*) : bool;
+    extern fn GetStdHandle(u64): i8*;
+
+    fn print(str: i8*&) {
+        let handle = GetStdHandle(-11 as u64);
+        let count = std::memory::allocate<u64>(1 as u64);
+
+        WriteConsoleA(handle, str, std::strlen(str), count, 0 as i8*);
     }
 }
