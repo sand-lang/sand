@@ -114,7 +114,7 @@ BinaryLiteral: ('0b' | '0B') BINARYDIGIT (
 	)*;
 
 // Comments
-Comment: '#' CommentLine* -> skip;
+Comment: '//' CommentLine* -> skip;
 fragment CommentLine: ~ [\\\r\n] | Escape;
 
 // Specials
