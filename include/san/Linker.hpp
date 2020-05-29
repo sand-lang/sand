@@ -90,6 +90,10 @@ public:
             raw_args.push_back(s);
         }
 
+#if __APPLE__
+        raw_args.push_back("-lSystem");
+#endif
+
         raw_args.push_back("-o");
         raw_args.push_back(output_file.c_str());
 
