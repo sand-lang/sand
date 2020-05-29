@@ -287,6 +287,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitAttributes(SanParser::AttributesContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAttribute(SanParser::AttributeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitEos(SanParser::EosContext *ctx) override {
     return visitChildren(ctx);
   }

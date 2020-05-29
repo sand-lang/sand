@@ -11,6 +11,7 @@
 #include <san/Environment.hpp>
 #include <san/Helpers.hpp>
 
+#include <san/Attributes.hpp>
 #include <san/NameArray.hpp>
 #include <san/Namespace.hpp>
 #include <san/Scope.hpp>
@@ -214,6 +215,11 @@ public:
     {
         auto scope = this->scopes.top();
 
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_os())
+            return nullptr;
+
         auto type = this->visitFunctionDeclaration(context->functionDeclaration(), this_type);
 
         if (auto function_type = dynamic_cast<Types::FunctionType *>(type))
@@ -397,6 +403,12 @@ public:
     Namespace *visitNamespaceStatement(SanParser::NamespaceStatementContext *context)
     {
         auto scope = this->scopes.top();
+
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_os())
+            return nullptr;
+
         auto name = context->VariableName()->getText();
 
         auto names = scope->get_names(name);
@@ -851,6 +863,12 @@ public:
     Types::ClassType *visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context)
     {
         auto scope = this->scopes.top();
+
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_os())
+            return nullptr;
+
         auto class_scope = Scope::create(scope);
 
         auto scoped_name_context = context->scopedNameNoGeneric();
@@ -900,6 +918,12 @@ public:
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
     {
         auto scope = this->scopes.top();
+
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_os())
+            return nullptr;
+
         auto class_scope = Scope::create(scope);
 
         auto name = context->VariableName()->getText();
@@ -2227,6 +2251,27 @@ public:
         }
 
         return types;
+    }
+
+    Attributes visitAttributes(SanParser::AttributesContext *context)
+    {
+        Attributes attributes;
+
+        for (auto &attribute_context : context->attribute())
+        {
+            auto attribute = this->visitAttribute(attribute_context);
+            attributes.set(attribute);
+        }
+
+        return attributes;
+    }
+
+    std::pair<std::string, std::string> visitAttribute(SanParser::AttributeContext *context)
+    {
+        auto key = context->VariableName()->getText();
+        auto value = this->stringLiteralToString(context->StringLiteral()->getText());
+
+        return std::make_pair(key, value);
     }
 };
 } // namespace San

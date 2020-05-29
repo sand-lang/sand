@@ -21,11 +21,11 @@ public:
     Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
     Destructor = 36, Namespace = 37, ScopeResolver = 38, VariableDeclarator = 39, 
     If = 40, Else = 41, While = 42, Break = 43, For = 44, In = 45, Function = 46, 
-    Extern = 47, Return = 48, Comma = 49, Colon = 50, Import = 51, True = 52, 
-    False = 53, InstructionsSeparator = 54, VariableName = 55, StringLiteral = 56, 
-    CharLiteral = 57, DecimalLiteral = 58, FloatingLiteral = 59, ZeroLiteral = 60, 
-    HexadecimalLiteral = 61, BinaryLiteral = 62, Comment = 63, WhiteSpace = 64, 
-    LineTerminator = 65
+    Extern = 47, Return = 48, Comma = 49, Colon = 50, Attribute = 51, Import = 52, 
+    True = 53, False = 54, InstructionsSeparator = 55, VariableName = 56, 
+    StringLiteral = 57, CharLiteral = 58, DecimalLiteral = 59, FloatingLiteral = 60, 
+    ZeroLiteral = 61, HexadecimalLiteral = 62, BinaryLiteral = 63, Comment = 64, 
+    WhiteSpace = 65, LineTerminator = 66
   };
 
   enum {
@@ -46,7 +46,7 @@ public:
     RuleType = 42, RuleTypeQualifier = 43, RuleTypeDimensions = 44, RuleTypePointer = 45, 
     RuleTypeReference = 46, RuleTypeName = 47, RuleFunctionType = 48, RuleClassTypeName = 49, 
     RuleClassTypeNameGenerics = 50, RuleNamespaceStatement = 51, RuleImportStatement = 52, 
-    RuleEos = 53
+    RuleAttributes = 53, RuleAttribute = 54, RuleEos = 55
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -112,6 +112,8 @@ public:
   class ClassTypeNameGenericsContext;
   class NamespaceStatementContext;
   class ImportStatementContext;
+  class AttributesContext;
+  class AttributeContext;
   class EosContext; 
 
   class  InstructionsContext : public antlr4::ParserRuleContext {
@@ -631,6 +633,7 @@ public:
   public:
     FunctionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
     FunctionDeclarationContext *functionDeclaration();
     BodyContext *body();
     antlr4::tree::TerminalNode *InstructionsSeparator();
@@ -804,6 +807,7 @@ public:
   public:
     SpecialClassStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
     antlr4::tree::TerminalNode *Special();
     antlr4::tree::TerminalNode *Class();
     ScopedNameNoGenericContext *scopedNameNoGeneric();
@@ -823,6 +827,7 @@ public:
   public:
     ClassStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
     antlr4::tree::TerminalNode *Class();
     antlr4::tree::TerminalNode *VariableName();
     ClassBodyContext *classBody();
@@ -1094,6 +1099,7 @@ public:
   public:
     NamespaceStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
     antlr4::tree::TerminalNode *Namespace();
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *OpeningBrace();
@@ -1121,6 +1127,37 @@ public:
   };
 
   ImportStatementContext* importStatement();
+
+  class  AttributesContext : public antlr4::ParserRuleContext {
+  public:
+    AttributesContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<AttributeContext *> attribute();
+    AttributeContext* attribute(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AttributesContext* attributes();
+
+  class  AttributeContext : public antlr4::ParserRuleContext {
+  public:
+    AttributeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Attribute();
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Equal();
+    antlr4::tree::TerminalNode *StringLiteral();
+    antlr4::tree::TerminalNode *ClosingBracket();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AttributeContext* attribute();
 
   class  EosContext : public antlr4::ParserRuleContext {
   public:

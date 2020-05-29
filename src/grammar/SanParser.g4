@@ -100,7 +100,10 @@ functionCallArguments:
 functionCallArgument: expression;
 
 function:
-	Extern? functionDeclaration (body | InstructionsSeparator);
+	attributes Extern? functionDeclaration (
+		body
+		| InstructionsSeparator
+	);
 
 functionDeclaration:
 	Function (
@@ -133,12 +136,14 @@ forStatement: 'for' VariableName 'in' expression statement;
 breakStatement: 'break';
 
 specialClassStatement:
-	Special 'class' scopedNameNoGeneric classTypeNameGenerics (
+	attributes Special 'class' scopedNameNoGeneric classTypeNameGenerics (
 		Extends classExtends
 	)? classBody;
 
 classStatement:
-	'class' VariableName classGenerics? (Extends classExtends)? classBody;
+	attributes 'class' VariableName classGenerics? (
+		Extends classExtends
+	)? classBody;
 
 classGenerics: '<' VariableName (',' VariableName)* '>';
 
@@ -175,8 +180,12 @@ classTypeName: scopedName;
 
 classTypeNameGenerics: '<' type (',' type)* '>';
 
-namespaceStatement: Namespace VariableName '{' statement* '}';
+namespaceStatement:
+	attributes Namespace VariableName '{' statement* '}';
 
 importStatement: Import StringLiteral;
+
+attributes: attribute*;
+attribute: '#[' VariableName '=' StringLiteral ']';
 
 eos: (EOF | LineTerminator);

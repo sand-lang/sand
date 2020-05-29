@@ -155,6 +155,10 @@ public:
 
     virtual antlrcpp::Any visitImportStatement(SanParser::ImportStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitAttributes(SanParser::AttributesContext *context) = 0;
+
+    virtual antlrcpp::Any visitAttribute(SanParser::AttributeContext *context) = 0;
+
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 
 
