@@ -1,5 +1,3 @@
-import "./string"
-
 namespace std {
     #[target_os = "darwin"]
     namespace memory {
