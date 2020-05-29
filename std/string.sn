@@ -1,0 +1,11 @@
+namespace std {
+    fn strlen(str: i8*) : u64 {
+        let len: u64 = 0;
+
+        while str[len] != 0 {
+            len = len + 1;
+        }
+
+        return len;
+    }
+}
