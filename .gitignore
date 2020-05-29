@@ -57,6 +57,7 @@ dist/
 
 # Generated files
 /output
+/bin
 
 # Internal libraries
 !/internal/**/*.a
