@@ -96,6 +96,11 @@ public:
             return module->getDataLayout().getPointerSize();
         }
 
+        if (this->is_array())
+        {
+            return this->base->size(module) * this->ref->getArrayNumElements();
+        }
+
         return this->ref->getScalarSizeInBits() / 8;
     }
 

@@ -62,6 +62,17 @@ public:
 
             builder.CreateMemCpy(lvalue->get_ref(), 1, rvalue->get_ref(), 1, llvm::cast<llvm::Value>(size));
         }
+        else if (this->type->is_array() && value->type->is_array())
+        {
+            auto i8ptr = Type::i8(builder.getContext())->pointer();
+
+            auto rvalue = value->cast(i8ptr, builder, false);
+            lvalue = lvalue->cast(i8ptr, builder, false);
+
+            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), lvalue->type->size(module));
+
+            builder.CreateMemCpy(lvalue->get_ref(), this->get_ref()->getPointerAlignment(module->getDataLayout()), rvalue->get_ref(), value->get_ref()->getPointerAlignment(module->getDataLayout()), llvm::cast<llvm::Value>(size));
+        }
         else
         {
             auto rvalue = value->cast(lvalue_type, builder, value->is_alloca);
@@ -76,6 +87,19 @@ public:
             return this;
         }
 
+        if (this->type->is_array())
+        {
+            if (this->is_alloca && load_reference && this->type->is_reference)
+            {
+                auto value = this->load_reference(builder);
+                return value->load_array(builder);
+            }
+            else
+            {
+                return this->load_array(builder);
+            }
+        }
+
         auto value = builder.CreateLoad(this->get_ref());
 
         if (this->is_alloca && load_reference && this->type->is_reference)
@@ -86,6 +110,12 @@ public:
         auto type = this->type->get_base(false);
 
         return new Value(this->name + ".load", type, value);
+    }
+
+    Value *load_array(llvm::IRBuilder<> &builder)
+    {
+        auto ref = builder.CreateConstInBoundsGEP2_64(this->get_ref(), 0, 0, "");
+        return new Value(this->name + ".load", this->type, ref);
     }
 
     Value *load_reference(llvm::IRBuilder<> &builder)
@@ -107,6 +137,16 @@ public:
 
         if (value->is_alloca)
         {
+            if (value->type->is_reference && value->type->base->is_array())
+            {
+                value = value->load_reference(builder);
+            }
+
+            if (value->type->is_array())
+            {
+                return this->load_array(builder);
+            }
+
             auto ref = builder.CreateLoad(this->get_ref());
             value = new Value(this->name + ".load", value->type, ref);
         }
