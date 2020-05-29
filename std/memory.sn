@@ -1,9 +1,36 @@
 namespace std {
+    #[target_os = "darwin"]
     namespace memory {
         extern fn calloc(u64, u64) : void*;
+        extern fn free(ptr: void *);
 
         fn allocate<T>(count: u64) : T* {
-            return calloc(count, sizeof T) as T*;
+            return calloc(count, (sizeof T) as u64) as T*;
+        }
+
+        fn deallocate(ptr: i8*&) {
+            if ptr != 0 {
+                free(ptr);
+                ptr = 0;
+            }
+        }
+    }
+
+    #[target_os = "windows"]
+    namespace memory {
+        extern fn VirtualAlloc(i8*, u64, u64, u64) : i8*;
+        extern fn VirtualFree(i8*, u64, u64) : bool;
+
+        fn allocate<T>(count: u64) : T* {
+            return VirtualAlloc(0 as i8*, count * (sizeof T), 12288 as u64, 4 as u64);
+        }
+
+        fn deallocate(ptr: i8*&) {
+            if ptr != 0 {
+                if VirtualFree(ptr, 0 as u64, 0x8000 as u64) {
+                    ptr = 0;
+                }
+            }
         }
     }
 }
