@@ -1,0 +1,5 @@
+import "print"
+
+fn main() {
+    std::print("Hello, World!");
+}
