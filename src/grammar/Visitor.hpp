@@ -58,7 +58,10 @@ public:
 
     size_t generating_properties_stack = 0;
 
-    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_), scopes(this->env) {}
+    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_), scopes(this->env)
+    {
+        this->include_paths.push_back(Environment::get_std_directory());
+    }
 
     void from_file(std::string path)
     {
