@@ -116,8 +116,8 @@ public:
         auto parser = new SanParser(tokens);
         parser->removeErrorListeners();
 
-        auto error_listener = new ParserErrorListener(this->env.debugger);
-        parser->addErrorListener(error_listener);
+        // auto error_listener = new ParserErrorListener(this->env.debugger);
+        // parser->addErrorListener(error_listener);
 
         SanParser::InstructionsContext *context = parser->instructions();
 
