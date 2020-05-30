@@ -5,6 +5,8 @@
 #include <san/Values/Function.hpp>
 #include <san/Values/Variable.hpp>
 
+#include <algorithm>
+
 namespace San
 {
 class NameArray : public Name
@@ -77,6 +79,9 @@ public:
     /** Return a pointer of Value or FunctionType */
     Name *get_function(const std::vector<Type *> &generics, const std::vector<Type *> &args)
     {
+        size_t score = Type::NOT_COMPATIBLE;
+        Name *best = nullptr;
+
         for (auto it = this->names.rbegin(); it != this->names.rend(); it++)
         {
             auto name = *it;
@@ -85,9 +90,16 @@ public:
             {
                 if (auto type = dynamic_cast<Types::FunctionType *>(value->type->behind_reference()))
                 {
-                    if (type->compare_args(args))
+                    auto compatibility = type->compare_args(args);
+
+                    if (compatibility == 0)
                     {
                         return value;
+                    }
+                    else if (compatibility < score)
+                    {
+                        score = compatibility;
+                        best = value;
                     }
                 }
             }
@@ -96,7 +108,7 @@ public:
             // }
         }
 
-        return nullptr;
+        return best;
     }
 
     NameArray *get_generic_classes();

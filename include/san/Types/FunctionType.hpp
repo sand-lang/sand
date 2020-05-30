@@ -91,7 +91,7 @@ public:
         return this->compare_args(args_types);
     }
 
-    bool compare_args(const std::vector<Type *> args) const
+    size_t compare_args(const std::vector<Type *> args) const
     {
         // `this` is automatically passed as arguments, it should not be in the comparison
         size_t start = (this->is_method ? 1 : 0);
@@ -100,23 +100,29 @@ public:
         {
             if (args.size() < this->args.size())
             {
-                return false;
+                return Type::NOT_COMPATIBLE;
             }
         }
         else if (args.size() != (this->args.size() - start))
         {
-            return false;
+            return Type::NOT_COMPATIBLE;
         }
+
+        size_t score = 0;
 
         for (size_t i = start; i < this->args.size(); i++)
         {
-            if (!this->args[i].type->equals(args[i - start]))
+            auto compatibility = this->args[i].type->compatibility(args[i - start]);
+
+            if (compatibility == Type::NOT_COMPATIBLE)
             {
-                return false;
+                return Type::NOT_COMPATIBLE;
             }
+
+            score += compatibility;
         }
 
-        return true;
+        return score;
     }
 };
 } // namespace San::Types

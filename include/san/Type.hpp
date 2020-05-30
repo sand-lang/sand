@@ -4,12 +4,17 @@
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <cstdlib>
 #include <iostream>
+#include <limits>
 
 namespace San
 {
 class Type : public Name
 {
+public:
+    static constexpr size_t NOT_COMPATIBLE = std::numeric_limits<size_t>::max();
+
 public:
     bool is_constant = false;
     bool is_signed = true;
@@ -404,6 +409,63 @@ public:
         default:
             return false;
         }
+    }
+
+    inline size_t compatibility(Type *right)
+    {
+        return Type::compatibility(this, right);
+    }
+
+    static size_t compatibility(Type *left, Type *right)
+    {
+        if (left->is_reference)
+        {
+            return compatibility(left->base, right);
+        }
+
+        if (right->is_reference)
+        {
+            return compatibility(left, right->base);
+        }
+
+        if (left->is_pointer())
+        {
+            if (!right->is_pointer() && !right->is_array())
+            {
+                return NOT_COMPATIBLE;
+            }
+
+            return Type::compatibility(left->base, right->base);
+        }
+
+        if (left->is_integer())
+        {
+            if (!right->is_integer())
+            {
+                return NOT_COMPATIBLE;
+            }
+
+            size_t score = 0;
+
+            if (left->is_signed != right->is_signed)
+            {
+                score += 10;
+            }
+
+            auto lbits = left->get_ref()->getIntegerBitWidth() / 8;
+            auto rbits = right->get_ref()->getIntegerBitWidth() / 8;
+
+            if (lbits > rbits)
+            {
+                return score + (lbits - rbits);
+            }
+            else
+            {
+                return score + (rbits - lbits);
+            }
+        }
+
+        return Type::equals(left->ref, right->ref) ? 0UL : NOT_COMPATIBLE;
     }
 };
 } // namespace San
