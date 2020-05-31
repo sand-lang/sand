@@ -57,6 +57,7 @@ public:
 
     ScopeStack scopes;
     std::stack<fs::path> files;
+    std::vector<fs::path> imported;
 
     size_t generating_properties_stack = 0;
 
@@ -95,7 +96,7 @@ public:
             }
         }
 
-        auto fullpath = fs::absolute(path);
+        auto fullpath = fs::absolute(path).lexically_normal();
 
         if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath.u8string(), ".sn"))
         {
@@ -106,6 +107,13 @@ public:
         {
             throw FileNotFoundException();
         }
+
+        if (std::find(imported.begin(), imported.end(), fullpath) != imported.end())
+        {
+            return;
+        }
+
+        imported.push_back(fullpath);
 
         std::ifstream stream;
         stream.open(fullpath);
