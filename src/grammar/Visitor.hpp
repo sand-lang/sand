@@ -1863,9 +1863,18 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        lexpr->store(rexpr, scope->builder(), scope->module());
+        auto args = {lexpr, rexpr};
+        if (auto overload = this->getOperatorOverload("=", args))
+        {
+            return overload->call(scope->builder(), args);
+        }
+        else if (lexpr->type->compatibility(rexpr->type) != Type::NOT_COMPATIBLE)
+        {
+            lexpr->store(rexpr, scope->builder(), scope->module());
+            return lexpr;
+        }
 
-        return lexpr;
+        throw InvalidRightValueException(rexpr_context->getStart());
     }
 
     Value *getOperatorOverload(const std::string &name, const std::vector<Value *> &args)
