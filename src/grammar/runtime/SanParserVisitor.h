@@ -93,6 +93,8 @@ public:
 
     virtual antlrcpp::Any visitFunctionCallArgument(SanParser::FunctionCallArgumentContext *context) = 0;
 
+    virtual antlrcpp::Any visitOverloadableOperator(SanParser::OverloadableOperatorContext *context) = 0;
+
     virtual antlrcpp::Any visitFunction(SanParser::FunctionContext *context) = 0;
 
     virtual antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) = 0;

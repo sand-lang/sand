@@ -100,6 +100,22 @@ functionCallArguments:
 
 functionCallArgument: expression;
 
+overloadableOperator:
+	'+'
+	| '-'
+	| '*'
+	| '/'
+	| '%'
+	| '^'
+	| '|'
+	| '&'
+	| '=='
+	| '!='
+	| '<'
+	| '<='
+	| '>'
+	| '>=';
+
 function:
 	attributes Extern? functionDeclaration (
 		body
@@ -109,7 +125,7 @@ function:
 functionDeclaration:
 	Function (
 		(
-			VariableName classGenerics? '(' (
+			((Operator overloadableOperator) | VariableName) classGenerics? '(' (
 				functionArguments (',' functionVariadicArgument)?
 				| functionVariadicArgument?
 			) ')' (':' type)?

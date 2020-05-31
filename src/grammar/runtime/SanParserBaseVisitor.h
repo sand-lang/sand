@@ -163,6 +163,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitOverloadableOperator(SanParser::OverloadableOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitFunction(SanParser::FunctionContext *ctx) override {
     return visitChildren(ctx);
   }

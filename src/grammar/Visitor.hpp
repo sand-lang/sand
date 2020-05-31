@@ -311,7 +311,14 @@ public:
         auto scope = this->scopes.top();
 
         std::string name = "";
-        if (auto variable_name = context->VariableName())
+        bool is_operator_overload = false;
+
+        if (auto operator_name = context->overloadableOperator())
+        {
+            name = operator_name->getText();
+            is_operator_overload = true;
+        }
+        else if (auto variable_name = context->VariableName())
         {
             name = variable_name->getText();
         }
@@ -1493,12 +1500,24 @@ public:
             {
                 return value;
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("+", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->Sub())
         {
             if (auto value = Value::sub(scope->builder(), lvalue, rvalue))
             {
                 return value;
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("-", args))
+            {
+                return overload->call(scope->builder(), args);
             }
         }
 
@@ -1531,6 +1550,12 @@ public:
                 auto value = this->env.builder.CreateFMul(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("mul", lvalue->type, value);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("*", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->Div())
         {
@@ -1544,6 +1569,12 @@ public:
                 auto value = this->env.builder.CreateFDiv(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("div", lvalue->type, value);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("/", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->Mod())
         {
@@ -1556,6 +1587,12 @@ public:
             {
                 auto value = this->env.builder.CreateFRem(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("mod", lvalue->type, value);
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("%", args))
+            {
+                return overload->call(scope->builder(), args);
             }
         }
 
@@ -1583,6 +1620,12 @@ public:
                 auto value = this->env.builder.CreateXor(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("xor", lvalue->type, value);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("^", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->BitwiseOr())
         {
@@ -1591,6 +1634,12 @@ public:
                 auto value = this->env.builder.CreateOr(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("or", lvalue->type, value);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("|", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->BitwiseAnd())
         {
@@ -1598,6 +1647,12 @@ public:
             {
                 auto value = this->env.builder.CreateAnd(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("and", lvalue->type, value);
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("&", args))
+            {
+                return overload->call(scope->builder(), args);
             }
         }
 
@@ -1630,10 +1685,25 @@ public:
                 auto value = this->env.builder.CreateFCmpOEQ(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("eq", Type::i1(scope->context()), value, false);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("==", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->NotEqualTo())
         {
-            return lvalue->not_equal(scope->builder(), rvalue);
+            if (auto value = lvalue->not_equal(scope->builder(), rvalue))
+            {
+                return value;
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("!=", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->LessThan())
         {
@@ -1646,6 +1716,12 @@ public:
             {
                 auto value = this->env.builder.CreateFCmpOLT(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("lt", Type::i1(scope->context()), value, false);
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("<", args))
+            {
+                return overload->call(scope->builder(), args);
             }
         }
         else if (opt->LessThanOrEqualTo())
@@ -1660,6 +1736,12 @@ public:
                 auto value = this->env.builder.CreateFCmpOLE(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("lte", Type::i1(scope->context()), value, false);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("<=", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->GreaterThan())
         {
@@ -1673,6 +1755,12 @@ public:
                 auto value = this->env.builder.CreateFCmpOGT(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("gt", Type::i1(scope->context()), value, false);
             }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">", args))
+            {
+                return overload->call(scope->builder(), args);
+            }
         }
         else if (opt->GreaterThanOrEqualTo())
         {
@@ -1685,6 +1773,12 @@ public:
             {
                 auto value = this->env.builder.CreateFCmpOGE(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("gte", Type::i1(scope->context()), value, false);
+            }
+
+            auto args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">=", args))
+            {
+                return overload->call(scope->builder(), args);
             }
         }
 
@@ -1772,6 +1866,22 @@ public:
         lexpr->store(rexpr, scope->builder(), scope->module());
 
         return lexpr;
+    }
+
+    Value *getOperatorOverload(const std::string &name, const std::vector<Value *> &args)
+    {
+        auto scope = this->scopes.top();
+        auto names = scope->get_names(name);
+
+        if (auto match = names->get_function(args))
+        {
+            if (auto value = dynamic_cast<Value *>(match))
+            {
+                return value;
+            }
+        }
+
+        return nullptr;
     }
 
     Value *visitIndex(SanParser::IndexContext *context)

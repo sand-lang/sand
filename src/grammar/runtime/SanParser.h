@@ -21,11 +21,11 @@ public:
     Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
     Destructor = 36, Namespace = 37, ScopeResolver = 38, VariableDeclarator = 39, 
     If = 40, Else = 41, While = 42, Break = 43, For = 44, In = 45, Function = 46, 
-    Extern = 47, Return = 48, Comma = 49, Colon = 50, Alias = 51, Attribute = 52, 
-    Import = 53, True = 54, False = 55, InstructionsSeparator = 56, VariableName = 57, 
-    StringLiteral = 58, CharLiteral = 59, DecimalLiteral = 60, FloatingLiteral = 61, 
-    ZeroLiteral = 62, HexadecimalLiteral = 63, BinaryLiteral = 64, Comment = 65, 
-    WhiteSpace = 66, LineTerminator = 67
+    Extern = 47, Return = 48, Operator = 49, Alias = 50, Comma = 51, Colon = 52, 
+    Attribute = 53, Import = 54, True = 55, False = 56, InstructionsSeparator = 57, 
+    VariableName = 58, StringLiteral = 59, CharLiteral = 60, DecimalLiteral = 61, 
+    FloatingLiteral = 62, ZeroLiteral = 63, HexadecimalLiteral = 64, BinaryLiteral = 65, 
+    Comment = 66, WhiteSpace = 67, LineTerminator = 68
   };
 
   enum {
@@ -36,17 +36,17 @@ public:
     RuleComparisonOperatorStatement = 13, RuleEqualityOperatorStatement = 14, 
     RuleLiteral = 15, RuleBooleanLiteral = 16, RuleIntegerLiteral = 17, 
     RuleFloatingLiteral = 18, RuleVariableDeclaration = 19, RuleFunctionCallArguments = 20, 
-    RuleFunctionCallArgument = 21, RuleFunction = 22, RuleFunctionDeclaration = 23, 
-    RuleFunctionVariadicArgument = 24, RuleFunctionArguments = 25, RuleFunctionArgument = 26, 
-    RuleReturnStatement = 27, RuleIfStatement = 28, RuleElseStatement = 29, 
-    RuleWhileStatement = 30, RuleForStatement = 31, RuleBreakStatement = 32, 
-    RuleSpecialClassStatement = 33, RuleClassStatement = 34, RuleClassGenerics = 35, 
-    RuleClassExtends = 36, RuleClassBody = 37, RuleClassProperty = 38, RuleClassMethod = 39, 
-    RuleClassInstantiationProperties = 40, RuleClassInstantiationProperty = 41, 
-    RuleType = 42, RuleTypeQualifier = 43, RuleTypeDimensions = 44, RuleTypePointer = 45, 
-    RuleTypeReference = 46, RuleTypeName = 47, RuleFunctionType = 48, RuleClassTypeName = 49, 
-    RuleClassTypeNameGenerics = 50, RuleNamespaceStatement = 51, RuleImportStatement = 52, 
-    RuleAttributes = 53, RuleAttribute = 54, RuleAlias = 55, RuleEos = 56
+    RuleFunctionCallArgument = 21, RuleOverloadableOperator = 22, RuleFunction = 23, 
+    RuleFunctionDeclaration = 24, RuleFunctionVariadicArgument = 25, RuleFunctionArguments = 26, 
+    RuleFunctionArgument = 27, RuleReturnStatement = 28, RuleIfStatement = 29, 
+    RuleElseStatement = 30, RuleWhileStatement = 31, RuleForStatement = 32, 
+    RuleBreakStatement = 33, RuleSpecialClassStatement = 34, RuleClassStatement = 35, 
+    RuleClassGenerics = 36, RuleClassExtends = 37, RuleClassBody = 38, RuleClassProperty = 39, 
+    RuleClassMethod = 40, RuleClassInstantiationProperties = 41, RuleClassInstantiationProperty = 42, 
+    RuleType = 43, RuleTypeQualifier = 44, RuleTypeDimensions = 45, RuleTypePointer = 46, 
+    RuleTypeReference = 47, RuleTypeName = 48, RuleFunctionType = 49, RuleClassTypeName = 50, 
+    RuleClassTypeNameGenerics = 51, RuleNamespaceStatement = 52, RuleImportStatement = 53, 
+    RuleAttributes = 54, RuleAttribute = 55, RuleAlias = 56, RuleEos = 57
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -81,6 +81,7 @@ public:
   class VariableDeclarationContext;
   class FunctionCallArgumentsContext;
   class FunctionCallArgumentContext;
+  class OverloadableOperatorContext;
   class FunctionContext;
   class FunctionDeclarationContext;
   class FunctionVariadicArgumentContext;
@@ -631,6 +632,32 @@ public:
 
   FunctionCallArgumentContext* functionCallArgument();
 
+  class  OverloadableOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    OverloadableOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Add();
+    antlr4::tree::TerminalNode *Sub();
+    antlr4::tree::TerminalNode *Mul();
+    antlr4::tree::TerminalNode *Div();
+    antlr4::tree::TerminalNode *Mod();
+    antlr4::tree::TerminalNode *Xor();
+    antlr4::tree::TerminalNode *BitwiseOr();
+    antlr4::tree::TerminalNode *BitwiseAnd();
+    antlr4::tree::TerminalNode *EqualTo();
+    antlr4::tree::TerminalNode *NotEqualTo();
+    antlr4::tree::TerminalNode *LessThan();
+    antlr4::tree::TerminalNode *LessThanOrEqualTo();
+    antlr4::tree::TerminalNode *GreaterThan();
+    antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  OverloadableOperatorContext* overloadableOperator();
+
   class  FunctionContext : public antlr4::ParserRuleContext {
   public:
     FunctionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -653,14 +680,16 @@ public:
     FunctionDeclarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Function();
-    antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
     antlr4::tree::TerminalNode *Destructor();
+    antlr4::tree::TerminalNode *VariableName();
     FunctionArgumentsContext *functionArguments();
     ClassGenericsContext *classGenerics();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
+    antlr4::tree::TerminalNode *Operator();
+    OverloadableOperatorContext *overloadableOperator();
     antlr4::tree::TerminalNode *Comma();
     FunctionVariadicArgumentContext *functionVariadicArgument();
 

@@ -72,16 +72,19 @@ Break: 'break';
 For: 'for';
 In: 'in';
 
-// Others
+// Functions
 Function: 'fn';
 Extern: 'extern';
 Return: 'return';
-Comma: ',';
-Colon: ':';
+
+Operator: 'operator';
 
 // Alias
 Alias: 'alias';
 
+// Others
+Comma: ',';
+Colon: ':';
 Attribute: '#[';
 
 Import: 'import';
