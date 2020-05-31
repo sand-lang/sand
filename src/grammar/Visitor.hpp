@@ -687,7 +687,7 @@ public:
                 value = value->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
             }
 
-            if_then->conditional_br(scope->builder(), value, if_next);
+            if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
         }
         else if (auto variable_declaration = context->variableDeclaration())
         {
@@ -698,7 +698,7 @@ public:
                 value = value->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
             }
 
-            if_then->conditional_br(scope->builder(), value, if_next);
+            if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
         }
 
         scope->get_function()->insert(if_then);

@@ -241,7 +241,7 @@ public:
         }
         else if (load)
         {
-            value = value->load(builder);
+            value = value->load_alloca_and_reference(builder);
         }
 
         auto ref = value->get_ref();
