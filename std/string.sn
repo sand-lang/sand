@@ -1,3 +1,5 @@
+import "memory"
+
 namespace std {
     fn strlen(str: i8*) : u64 {
         let len: u64 = 0;
@@ -7,5 +9,41 @@ namespace std {
         }
 
         return len;
+    }
+
+    fn numlen(n: i64) : u64 {
+        let len: u64 = 0;
+
+        while n != 0 {
+            len = len + 1;
+            n = n / 10;
+        }
+
+        return len;
+    }
+
+    fn to_string(n: i64) : i8* {
+        let is_negative = n < 0;
+
+        let len = numlen(n);
+
+        if is_negative {
+            len = len + (1 as u64);
+            n = 0 - n;
+        }
+
+        let str = std::memory::allocate<i8>(len + 1);
+
+        while n != 0 {
+            str[len - (1 as u64)] = (n % 10) + '0';
+            n = n / 10;
+            len = len - (1 as u64);
+        }
+
+        if is_negative {
+            str[0] = '-';
+        }
+
+        return str;
     }
 }
