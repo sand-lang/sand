@@ -46,7 +46,7 @@ public:
         auto lvalue = this;
         auto lvalue_type = lvalue->type;
 
-        if (lvalue->type->is_reference && !overwrite_reference)
+        if (lvalue->is_alloca && lvalue_type->is_reference && !overwrite_reference)
         {
             lvalue = lvalue->load_reference(builder);
         }
@@ -75,6 +75,12 @@ public:
         }
         else
         {
+            if (!overwrite_reference) {
+                value = value->load_alloca_and_reference(builder);
+            } else if (value->is_alloca && value->type->is_reference) {
+                value = value->load(builder, false);
+            }
+
             auto rvalue = value->cast(lvalue_type, builder, value->is_alloca);
             builder.CreateStore(rvalue->get_ref(), lvalue->get_ref());
         }

@@ -1922,10 +1922,21 @@ public:
     Name *visitPropertyExpression(SanParser::PropertyExpressionContext *context)
     {
         auto scope = this->scopes.top();
+        auto expr = this->valueFromExpression(context->expression());
 
-        auto expr = this->valueFromExpression(context->expression())->load_reference(scope->builder());
+        if (expr->is_alloca)
+        {
+            expr = expr->load_reference(scope->builder());
+        }
 
-        if (auto class_type = dynamic_cast<Types::ClassType *>(expr->type))
+        auto type = expr->type;
+
+        if (type->is_reference)
+        {
+            type = type->base;
+        }
+
+        if (auto class_type = dynamic_cast<Types::ClassType *>(type))
         {
             return this->visitName(context->name(), expr);
         }
@@ -2078,7 +2089,7 @@ public:
     {
         auto scope = this->scopes.top();
 
-        if (auto type = dynamic_cast<Types::ClassType *>(value->type))
+        if (auto type = dynamic_cast<Types::ClassType *>(value->type->behind_reference()))
         {
             auto name = context->VariableName()->getText();
             auto names = type->get_names(name, value, scope->builder(), scope->module());
