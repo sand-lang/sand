@@ -11,6 +11,7 @@
 #include <san/Environment.hpp>
 #include <san/Helpers.hpp>
 
+#include <san/Alias.hpp>
 #include <san/Attributes.hpp>
 #include <san/NameArray.hpp>
 #include <san/Namespace.hpp>
@@ -18,6 +19,7 @@
 #include <san/ScopeStack.hpp>
 #include <san/StatementStatus.hpp>
 #include <san/Types/ClassType.hpp>
+#include <san/Types/GenericAlias.hpp>
 #include <san/Types/GenericClassType.hpp>
 #include <san/Types/GenericFunctionType.hpp>
 #include <san/Values/Function.hpp>
@@ -206,6 +208,10 @@ public:
         else if (auto import_statement = context->importStatement())
         {
             this->visitImportStatement(import_statement);
+        }
+        else if (auto alias_statement = context->alias())
+        {
+            this->visitAlias(alias_statement);
         }
 
         return nullptr;
@@ -1255,6 +1261,11 @@ public:
             {
                 auto name = names->last();
 
+                while (auto alias = dynamic_cast<Alias *>(name))
+                {
+                    name = alias->names->last();
+                }
+
                 if (auto type_name = dynamic_cast<Type *>(name))
                 {
                     type = type_name;
@@ -1409,6 +1420,11 @@ public:
         }
         else if (auto names = dynamic_cast<NameArray *>(lvalue))
         {
+            while (auto alias = dynamic_cast<Alias *>(names->last()))
+            {
+                names = alias->names;
+            }
+
             if (auto function = names->get_function(args))
             {
                 if (auto value = dynamic_cast<Value *>(function))
@@ -1814,6 +1830,11 @@ public:
     {
         if (auto array = dynamic_cast<NameArray *>(name))
         {
+            while (auto alias = dynamic_cast<Alias *>(array->last()))
+            {
+                array = alias->names;
+            }
+
             if (array->size() > 1 && !dynamic_cast<Values::Variable *>(array->get(0)))
             {
                 throw MultipleInstancesException(context->getStart());
@@ -1836,7 +1857,12 @@ public:
     {
         if (auto array = dynamic_cast<NameArray *>(name))
         {
-            if (auto type = dynamic_cast<Type *>(array->names[0]))
+            while (auto alias = dynamic_cast<Alias *>(array->last()))
+            {
+                array = alias->names;
+            }
+
+            if (auto type = dynamic_cast<Type *>(array->last()))
             {
                 return type;
             }
@@ -1982,9 +2008,14 @@ public:
 
         for (auto it = names->vector().rbegin(); it != names->vector().rend(); it++)
         {
-            auto &name = *it;
+            auto name = *it;
 
-            if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
+            if (auto alias = dynamic_cast<Alias *>(name))
+            {
+                auto values = this->visitTypeNameClassGenerics(context, alias->names);
+                array->merge(values);
+            }
+            else if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
 
@@ -2009,6 +2040,20 @@ public:
                 else
                 {
                     auto generated = this->generateGenericFunction(generic_function, generics);
+                    array->add(generated);
+                }
+            }
+            else if (auto generic_alias = dynamic_cast<Types::GenericAlias *>(name))
+            {
+                auto generics = this->visitClassTypeNameGenerics(context);
+
+                if (auto alias = generic_alias->get_child(generics))
+                {
+                    array->add(alias);
+                }
+                else
+                {
+                    auto generated = this->generateGenericAlias(generic_alias, generics);
                     array->add(generated);
                 }
             }
@@ -2275,6 +2320,52 @@ public:
         auto value = this->stringLiteralToString(context->StringLiteral()->getText());
 
         return std::make_pair(key, value);
+    }
+
+    Name *visitAlias(SanParser::AliasContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto name = context->VariableName()->getText();
+
+        if (auto generics_context = context->classGenerics())
+        {
+            auto generics = this->visitClassGenerics(generics_context);
+
+            auto alias_scope = Scope::create(scope);
+            auto alias = new Types::GenericAlias(alias_scope, name, generics, context);
+
+            scope->add_name(name, alias);
+            return alias;
+        }
+
+        auto names = this->visitScopedName(context->scopedName());
+
+        auto alias = new Alias(name, names);
+
+        scope->add_name(name, alias);
+        return alias;
+    }
+
+    Alias *generateGenericAlias(Types::GenericAlias *generic, const std::vector<Type *> &generics)
+    {
+        auto scope = generic->scope;
+        this->scopes.push(scope);
+
+        for (size_t i = 0; i < generic->generics.size(); i++)
+        {
+            auto &name = generic->generics[i]->name;
+            scope->add_name(name, generics[i]);
+        }
+
+        auto names = this->visitScopedName(generic->context->scopedName());
+
+        this->scopes.pop();
+
+        auto alias = new Alias(generic->name, names);
+        generic->children.push_back(Types::GenericAliasChild(generics, alias));
+
+        return alias;
     }
 };
 } // namespace San

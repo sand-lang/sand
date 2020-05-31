@@ -21,7 +21,8 @@ statement:
 	| breakStatement InstructionsSeparator
 	| specialClassStatement
 	| classStatement
-	| importStatement;
+	| importStatement
+	| alias InstructionsSeparator;
 
 expression:
 	'(' expression ')'										# InParenExpression
@@ -187,5 +188,7 @@ importStatement: Import StringLiteral;
 
 attributes: attribute*;
 attribute: '#[' VariableName '=' StringLiteral ']';
+
+alias: 'alias' VariableName classGenerics? '=' scopedName;
 
 eos: (EOF | LineTerminator);

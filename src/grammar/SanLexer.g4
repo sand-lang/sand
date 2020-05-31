@@ -79,6 +79,9 @@ Return: 'return';
 Comma: ',';
 Colon: ':';
 
+// Alias
+Alias: 'alias';
+
 Attribute: '#[';
 
 Import: 'import';
