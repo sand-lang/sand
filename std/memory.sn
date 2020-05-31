@@ -11,7 +11,7 @@ namespace std {
         fn deallocate(ptr: i8*&) {
             if ptr != 0 {
                 free(ptr);
-                ptr = 0;
+                ptr = (0 as i8*);
             }
         }
     }
