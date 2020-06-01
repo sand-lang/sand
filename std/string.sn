@@ -1,4 +1,4 @@
-import "memory"
+import "./memory"
 
 namespace std {
     fn strlen(str: i8*) : u64 {
@@ -46,4 +46,59 @@ namespace std {
 
         return str;
     }
+}
+
+namespace std {
+    class string {
+        ptr: i8*;
+        length: u64;
+
+        static fn new() : string {
+            return string {
+                ptr = std::memory::allocate<i8>(1),
+                length = 0,
+            };
+        }
+
+        static fn new(value: i8*) : string {
+            let length = std::strlen(value);
+            let ptr = std::memory::allocate<i8>(length + 1);
+
+            std::memory::copy(value, ptr, length);
+
+            return string {
+                ptr,
+                length,
+            };
+        }
+
+        static fn assign(ptr: i8*, length: u64) : string {
+            return string {
+                ptr,
+                length,
+            };
+        }
+    }
+}
+
+fn operator +(l: std::string&, r: i8*) : std::string {
+  let r_length = std::strlen(r);
+  let concat_length = l.length + r_length;
+
+  let alloca = std::memory::allocate<i8>(concat_length + 1);
+  std::memory::copy(l.ptr, alloca, l.length);
+  std::memory::copy(r, ((alloca as u64) + l.length) as i8*, r_length);
+
+  return std::string::assign(alloca, concat_length);
+}
+
+fn operator +(l: i8*, r: std::string&) : std::string {
+  let l_length = std::strlen(l);
+  let concat_length = r.length + l_length;
+
+  let alloca = std::memory::allocate<i8>(concat_length + 1);
+  std::memory::copy(l, alloca, l_length);
+  std::memory::copy(r.ptr, ((alloca as u64) + l_length) as i8*, r.length);
+
+  return std::string::assign(alloca, concat_length);
 }

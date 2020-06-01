@@ -30,4 +30,8 @@ namespace std {
     fn print(n: i64) {
         print(std::to_string(n));
     }
+
+    fn print(str: std::string&) {
+        print(str.ptr);
+    }
 }
