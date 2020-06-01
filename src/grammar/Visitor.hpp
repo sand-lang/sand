@@ -124,7 +124,7 @@ public:
         auto lexer = new SanLexer(input);
         auto tokens = new CommonTokenStream(lexer);
         auto parser = new SanParser(tokens);
-        parser->removeErrorListeners();
+        // parser->removeErrorListeners();
 
         // auto error_listener = new ParserErrorListener(this->env.debugger);
         // parser->addErrorListener(error_listener);
