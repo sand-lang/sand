@@ -1909,7 +1909,7 @@ public:
         auto expr = this->valueFromExpression(context->expression());
         auto type = this->visitType(context->type());
 
-        return expr->cast(type, scope->builder(), false);
+        return expr->cast(type, scope->builder(), true);
     }
 
     Value *visitThisExpression(SanParser::ThisExpressionContext *context)
