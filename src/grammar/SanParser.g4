@@ -206,6 +206,10 @@ attributes: attribute*;
 attribute: '#[' VariableName '=' StringLiteral ']';
 
 alias:
-	'alias' VariableName classGenerics? '=' (scopedName | type);
+	'alias' VariableName classGenerics? '=' (
+		scopedName
+		| type
+		| literal
+	);
 
 eos: (EOF | LineTerminator);

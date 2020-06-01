@@ -2522,6 +2522,11 @@ public:
             auto type = this->visitType(type_context);
             names = new NameArray({type});
         }
+        else if (auto literal_context = context->literal())
+        {
+            auto literal = this->visitLiteral(literal_context);
+            names = new NameArray({literal});
+        }
 
         return new Alias(name, names);
     }
