@@ -1198,6 +1198,7 @@ public:
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *Equal();
     ScopedNameContext *scopedName();
+    TypeContext *type();
     ClassGenericsContext *classGenerics();
 
 

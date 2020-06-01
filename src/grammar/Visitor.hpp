@@ -2477,9 +2477,7 @@ public:
             return alias;
         }
 
-        auto names = this->visitScopedName(context->scopedName());
-
-        auto alias = new Alias(name, names);
+        auto alias = this->generateAlias(context);
 
         scope->add_name(name, alias);
         return alias;
@@ -2496,14 +2494,31 @@ public:
             scope->add_name(name, generics[i]);
         }
 
-        auto names = this->visitScopedName(generic->context->scopedName());
+        auto alias = this->generateAlias(generic->context);
 
         this->scopes.pop();
 
-        auto alias = new Alias(generic->name, names);
         generic->children.push_back(Types::GenericAliasChild(generics, alias));
 
         return alias;
+    }
+
+    Alias *generateAlias(SanParser::AliasContext *context)
+    {
+        auto name = context->VariableName()->getText();
+        NameArray *names = nullptr;
+
+        if (auto scoped_name_context = context->scopedName())
+        {
+            names = this->visitScopedName(scoped_name_context);
+        }
+        else if (auto type_context = context->type())
+        {
+            auto type = this->visitType(type_context);
+            names = new NameArray({type});
+        }
+
+        return new Alias(name, names);
     }
 };
 } // namespace San

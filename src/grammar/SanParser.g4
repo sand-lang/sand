@@ -205,6 +205,7 @@ importStatement: Import StringLiteral;
 attributes: attribute*;
 attribute: '#[' VariableName '=' StringLiteral ']';
 
-alias: 'alias' VariableName classGenerics? '=' scopedName;
+alias:
+	'alias' VariableName classGenerics? '=' (scopedName | type);
 
 eos: (EOF | LineTerminator);
