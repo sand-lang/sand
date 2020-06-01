@@ -2044,6 +2044,11 @@ public:
 
     std::shared_ptr<Scope> scopeFromName(Name *name)
     {
+        while (auto alias = dynamic_cast<Alias *>(name))
+        {
+            name = alias->names->last();
+        }
+
         if (auto class_type = dynamic_cast<Types::ClassType *>(name))
         {
             return class_type->get_static_scope();
