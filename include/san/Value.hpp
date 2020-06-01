@@ -75,9 +75,12 @@ public:
         }
         else
         {
-            if (!overwrite_reference) {
+            if (!overwrite_reference)
+            {
                 value = value->load_alloca_and_reference(builder);
-            } else if (value->is_alloca && value->type->is_reference) {
+            }
+            else if (value->is_alloca && value->type->is_reference)
+            {
                 value = value->load(builder, false);
             }
 
@@ -113,7 +116,12 @@ public:
             value = builder.CreateLoad(value);
         }
 
-        auto type = this->type->get_base(false);
+        auto type = this->type;
+
+        if (!this->is_alloca && load_reference && this->type->is_reference)
+        {
+            type = type->get_base(false);
+        }
 
         return new Value(this->name + ".load", type, value);
     }
@@ -248,6 +256,11 @@ public:
         else if (load)
         {
             value = value->load_alloca_and_reference(builder);
+        }
+
+        if (value->is_alloca && value->type->is_reference)
+        {
+            value = value->load(builder, false);
         }
 
         auto ref = value->get_ref();
