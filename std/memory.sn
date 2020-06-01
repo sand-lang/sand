@@ -3,6 +3,7 @@ namespace std {
     namespace memory {
         extern fn calloc(u64, u64) : void*;
         extern fn free(ptr: void *);
+        extern fn memcpy(src: void*, dst: void*, len: u64) : void*;
 
         fn allocate<T>(count: u64) : T* {
             return calloc(count, (sizeof T) as u64) as T*;
@@ -13,6 +14,10 @@ namespace std {
                 free(ptr);
                 ptr = (0 as i8*);
             }
+        }
+
+        fn copy(source: void*, destination: void*, length: u64) : void* {
+            return memcpy(destination, source, length);
         }
     }
 
