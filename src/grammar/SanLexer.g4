@@ -78,6 +78,7 @@ Extern: 'extern';
 Return: 'return';
 
 Operator: 'operator';
+Cast: 'cast';
 
 // Alias
 Alias: 'alias';

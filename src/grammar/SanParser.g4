@@ -125,7 +125,11 @@ function:
 functionDeclaration:
 	Function (
 		(
-			((Operator overloadableOperator) | VariableName) classGenerics? '(' (
+			(
+				(Operator overloadableOperator)
+				| (Cast type)
+				| VariableName
+			) classGenerics? '(' (
 				functionArguments (',' functionVariadicArgument)?
 				| functionVariadicArgument?
 			) ')' (':' type)?

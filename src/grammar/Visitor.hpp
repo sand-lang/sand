@@ -311,12 +311,18 @@ public:
         auto scope = this->scopes.top();
 
         std::string name = "";
-        bool is_operator_overload = false;
+
+        Type *cast_type = nullptr;
 
         if (auto operator_name = context->overloadableOperator())
         {
             name = operator_name->getText();
-            is_operator_overload = true;
+        }
+        else if (auto type_context = context->type(0))
+        {
+            cast_type = this->visitType(type_context);
+
+            name = "@cast";
         }
         else if (auto variable_name = context->VariableName())
         {
@@ -347,11 +353,15 @@ public:
 
         Type *return_type = nullptr;
 
-        if (name == "main")
+        if (cast_type)
+        {
+            return_type = cast_type;
+        }
+        else if (name == "main")
         {
             return_type = Type::i32(scope->context());
         }
-        else if (auto type_context = context->type())
+        else if (auto type_context = context->type(1))
         {
             return_type = this->visitType(type_context);
         }
