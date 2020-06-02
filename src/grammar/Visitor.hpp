@@ -1925,7 +1925,7 @@ public:
         auto names = scope->get_names("this");
         auto value = this->valueFromName(names, context);
 
-        return value->load(scope->builder());
+        return value->load(scope->builder())->gep(0UL, scope->builder());
     }
 
     Name *visitPropertyExpression(SanParser::PropertyExpressionContext *context)
