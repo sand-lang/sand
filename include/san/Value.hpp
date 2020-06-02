@@ -264,6 +264,7 @@ public:
         }
 
         auto ref = value->get_ref();
+        type = value->type;
 
         if (type->is_integer())
         {
