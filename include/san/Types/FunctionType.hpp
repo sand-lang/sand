@@ -59,7 +59,7 @@ public:
             }
             else
             {
-                argument_llvm_types.push_back(return_type->pointer()->get_ref());
+                argument_llvm_types.push_back(return_type->pointer(builder.getContext())->get_ref());
             }
 
             return_llvm_type = Type::llvm_void(builder.getContext());

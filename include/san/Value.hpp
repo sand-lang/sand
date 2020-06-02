@@ -53,7 +53,7 @@ public:
 
         if (this->type->is_struct() && value->type->is_struct())
         {
-            auto i8ptr = Type::i8(builder.getContext())->pointer();
+            auto i8ptr = Type::i8(builder.getContext())->pointer(builder.getContext());
 
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
@@ -64,7 +64,7 @@ public:
         }
         else if (this->type->is_array() && value->type->is_array())
         {
-            auto i8ptr = Type::i8(builder.getContext())->pointer();
+            auto i8ptr = Type::i8(builder.getContext())->pointer(builder.getContext());
 
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
@@ -232,7 +232,7 @@ public:
         };
 
         auto value = builder.CreateInBoundsGEP(bytes, idxs, "idx");
-        value = builder.CreateBitCast(value, dest->pointer()->get_ref());
+        value = builder.CreateBitCast(value, dest->pointer(builder.getContext())->get_ref());
 
         return new Value(this->name, dest, value, true);
     }

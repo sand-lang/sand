@@ -341,7 +341,7 @@ public:
 
         if (parent != nullptr)
         {
-            auto arg = Types::FunctionArgument("this", parent->pointer());
+            auto arg = Types::FunctionArgument("this", parent->pointer(scope->context()));
             args.insert(args.begin(), arg);
         }
 
@@ -2387,16 +2387,17 @@ public:
 
     Type *visitType(SanParser::TypeContext *context)
     {
+        auto scope = this->scopes.top();
         auto type = this->visitTypeName(context->typeName());
 
         for (const auto &pointer : context->typePointer())
         {
-            type = type->pointer();
+            type = type->pointer(scope->context());
         }
 
         if (context->typeReference())
         {
-            type = type->pointer();
+            type = type->pointer(scope->context());
             type->is_reference = true;
         }
 

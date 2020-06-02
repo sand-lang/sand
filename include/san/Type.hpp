@@ -61,9 +61,15 @@ public:
         return stream.str();
     }
 
-    Type *pointer()
+    Type *pointer(llvm::LLVMContext &context)
     {
         auto ref = this->get_ref();
+
+        if (this->is_void())
+        {
+            ref = Type::llvm_i8(context);
+        }
+
         return new Type(this->name + "*", ref->getPointerTo(), this);
     }
 
