@@ -1,3 +1,5 @@
+import "./range"
+
 namespace std {
     #[target_os = "darwin"]
     namespace memory {
@@ -14,10 +16,6 @@ namespace std {
                 free(ptr);
                 ptr = (0 as i8*);
             }
-        }
-
-        fn copy(source: void*, destination: void*, length: u64) : void* {
-            return memcpy(destination, source, length);
         }
     }
 
@@ -36,6 +34,16 @@ namespace std {
                     ptr = (0 as i8*);
                 }
             }
+        }
+    }
+
+    namespace memory {
+        fn copy(source: void*, destination: void*, length: u64) : void* {
+            for i in std::range<u64>::new(0 as u64, length) {
+                destination[i] = source[i];
+            }
+
+            return destination;
         }
     }
 }
