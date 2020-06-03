@@ -99,6 +99,8 @@ public:
 
     virtual antlrcpp::Any visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context) = 0;
 
+    virtual antlrcpp::Any visitCastFunctionType(SanParser::CastFunctionTypeContext *context) = 0;
+
     virtual antlrcpp::Any visitFunctionVariadicArgument(SanParser::FunctionVariadicArgumentContext *context) = 0;
 
     virtual antlrcpp::Any visitFunctionArguments(SanParser::FunctionArgumentsContext *context) = 0;

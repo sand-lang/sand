@@ -318,9 +318,9 @@ public:
         {
             name = operator_name->getText();
         }
-        else if (auto type_context = context->type(0))
+        else if (auto type_context = context->castFunctionType())
         {
-            cast_type = this->visitType(type_context);
+            cast_type = this->visitCastFunctionType(type_context);
 
             name = "@cast";
         }
@@ -361,7 +361,7 @@ public:
         {
             return_type = Type::i32(scope->context());
         }
-        else if (auto type_context = context->type(1))
+        else if (auto type_context = context->type())
         {
             return_type = this->visitType(type_context);
         }
@@ -371,6 +371,11 @@ public:
         }
 
         return Types::FunctionType::create(scope->builder(), scope->module(), name, return_type, args, is_variadic, parent != nullptr);
+    }
+
+    Type *visitCastFunctionType(SanParser::CastFunctionTypeContext *context)
+    {
+        return this->visitType(context->type());
     }
 
     std::vector<Types::FunctionArgument> visitFunctionArguments(SanParser::FunctionArgumentsContext *context)

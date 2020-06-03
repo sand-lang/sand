@@ -127,7 +127,7 @@ functionDeclaration:
 		(
 			(
 				(Operator overloadableOperator)
-				| (Cast type)
+				| (Cast castFunctionType)
 				| VariableName
 			) classGenerics? '(' (
 				functionArguments (',' functionVariadicArgument)?
@@ -136,6 +136,8 @@ functionDeclaration:
 		)
 		| (Destructor '(' ')')
 	);
+
+castFunctionType: type;
 
 functionVariadicArgument: '...';
 

@@ -175,6 +175,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitCastFunctionType(SanParser::CastFunctionTypeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitFunctionVariadicArgument(SanParser::FunctionVariadicArgumentContext *ctx) override {
     return visitChildren(ctx);
   }
