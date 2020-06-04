@@ -87,7 +87,7 @@ fn operator +(l: std::string&, r: i8*) : std::string {
 
   let alloca = std::memory::allocate<i8>(concat_length + 1);
   std::memory::copy(l.ptr, alloca, l.length);
-  std::memory::copy(r, ((alloca as u64) + l.length) as i8*, r_length);
+  std::memory::copy(r, alloca + l.length, r_length);
 
   return std::string::assign(alloca, concat_length);
 }
@@ -98,7 +98,7 @@ fn operator +(l: i8*, r: std::string&) : std::string {
 
   let alloca = std::memory::allocate<i8>(concat_length + 1);
   std::memory::copy(l, alloca, l_length);
-  std::memory::copy(r.ptr, ((alloca as u64) + l_length) as i8*, r.length);
+  std::memory::copy(r.ptr, alloca + l_length, r.length);
 
   return std::string::assign(alloca, concat_length);
 }
