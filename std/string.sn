@@ -113,3 +113,14 @@ fn operator +(l: i8*, r: std::string&) : std::string {
 fn operator +(l: std::string&, r: std::string&) : std::string {
     return l + r.ptr;
 }
+
+fn operator *(l: std::string&, r: u64) : std::string {
+  let string_length = l.length * r;
+  let alloca = std::memory::allocate<i8>(string_length + 1);
+
+  for i in std::range<u64>::new(0 as u64, r) {
+    std::memory::copy(l.ptr, alloca + l.length * i, l.length);
+  }
+
+  return std::string::assign(alloca, l.length * r);
+}
