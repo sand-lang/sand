@@ -78,6 +78,13 @@ namespace std {
                 length,
             };
         }
+
+        static fn assign(ptr: i8*) : string {
+            return string {
+                ptr,
+                length = std::strlen(ptr),
+            };
+        }
     }
 }
 
