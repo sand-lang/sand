@@ -64,7 +64,7 @@ public:
         return nullptr;
     }
 
-    Name *get_function(const std::vector<Value *> &args)
+    Name *get_function(const std::vector<Value *> &args, Type *return_type = nullptr)
     {
         std::vector<Type *> args_types;
 
@@ -73,11 +73,11 @@ public:
             args_types.push_back(arg->type);
         }
 
-        return this->get_function({}, args_types);
+        return this->get_function({}, args_types, return_type);
     }
 
     /** Return a pointer of Value or FunctionType */
-    Name *get_function(const std::vector<Type *> &generics, const std::vector<Type *> &args)
+    Name *get_function(const std::vector<Type *> &generics, const std::vector<Type *> &args, Type *return_type = nullptr)
     {
         size_t score = Type::NOT_COMPATIBLE;
         Name *best = nullptr;
@@ -91,6 +91,20 @@ public:
                 if (auto type = dynamic_cast<Types::FunctionType *>(value->type->behind_reference()))
                 {
                     auto compatibility = type->compare_args(args);
+
+                    if (return_type)
+                    {
+                        auto return_type_compatiblity = type->return_type->compatibility(return_type);
+
+                        if (return_type_compatiblity == Type::NOT_COMPATIBLE)
+                        {
+                            compatibility = Type::NOT_COMPATIBLE;
+                        }
+                        else
+                        {
+                            compatibility += return_type_compatiblity;
+                        }
+                    }
 
                     if (compatibility == 0)
                     {

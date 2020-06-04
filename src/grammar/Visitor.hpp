@@ -1908,6 +1908,22 @@ public:
         return nullptr;
     }
 
+    Value *getCastOverload(Value *value, Type *dest)
+    {
+        auto scope = this->scopes.top();
+        auto names = scope->get_names("@cast");
+
+        if (auto match = names->get_function({value}, dest))
+        {
+            if (auto value = dynamic_cast<Value *>(match))
+            {
+                return value;
+            }
+        }
+
+        return nullptr;
+    }
+
     Value *visitIndex(SanParser::IndexContext *context)
     {
         auto scope = this->scopes.top();
@@ -1923,6 +1939,11 @@ public:
         auto scope = this->scopes.top();
         auto expr = this->valueFromExpression(context->expression());
         auto type = this->visitType(context->type());
+
+        if (auto function = this->getCastOverload(expr, type))
+        {
+            return function->call(scope->builder(), {expr});
+        }
 
         return expr->cast(type, scope->builder(), true);
     }
