@@ -1,4 +1,5 @@
 import "./memory"
+import "./range"
 
 namespace std {
     fn strlen(str: i8*) : u64 {
