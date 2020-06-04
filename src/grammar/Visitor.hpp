@@ -1506,8 +1506,8 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        auto lvalue = lexpr->load_alloca_and_reference(scope->builder());
-        auto rvalue = rexpr->cast(lvalue->type, scope->builder());
+        auto lvalue = lexpr;
+        auto rvalue = rexpr;
 
         if (opt->Add())
         {

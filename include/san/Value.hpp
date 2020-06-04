@@ -374,15 +374,35 @@ public:
 
     static Value *add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        if (lvalue->type->is_integer())
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        if (ltype->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
             auto value = builder.CreateAdd(lvalue->get_ref(), rvalue->get_ref());
             return new Value("add", lvalue->type, value);
         }
-        else if (lvalue->type->is_floating_point())
+        else if (ltype->is_floating_point())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
             auto value = builder.CreateFAdd(lvalue->get_ref(), rvalue->get_ref());
             return new Value("add", lvalue->type, value);
+        }
+        else if (ltype->is_pointer() && rtype->is_integer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->load_alloca_and_reference(builder);
+
+            auto value = lvalue->gep(rvalue, builder);
+            value->is_alloca = false;
+            value->type = ltype;
+
+            return value;
         }
 
         return nullptr;
@@ -401,15 +421,31 @@ public:
 
     static Value *sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        if (lvalue->type->is_integer())
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        if (ltype->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
             auto value = builder.CreateSub(lvalue->get_ref(), rvalue->get_ref());
             return new Value("sub", lvalue->type, value);
         }
-        else if (lvalue->type->is_floating_point())
+        else if (ltype->is_floating_point())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
             auto value = builder.CreateFSub(lvalue->get_ref(), rvalue->get_ref());
             return new Value("sub", lvalue->type, value);
+        }
+        else if (ltype->is_pointer() && rtype->is_integer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->load_alloca_and_reference(builder);
+
+            return lvalue->gep(rvalue, builder);
         }
 
         return nullptr;
