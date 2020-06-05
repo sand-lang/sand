@@ -10,6 +10,13 @@ namespace std {
             };
         }
 
+        static fn new(_end: T) : range<T> {
+            return range<T> {
+                _start = 0 as T,
+                _end,
+            };
+        }
+
         fn begin() : T& {
             return this._start;
         }
