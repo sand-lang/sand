@@ -53,6 +53,9 @@ Static: 'static';
 This: 'this';
 Dot: '.';
 
+// Union
+Union: 'union';
+
 Destructor: '@destructor';
 
 // Namespaces

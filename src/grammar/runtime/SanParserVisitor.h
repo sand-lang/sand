@@ -119,6 +119,12 @@ public:
 
     virtual antlrcpp::Any visitBreakStatement(SanParser::BreakStatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitUnionStatement(SanParser::UnionStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitUnionBody(SanParser::UnionBodyContext *context) = 0;
+
+    virtual antlrcpp::Any visitUnionProperty(SanParser::UnionPropertyContext *context) = 0;
+
     virtual antlrcpp::Any visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) = 0;

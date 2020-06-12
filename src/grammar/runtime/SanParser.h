@@ -19,13 +19,13 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
     Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
-    Destructor = 36, Namespace = 37, ScopeResolver = 38, VariableDeclarator = 39, 
-    If = 40, Else = 41, While = 42, Break = 43, For = 44, In = 45, Function = 46, 
-    Extern = 47, Return = 48, Operator = 49, Cast = 50, Alias = 51, Comma = 52, 
-    Colon = 53, Attribute = 54, Import = 55, True = 56, False = 57, InstructionsSeparator = 58, 
-    VariableName = 59, StringLiteral = 60, CharLiteral = 61, DecimalLiteral = 62, 
-    FloatingLiteral = 63, ZeroLiteral = 64, HexadecimalLiteral = 65, BinaryLiteral = 66, 
-    Comment = 67, WhiteSpace = 68, LineTerminator = 69
+    Union = 36, Destructor = 37, Namespace = 38, ScopeResolver = 39, VariableDeclarator = 40, 
+    If = 41, Else = 42, While = 43, Break = 44, For = 45, In = 46, Function = 47, 
+    Extern = 48, Return = 49, Operator = 50, Cast = 51, Alias = 52, Comma = 53, 
+    Colon = 54, Attribute = 55, Import = 56, True = 57, False = 58, InstructionsSeparator = 59, 
+    VariableName = 60, StringLiteral = 61, CharLiteral = 62, DecimalLiteral = 63, 
+    FloatingLiteral = 64, ZeroLiteral = 65, HexadecimalLiteral = 66, BinaryLiteral = 67, 
+    Comment = 68, WhiteSpace = 69, LineTerminator = 70
   };
 
   enum {
@@ -40,14 +40,15 @@ public:
     RuleFunctionDeclaration = 24, RuleCastFunctionType = 25, RuleFunctionVariadicArgument = 26, 
     RuleFunctionArguments = 27, RuleFunctionArgument = 28, RuleReturnStatement = 29, 
     RuleIfStatement = 30, RuleElseStatement = 31, RuleWhileStatement = 32, 
-    RuleForStatement = 33, RuleBreakStatement = 34, RuleSpecialClassStatement = 35, 
-    RuleClassStatement = 36, RuleClassGenerics = 37, RuleClassExtends = 38, 
-    RuleClassBody = 39, RuleClassProperty = 40, RuleClassMethod = 41, RuleClassInstantiationProperties = 42, 
-    RuleClassInstantiationProperty = 43, RuleType = 44, RuleTypeQualifier = 45, 
-    RuleTypeDimensions = 46, RuleTypePointer = 47, RuleTypeReference = 48, 
-    RuleTypeName = 49, RuleFunctionType = 50, RuleClassTypeName = 51, RuleClassTypeNameGenerics = 52, 
-    RuleNamespaceStatement = 53, RuleImportStatement = 54, RuleAttributes = 55, 
-    RuleAttribute = 56, RuleAlias = 57, RuleEos = 58
+    RuleForStatement = 33, RuleBreakStatement = 34, RuleUnionStatement = 35, 
+    RuleUnionBody = 36, RuleUnionProperty = 37, RuleSpecialClassStatement = 38, 
+    RuleClassStatement = 39, RuleClassGenerics = 40, RuleClassExtends = 41, 
+    RuleClassBody = 42, RuleClassProperty = 43, RuleClassMethod = 44, RuleClassInstantiationProperties = 45, 
+    RuleClassInstantiationProperty = 46, RuleType = 47, RuleTypeQualifier = 48, 
+    RuleTypeDimensions = 49, RuleTypePointer = 50, RuleTypeReference = 51, 
+    RuleTypeName = 52, RuleFunctionType = 53, RuleClassTypeName = 54, RuleClassTypeNameGenerics = 55, 
+    RuleNamespaceStatement = 56, RuleImportStatement = 57, RuleAttributes = 58, 
+    RuleAttribute = 59, RuleAlias = 60, RuleEos = 61
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -95,6 +96,9 @@ public:
   class WhileStatementContext;
   class ForStatementContext;
   class BreakStatementContext;
+  class UnionStatementContext;
+  class UnionBodyContext;
+  class UnionPropertyContext;
   class SpecialClassStatementContext;
   class ClassStatementContext;
   class ClassGenericsContext;
@@ -168,6 +172,7 @@ public:
     BreakStatementContext *breakStatement();
     SpecialClassStatementContext *specialClassStatement();
     ClassStatementContext *classStatement();
+    UnionStatementContext *unionStatement();
     ImportStatementContext *importStatement();
     AliasContext *alias();
 
@@ -850,6 +855,54 @@ public:
   };
 
   BreakStatementContext* breakStatement();
+
+  class  UnionStatementContext : public antlr4::ParserRuleContext {
+  public:
+    UnionStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
+    antlr4::tree::TerminalNode *Union();
+    antlr4::tree::TerminalNode *VariableName();
+    UnionBodyContext *unionBody();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  UnionStatementContext* unionStatement();
+
+  class  UnionBodyContext : public antlr4::ParserRuleContext {
+  public:
+    UnionBodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *OpeningBrace();
+    antlr4::tree::TerminalNode *ClosingBrace();
+    std::vector<UnionPropertyContext *> unionProperty();
+    UnionPropertyContext* unionProperty(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  UnionBodyContext* unionBody();
+
+  class  UnionPropertyContext : public antlr4::ParserRuleContext {
+  public:
+    UnionPropertyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+    antlr4::tree::TerminalNode *InstructionsSeparator();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  UnionPropertyContext* unionProperty();
 
   class  SpecialClassStatementContext : public antlr4::ParserRuleContext {
   public:

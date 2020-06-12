@@ -21,6 +21,7 @@ statement:
 	| breakStatement InstructionsSeparator
 	| specialClassStatement
 	| classStatement
+	| unionStatement
 	| importStatement
 	| alias InstructionsSeparator;
 
@@ -157,6 +158,12 @@ whileStatement: 'while' expression statement;
 forStatement: 'for' VariableName 'in' expression statement;
 
 breakStatement: 'break';
+
+unionStatement: attributes 'union' VariableName unionBody;
+
+unionBody: '{' unionProperty* '}';
+
+unionProperty: VariableName ':' type InstructionsSeparator;
 
 specialClassStatement:
 	attributes Special 'class' scopedNameNoGeneric classTypeNameGenerics (

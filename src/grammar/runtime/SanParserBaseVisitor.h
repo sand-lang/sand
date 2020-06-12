@@ -215,6 +215,18 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitUnionStatement(SanParser::UnionStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitUnionBody(SanParser::UnionBodyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitUnionProperty(SanParser::UnionPropertyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitSpecialClassStatement(SanParser::SpecialClassStatementContext *ctx) override {
     return visitChildren(ctx);
   }

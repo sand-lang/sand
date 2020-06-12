@@ -237,6 +237,12 @@ public:
         return new Value(this->name, dest, value, true);
     }
 
+    Value *union_cast(Type *dest, llvm::IRBuilder<> &builder)
+    {
+        auto value = builder.CreateBitCast(this->get_ref(), dest->get_ref()->getPointerTo());
+        return new Value(this->name, dest, value, true);
+    }
+
     virtual Value *cast(Type *dest, llvm::IRBuilder<> &builder, const bool &load = true)
     {
         auto value = this;

@@ -22,6 +22,7 @@
 #include <san/Types/GenericAlias.hpp>
 #include <san/Types/GenericClassType.hpp>
 #include <san/Types/GenericFunctionType.hpp>
+#include <san/Types/UnionType.hpp>
 #include <san/Values/Function.hpp>
 #include <san/Values/GlobalConstant.hpp>
 #include <san/Values/GlobalVariable.hpp>
@@ -212,6 +213,10 @@ public:
         else if (auto class_statement = context->classStatement())
         {
             return this->visitClassStatement(class_statement);
+        }
+        else if (auto union_statement = context->unionStatement())
+        {
+            return this->visitUnionStatement(union_statement);
         }
         else if (auto import_statement = context->importStatement())
         {
@@ -952,6 +957,55 @@ public:
         }
 
         throw NotAGenericException(scoped_name_context->getStart());
+    }
+
+    Name *visitUnionStatement(SanParser::UnionStatementContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_os())
+            return nullptr;
+
+        auto name = context->VariableName()->getText();
+        auto union_scope = Scope::create(scope);
+
+        auto type = Types::UnionType::create(union_scope, name);
+        scope->add_name(name, type);
+
+        this->scopes.push(union_scope);
+
+        this->visitUnionBody(context->unionBody(), type);
+
+        this->scopes.pop();
+
+        return type;
+    }
+
+    Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type)
+    {
+        auto scope = this->scopes.top();
+
+        std::vector<Types::UnionProperty *> properties;
+
+        for (auto &union_property : context->unionProperty())
+        {
+            auto property = this->visitUnionProperty(union_property);
+            properties.push_back(property);
+        }
+
+        type->set_properties(properties, scope->builder(), scope->module());
+
+        return type;
+    }
+
+    Types::UnionProperty *visitUnionProperty(SanParser::UnionPropertyContext *context)
+    {
+        auto name = context->VariableName()->getText();
+        auto type = this->visitType(context->type());
+
+        return new Types::UnionProperty(name, type);
     }
 
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
@@ -1986,6 +2040,10 @@ public:
         {
             return this->visitName(context->name(), expr);
         }
+        else if (auto union_type = dynamic_cast<Types::UnionType *>(type))
+        {
+            return this->visitName(context->name(), expr);
+        }
 
         throw NotAClassException(context->expression()->getStart());
     }
@@ -2161,6 +2219,18 @@ public:
                 }
 
                 return names;
+            }
+
+            throw UnknownNameException(context->VariableName()->getSymbol());
+        }
+        else if (auto type = dynamic_cast<Types::UnionType *>(value->type->behind_reference()))
+        {
+            auto name = context->VariableName()->getText();
+            auto property = type->get_property(name);
+
+            if (property != nullptr)
+            {
+                return new NameArray({value->union_cast(property->type, scope->builder())});
             }
 
             throw UnknownNameException(context->VariableName()->getSymbol());
