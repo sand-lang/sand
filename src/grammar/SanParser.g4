@@ -216,7 +216,7 @@ namespaceStatement:
 importStatement: Import StringLiteral;
 
 attributes: attribute*;
-attribute: '#[' VariableName '=' StringLiteral ']';
+attribute: '#[' VariableName ('=' StringLiteral)? ']';
 
 alias:
 	'alias' VariableName classGenerics? '=' (

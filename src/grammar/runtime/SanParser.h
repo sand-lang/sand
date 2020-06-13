@@ -1249,9 +1249,9 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Attribute();
     antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *ClosingBracket();
     antlr4::tree::TerminalNode *Equal();
     antlr4::tree::TerminalNode *StringLiteral();
-    antlr4::tree::TerminalNode *ClosingBracket();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

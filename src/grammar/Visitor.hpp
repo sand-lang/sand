@@ -251,6 +251,11 @@ public:
 
             auto function = new Values::Function(scope->module(), function_type, linkage);
 
+            if (attributes.noinline)
+            {
+                function->get_ref()->addAttribute(llvm::AttributeList::FunctionIndex, llvm::Attribute::NoInline);
+            }
+
             if (add_to_scope)
             {
                 scope->add_name(function->name, function);
@@ -258,7 +263,7 @@ public:
 
             if (generate_body)
             {
-                return this->generateFunctionBody(context, function);
+                this->generateFunctionBody(context, function);
             }
 
             return function;
@@ -2568,9 +2573,14 @@ public:
     std::pair<std::string, std::string> visitAttribute(SanParser::AttributeContext *context)
     {
         auto key = context->VariableName()->getText();
-        auto value = this->stringLiteralToString(context->StringLiteral()->getText());
 
-        return std::make_pair(key, value);
+        if (auto literal = context->StringLiteral())
+        {
+            auto value = this->stringLiteralToString(literal->getText());
+            return std::make_pair(key, value);
+        }
+
+        return std::make_pair(key, "true");
     }
 
     Name *visitAlias(SanParser::AliasContext *context)

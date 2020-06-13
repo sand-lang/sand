@@ -19,6 +19,7 @@ class Attributes
 {
 public:
     std::vector<std::string> target_os;
+    bool noinline = false;
 
     void set(const std::pair<std::string, std::string> &pair)
     {
@@ -26,7 +27,11 @@ public:
 
         if (key == "target_os")
         {
-            target_os.push_back(value);
+            this->target_os.push_back(value);
+        }
+        else if (key == "noinline")
+        {
+            this->noinline = value == "true";
         }
     }
 
