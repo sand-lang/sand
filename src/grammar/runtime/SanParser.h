@@ -35,20 +35,20 @@ public:
     RuleBitwiseOperatorStatement = 11, RuleConditionalOperatorStatement = 12, 
     RuleComparisonOperatorStatement = 13, RuleEqualityOperatorStatement = 14, 
     RuleLiteral = 15, RuleBooleanLiteral = 16, RuleIntegerLiteral = 17, 
-    RuleFloatingLiteral = 18, RuleVariableDeclaration = 19, RuleFunctionCallArguments = 20, 
-    RuleFunctionCallArgument = 21, RuleOverloadableOperator = 22, RuleFunction = 23, 
-    RuleFunctionDeclaration = 24, RuleCastFunctionType = 25, RuleFunctionVariadicArgument = 26, 
-    RuleFunctionArguments = 27, RuleFunctionArgument = 28, RuleReturnStatement = 29, 
-    RuleIfStatement = 30, RuleElseStatement = 31, RuleWhileStatement = 32, 
-    RuleForStatement = 33, RuleBreakStatement = 34, RuleUnionStatement = 35, 
-    RuleUnionBody = 36, RuleUnionProperty = 37, RuleSpecialClassStatement = 38, 
-    RuleClassStatement = 39, RuleClassGenerics = 40, RuleClassExtends = 41, 
-    RuleClassBody = 42, RuleClassProperty = 43, RuleClassMethod = 44, RuleClassInstantiationProperties = 45, 
-    RuleClassInstantiationProperty = 46, RuleType = 47, RuleTypeQualifier = 48, 
-    RuleTypeDimensions = 49, RuleTypePointer = 50, RuleTypeReference = 51, 
-    RuleTypeName = 52, RuleFunctionType = 53, RuleClassTypeName = 54, RuleClassTypeNameGenerics = 55, 
-    RuleNamespaceStatement = 56, RuleImportStatement = 57, RuleAttributes = 58, 
-    RuleAttribute = 59, RuleAlias = 60, RuleEos = 61
+    RuleFloatingLiteral = 18, RuleStringLiteral = 19, RuleVariableDeclaration = 20, 
+    RuleFunctionCallArguments = 21, RuleFunctionCallArgument = 22, RuleOverloadableOperator = 23, 
+    RuleFunction = 24, RuleFunctionDeclaration = 25, RuleCastFunctionType = 26, 
+    RuleFunctionVariadicArgument = 27, RuleFunctionArguments = 28, RuleFunctionArgument = 29, 
+    RuleReturnStatement = 30, RuleIfStatement = 31, RuleElseStatement = 32, 
+    RuleWhileStatement = 33, RuleForStatement = 34, RuleBreakStatement = 35, 
+    RuleUnionStatement = 36, RuleUnionBody = 37, RuleUnionProperty = 38, 
+    RuleSpecialClassStatement = 39, RuleClassStatement = 40, RuleClassGenerics = 41, 
+    RuleClassExtends = 42, RuleClassBody = 43, RuleClassProperty = 44, RuleClassMethod = 45, 
+    RuleClassInstantiationProperties = 46, RuleClassInstantiationProperty = 47, 
+    RuleType = 48, RuleTypeQualifier = 49, RuleTypeDimensions = 50, RuleTypePointer = 51, 
+    RuleTypeReference = 52, RuleTypeName = 53, RuleFunctionType = 54, RuleClassTypeName = 55, 
+    RuleClassTypeNameGenerics = 56, RuleNamespaceStatement = 57, RuleImportStatement = 58, 
+    RuleAttributes = 59, RuleAttribute = 60, RuleAlias = 61, RuleEos = 62
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -80,6 +80,7 @@ public:
   class BooleanLiteralContext;
   class IntegerLiteralContext;
   class FloatingLiteralContext;
+  class StringLiteralContext;
   class VariableDeclarationContext;
   class FunctionCallArgumentsContext;
   class FunctionCallArgumentContext;
@@ -537,7 +538,7 @@ public:
     BooleanLiteralContext *booleanLiteral();
     IntegerLiteralContext *integerLiteral();
     FloatingLiteralContext *floatingLiteral();
-    antlr4::tree::TerminalNode *StringLiteral();
+    StringLiteralContext *stringLiteral();
     antlr4::tree::TerminalNode *CharLiteral();
 
 
@@ -591,6 +592,20 @@ public:
   };
 
   FloatingLiteralContext* floatingLiteral();
+
+  class  StringLiteralContext : public antlr4::ParserRuleContext {
+  public:
+    StringLiteralContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> StringLiteral();
+    antlr4::tree::TerminalNode* StringLiteral(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  StringLiteralContext* stringLiteral();
 
   class  VariableDeclarationContext : public antlr4::ParserRuleContext {
   public:

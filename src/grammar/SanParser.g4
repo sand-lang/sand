@@ -75,7 +75,7 @@ literal:
 	booleanLiteral
 	| integerLiteral
 	| floatingLiteral
-	| StringLiteral
+	| stringLiteral
 	| CharLiteral;
 
 booleanLiteral: True | False;
@@ -89,6 +89,8 @@ integerLiteral:
 	);
 
 floatingLiteral: Sub? FloatingLiteral;
+
+stringLiteral: StringLiteral+;
 
 variableDeclaration:
 	VariableDeclarator VariableName (

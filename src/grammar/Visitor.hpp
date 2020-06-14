@@ -2343,9 +2343,15 @@ public:
         {
             return this->visitFloatingLiteral(literal);
         }
-        else if (const auto literal = context->StringLiteral())
+        else if (const auto literal = context->stringLiteral())
         {
-            auto str = this->stringLiteralToString(literal->getSymbol()->getText());
+            std::string str = "";
+
+            for (auto &string : literal->StringLiteral())
+            {
+                str += this->stringLiteralToString(string->getSymbol()->getText());
+            }
+
             auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
 
             auto type = scope->get_primary_type("i8")->array(str.size() + 1);
