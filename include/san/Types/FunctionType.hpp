@@ -42,27 +42,32 @@ public:
                                                    is_sret(is_sret_),
                                                    is_method(is_method_) {}
 
-    static FunctionType *create(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const std::string &name, Type *return_type, const std::vector<FunctionArgument> &args, const bool &is_variadic = false, const bool &is_method = false)
+    static FunctionType *create(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const std::string &name, Type *return_type, const std::vector<FunctionArgument> &args, const bool &is_variadic = false, const bool &is_method = false, const bool &auto_sret = true)
     {
         auto return_llvm_type = return_type->get_ref();
         std::vector<llvm::Type *> argument_llvm_types;
 
         auto return_type_size = return_type->size(module);
 
-        auto is_sret = return_type->is_struct() || (return_type_size > 8);
+        auto is_sret = false;
 
-        if (is_sret)
+        if (auto_sret)
         {
-            if (return_type->is_pointer())
-            {
-                argument_llvm_types.push_back(return_type->get_ref());
-            }
-            else
-            {
-                argument_llvm_types.push_back(return_type->pointer(builder.getContext())->get_ref());
-            }
+            is_sret = return_type->is_struct() || (return_type_size > 8);
 
-            return_llvm_type = Type::llvm_void(builder.getContext());
+            if (is_sret)
+            {
+                if (return_type->is_pointer())
+                {
+                    argument_llvm_types.push_back(return_type->get_ref());
+                }
+                else
+                {
+                    argument_llvm_types.push_back(return_type->pointer(builder.getContext())->get_ref());
+                }
+
+                return_llvm_type = Type::llvm_void(builder.getContext());
+            }
         }
 
         for (const auto &arg : args)

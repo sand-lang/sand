@@ -22,10 +22,10 @@ public:
     Union = 36, Destructor = 37, Namespace = 38, ScopeResolver = 39, VariableDeclarator = 40, 
     If = 41, Else = 42, While = 43, Break = 44, For = 45, In = 46, Function = 47, 
     Extern = 48, Return = 49, Operator = 50, Cast = 51, Alias = 52, Comma = 53, 
-    Colon = 54, Attribute = 55, Import = 56, True = 57, False = 58, InstructionsSeparator = 59, 
-    VariableName = 60, StringLiteral = 61, CharLiteral = 62, DecimalLiteral = 63, 
-    FloatingLiteral = 64, ZeroLiteral = 65, HexadecimalLiteral = 66, BinaryLiteral = 67, 
-    Comment = 68, WhiteSpace = 69, LineTerminator = 70
+    Colon = 54, Attribute = 55, Assembly = 56, Import = 57, True = 58, False = 59, 
+    InstructionsSeparator = 60, VariableName = 61, StringLiteral = 62, CharLiteral = 63, 
+    DecimalLiteral = 64, FloatingLiteral = 65, ZeroLiteral = 66, HexadecimalLiteral = 67, 
+    BinaryLiteral = 68, Comment = 69, WhiteSpace = 70, LineTerminator = 71
   };
 
   enum {
@@ -48,7 +48,9 @@ public:
     RuleType = 48, RuleTypeQualifier = 49, RuleTypeDimensions = 50, RuleTypePointer = 51, 
     RuleTypeReference = 52, RuleTypeName = 53, RuleFunctionType = 54, RuleClassTypeName = 55, 
     RuleClassTypeNameGenerics = 56, RuleNamespaceStatement = 57, RuleImportStatement = 58, 
-    RuleAttributes = 59, RuleAttribute = 60, RuleAlias = 61, RuleEos = 62
+    RuleAttributes = 59, RuleAttribute = 60, RuleAlias = 61, RuleAssemblyStatement = 62, 
+    RuleAssemblyTemplate = 63, RuleAssemblyOutput = 64, RuleAssemblyInput = 65, 
+    RuleAssemblyClobber = 66, RuleEos = 67
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -123,6 +125,11 @@ public:
   class AttributesContext;
   class AttributeContext;
   class AliasContext;
+  class AssemblyStatementContext;
+  class AssemblyTemplateContext;
+  class AssemblyOutputContext;
+  class AssemblyInputContext;
+  class AssemblyClobberContext;
   class EosContext; 
 
   class  InstructionsContext : public antlr4::ParserRuleContext {
@@ -175,6 +182,7 @@ public:
     ClassStatementContext *classStatement();
     UnionStatementContext *unionStatement();
     ImportStatementContext *importStatement();
+    AssemblyStatementContext *assemblyStatement();
     AliasContext *alias();
 
 
@@ -1293,6 +1301,90 @@ public:
   };
 
   AliasContext* alias();
+
+  class  AssemblyStatementContext : public antlr4::ParserRuleContext {
+  public:
+    AssemblyStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Assembly();
+    antlr4::tree::TerminalNode *OpeningParen();
+    StringLiteralContext *stringLiteral();
+    antlr4::tree::TerminalNode *ClosingParen();
+    std::vector<antlr4::tree::TerminalNode *> Colon();
+    antlr4::tree::TerminalNode* Colon(size_t i);
+    std::vector<AssemblyOutputContext *> assemblyOutput();
+    AssemblyOutputContext* assemblyOutput(size_t i);
+    std::vector<AssemblyInputContext *> assemblyInput();
+    AssemblyInputContext* assemblyInput(size_t i);
+    std::vector<AssemblyClobberContext *> assemblyClobber();
+    AssemblyClobberContext* assemblyClobber(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AssemblyStatementContext* assemblyStatement();
+
+  class  AssemblyTemplateContext : public antlr4::ParserRuleContext {
+  public:
+    AssemblyTemplateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    StringLiteralContext *stringLiteral();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AssemblyTemplateContext* assemblyTemplate();
+
+  class  AssemblyOutputContext : public antlr4::ParserRuleContext {
+  public:
+    AssemblyOutputContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *StringLiteral();
+    antlr4::tree::TerminalNode *OpeningParen();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *ClosingParen();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AssemblyOutputContext* assemblyOutput();
+
+  class  AssemblyInputContext : public antlr4::ParserRuleContext {
+  public:
+    AssemblyInputContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *StringLiteral();
+    antlr4::tree::TerminalNode *OpeningParen();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *ClosingParen();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AssemblyInputContext* assemblyInput();
+
+  class  AssemblyClobberContext : public antlr4::ParserRuleContext {
+  public:
+    AssemblyClobberContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *StringLiteral();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AssemblyClobberContext* assemblyClobber();
 
   class  EosContext : public antlr4::ParserRuleContext {
   public:

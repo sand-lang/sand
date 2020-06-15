@@ -23,6 +23,7 @@ statement:
 	| classStatement
 	| unionStatement
 	| importStatement
+	| assemblyStatement InstructionsSeparator
 	| alias InstructionsSeparator;
 
 expression:
@@ -226,5 +227,17 @@ alias:
 		| type
 		| literal
 	);
+
+assemblyStatement:
+	'asm' '(' stringLiteral (
+		':' (assemblyOutput ( ',' assemblyOutput)*)?
+	) (':' (assemblyInput (',' assemblyInput)*)?) (
+		(':' assemblyClobber (',' assemblyClobber)*)?
+	) ')';
+
+assemblyTemplate: stringLiteral;
+assemblyOutput: StringLiteral '(' expression ')';
+assemblyInput: StringLiteral '(' expression ')';
+assemblyClobber: StringLiteral;
 
 eos: (EOF | LineTerminator);

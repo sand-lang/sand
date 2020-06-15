@@ -91,6 +91,8 @@ Comma: ',';
 Colon: ':';
 Attribute: '#[';
 
+Assembly: 'asm';
+
 Import: 'import';
 
 True: 'true';

@@ -5,6 +5,7 @@
 #include "ParserErrorListener.hpp"
 
 #include <llvm/ADT/SmallVector.h>
+#include <llvm/IR/InlineAsm.h>
 #include <llvm/Transforms/Utils/Evaluator.h>
 
 #include <san/Debugger.hpp>
@@ -12,6 +13,7 @@
 #include <san/Helpers.hpp>
 
 #include <san/Alias.hpp>
+#include <san/AssemblyOperand.hpp>
 #include <san/Attributes.hpp>
 #include <san/NameArray.hpp>
 #include <san/Namespace.hpp>
@@ -30,6 +32,7 @@
 
 #include <san/Exceptions/ExpressionHasNotClassTypeException.hpp>
 #include <san/Exceptions/ImportException.hpp>
+#include <san/Exceptions/InvalidInputConstraintException.hpp>
 #include <san/Exceptions/InvalidLeftValueException.hpp>
 #include <san/Exceptions/InvalidRangeException.hpp>
 #include <san/Exceptions/InvalidRightValueException.hpp>
@@ -222,9 +225,13 @@ public:
         {
             this->visitImportStatement(import_statement);
         }
+        else if (auto assembly_statement = context->assemblyStatement())
+        {
+            this->visitAssemblyStatement(assembly_statement);
+        }
         else if (auto alias_statement = context->alias())
         {
-            this->visitAlias(alias_statement);
+            return this->visitAlias(alias_statement);
         }
 
         return nullptr;
@@ -2345,17 +2352,7 @@ public:
         }
         else if (const auto literal = context->stringLiteral())
         {
-            std::string str = "";
-
-            for (auto &string : literal->StringLiteral())
-            {
-                str += this->stringLiteralToString(string->getSymbol()->getText());
-            }
-
-            auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
-
-            auto type = scope->get_primary_type("i8")->array(str.size() + 1);
-            return Values::GlobalConstant::create(".str", type, constant, scope->module());
+            return this->visitStringLiteral(literal);
         }
         else if (const auto literal = context->CharLiteral())
         {
@@ -2391,6 +2388,18 @@ public:
         str = std::regex_replace(str, std::regex("\\\\v"), "\v");
         str = std::regex_replace(str, std::regex("\\\\\\?"), "\?");
         str = std::regex_replace(str, std::regex("\\\\(.)"), "$1");
+
+        return str;
+    }
+
+    std::string stringLiteralToString(SanParser::StringLiteralContext *context)
+    {
+        std::string str = "";
+
+        for (auto *literal : context->StringLiteral())
+        {
+            str += this->stringLiteralToString(literal->getSymbol()->getText());
+        }
 
         return str;
     }
@@ -2503,6 +2512,20 @@ public:
         return new Values::Constant("literal_f64", type, value);
     }
 
+    Values::GlobalConstant *visitStringLiteral(SanParser::StringLiteralContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        std::string str = this->stringLiteralToString(context);
+
+        auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
+
+        auto type = scope->get_primary_type("i8")->array(str.size() + 1);
+        auto value = Values::GlobalConstant::create(".str", type, constant, scope->module());
+
+        return value;
+    }
+
     Type *visitType(SanParser::TypeContext *context)
     {
         auto scope = this->scopes.top();
@@ -2515,8 +2538,7 @@ public:
 
         if (context->typeReference())
         {
-            type = type->pointer(scope->context());
-            type->is_reference = true;
+            type = type->reference(scope->context());
         }
 
         return type;
@@ -2587,6 +2609,207 @@ public:
         }
 
         return std::make_pair(key, "true");
+    }
+
+    void visitAssemblyStatement(SanParser::AssemblyStatementContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto code = this->stringLiteralToString(context->stringLiteral());
+
+        std::vector<AssemblyOperand> outputs = this->visitAssemblyOutputs(context->assemblyOutput());
+        std::vector<AssemblyOperand> inputs = this->visitAssemblyInputs(context->assemblyInput());
+        std::string clobbers = this->visitAssemblyClobbers(context->assemblyClobber());
+
+        if (!clobbers.empty())
+        {
+            clobbers += ",";
+        }
+
+        std::string operands_clobbers = "";
+
+        std::vector<Value *> output_values;
+        std::vector<llvm::Type *> output_types;
+
+        std::vector<Value *> output_args;
+        std::vector<Value *> input_args;
+
+        for (auto &output : outputs)
+        {
+            if (output.type == AssemblyConstraintModifier::ReadWrite)
+            {
+                auto loaded = output.expression->load(scope->builder());
+                output_args.push_back(loaded);
+
+                output.name[0] = '=';
+            }
+
+            operands_clobbers += output.name + ",";
+
+            output_types.push_back(output.expression->type->get_ref());
+            output_values.push_back(output.expression);
+        }
+
+        for (auto &input : inputs)
+        {
+            auto loaded = input.expression->load(scope->builder());
+            input_args.push_back(loaded);
+            operands_clobbers += input.name + ",";
+        }
+
+        for (size_t i = 0; i < outputs.size(); i++)
+        {
+            if (outputs[i].type == AssemblyConstraintModifier::ReadWrite)
+            {
+                operands_clobbers += std::to_string(i) + ",";
+            }
+        }
+
+        std::vector<Value *> args;
+        std::vector<Types::FunctionArgument> function_args;
+
+        for (auto &arg : input_args)
+        {
+            args.push_back(arg);
+            function_args.push_back(Types::FunctionArgument("", arg->type));
+        }
+
+        for (auto &arg : output_args)
+        {
+            args.push_back(arg);
+            function_args.push_back(Types::FunctionArgument("", arg->type));
+        }
+
+        llvm::Type *return_type = Type::llvm_void(scope->context());
+
+        if (output_types.size() == 1)
+        {
+            return_type = output_types[0];
+        }
+        else if (!output_types.empty())
+        {
+            return_type = llvm::StructType::get(scope->context(), output_types);
+        }
+
+        auto type = Types::FunctionType::create(scope->builder(), scope->module(), "inline.asm", new Type(".tmp.class", return_type), function_args, false, false, false);
+
+        auto value = llvm::InlineAsm::get(type->get_ref(), code, operands_clobbers + clobbers + "~{dirflag},~{fpsr},~{flags}", true);
+        auto ret = Value("inline.asm", type, value).call(scope->builder(), args);
+
+        if (return_type->isStructTy())
+        {
+            auto builder = scope->builder();
+            auto ref = ret->get_ref();
+
+            for (size_t i = 0; i < output_values.size(); i++)
+            {
+                auto value = builder.CreateExtractValue(ref, i, "");
+                builder.CreateStore(value, output_values[i]->get_ref());
+            }
+        }
+        else if (!return_type->isVoidTy())
+        {
+            scope->builder().CreateStore(ret->get_ref(), output_values[0]->get_ref());
+        }
+    }
+
+    std::vector<AssemblyOperand> visitAssemblyOutputs(const std::vector<SanParser::AssemblyOutputContext *> &context)
+    {
+        std::vector<AssemblyOperand> operands;
+
+        for (auto &clobber : context)
+        {
+            auto output = this->visitAssemblyOutput(clobber);
+            operands.push_back(output);
+        }
+
+        return operands;
+    }
+
+    AssemblyOperand visitAssemblyOutput(SanParser::AssemblyOutputContext *context)
+    {
+        auto name = this->stringLiteralToString(context->StringLiteral()->getText());
+        auto value = this->valueFromExpression(context->expression());
+
+        if (!value->is_alloca)
+        {
+            throw InvalidLeftValueException(context->expression()->getStart());
+        }
+
+        auto operand = this->createAssemblyOperand(name, value);
+
+        if (operand.type == AssemblyConstraintModifier::None)
+        {
+            throw InvalidInputConstraintException(context->StringLiteral()->getSymbol());
+        }
+
+        return operand;
+    }
+
+    std::vector<AssemblyOperand> visitAssemblyInputs(const std::vector<SanParser::AssemblyInputContext *> &context)
+    {
+        std::vector<AssemblyOperand> operands;
+
+        for (auto &clobber : context)
+        {
+            auto input = this->visitAssemblyInput(clobber);
+            operands.push_back(input);
+        }
+
+        return operands;
+    }
+
+    AssemblyOperand visitAssemblyInput(SanParser::AssemblyInputContext *context)
+    {
+        auto name = this->stringLiteralToString(context->StringLiteral()->getText());
+        auto value = this->valueFromExpression(context->expression());
+
+        auto operand = this->createAssemblyOperand(name, value);
+
+        return operand;
+    }
+
+    AssemblyOperand createAssemblyOperand(const std::string &name, Value *lvalue)
+    {
+        AssemblyOperand operand(AssemblyConstraintModifier::None, name, lvalue);
+
+        if (name[0] == '=')
+        {
+            operand.type = AssemblyConstraintModifier::WriteOnly;
+        }
+        else if (name[0] == '+')
+        {
+            operand.type = AssemblyConstraintModifier::ReadWrite;
+        }
+
+        if (name[1] == '&')
+        {
+            operand.is_earlyclobber = true;
+        }
+
+        return operand;
+    }
+
+    std::string visitAssemblyClobbers(const std::vector<SanParser::AssemblyClobberContext *> &context)
+    {
+        std::string clobbers = "";
+
+        for (auto &clobber : context)
+        {
+            if (!clobbers.empty())
+            {
+                clobbers += ",";
+            }
+
+            clobbers += this->visitAssemblyClobber(clobber);
+        }
+
+        return clobbers;
+    }
+
+    std::string visitAssemblyClobber(SanParser::AssemblyClobberContext *context)
+    {
+        return "~{" + this->stringLiteralToString(context->StringLiteral()->getText()) + "}";
     }
 
     Name *visitAlias(SanParser::AliasContext *context)

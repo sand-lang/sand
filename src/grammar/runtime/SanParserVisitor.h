@@ -173,6 +173,16 @@ public:
 
     virtual antlrcpp::Any visitAlias(SanParser::AliasContext *context) = 0;
 
+    virtual antlrcpp::Any visitAssemblyStatement(SanParser::AssemblyStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitAssemblyTemplate(SanParser::AssemblyTemplateContext *context) = 0;
+
+    virtual antlrcpp::Any visitAssemblyOutput(SanParser::AssemblyOutputContext *context) = 0;
+
+    virtual antlrcpp::Any visitAssemblyInput(SanParser::AssemblyInputContext *context) = 0;
+
+    virtual antlrcpp::Any visitAssemblyClobber(SanParser::AssemblyClobberContext *context) = 0;
+
     virtual antlrcpp::Any visitEos(SanParser::EosContext *context) = 0;
 
 

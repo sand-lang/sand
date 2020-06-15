@@ -323,6 +323,26 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitAssemblyStatement(SanParser::AssemblyStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAssemblyTemplate(SanParser::AssemblyTemplateContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAssemblyOutput(SanParser::AssemblyOutputContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAssemblyInput(SanParser::AssemblyInputContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAssemblyClobber(SanParser::AssemblyClobberContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitEos(SanParser::EosContext *ctx) override {
     return visitChildren(ctx);
   }

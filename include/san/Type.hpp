@@ -73,6 +73,14 @@ public:
         return new Type(this->name + "*", ref->getPointerTo(), this);
     }
 
+    Type *reference(llvm::LLVMContext &context)
+    {
+        auto pointer_type = this->pointer(context);
+        pointer_type->is_reference = true;
+
+        return pointer_type;
+    }
+
     Type *array(const size_t &size)
     {
         auto ref = this->get_ref();
