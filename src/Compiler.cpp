@@ -14,7 +14,9 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 
-std::vector<std::string> San::Compiler::generate_objects(const llvm::PassBuilder::OptimizationLevel &optimization_level)
+#include <iostream>
+
+std::vector<std::string> San::Compiler::generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -23,12 +25,12 @@ std::vector<std::string> San::Compiler::generate_objects(const llvm::PassBuilder
     llvm::InitializeAllAsmPrinters();
 
     std::string error;
-    std::string target_triple = llvm::sys::getDefaultTargetTriple();
+    std::string target_triple = this->module->getTargetTriple();
     const llvm::Target *target = llvm::TargetRegistry::lookupTarget(target_triple, error);
 
     if (!target)
     {
-        llvm::errs() << error;
+        std::cerr << error << std::endl;
         return {};
     }
 

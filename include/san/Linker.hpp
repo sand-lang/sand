@@ -22,7 +22,12 @@ namespace San
 class Linker
 {
 public:
-    static bool link(const std::vector<std::string> &objects, const std::vector<std::string> &libraries, const std::string &args, const std::string &output_file)
+    static bool link(const std::vector<std::string> &objects,
+                     const std::string &os,
+                     const std::string &arch,
+                     const std::vector<std::string> &libraries,
+                     const std::string &args,
+                     const std::string &output_file)
     {
         std::vector<const char *> raw_args = {"lld"};
 

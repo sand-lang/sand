@@ -65,7 +65,11 @@ public:
 
     size_t generating_properties_stack = 0;
 
-    Visitor(std::vector<std::string> include_paths_ = {}) : env("output"), include_paths(include_paths_), scopes(this->env)
+    Visitor(const std::string &target_os,
+            const std::string &target_arch,
+            const std::vector<std::string> &include_paths_ = {}) : env("output", target_os, target_arch),
+                                                                   include_paths(include_paths_),
+                                                                   scopes(this->env)
     {
         this->include_paths.push_back(Environment::get_std_directory().u8string());
     }
@@ -246,7 +250,7 @@ public:
 
         auto attributes = this->visitAttributes(context->attributes());
 
-        if (!attributes.accept_current_os())
+        if (!attributes.accept_current_target())
             return nullptr;
 
         auto type = this->visitFunctionDeclaration(context->functionDeclaration(), this_type);
@@ -462,7 +466,7 @@ public:
 
         auto attributes = this->visitAttributes(context->attributes());
 
-        if (!attributes.accept_current_os())
+        if (!attributes.accept_current_target())
             return nullptr;
 
         auto name = context->VariableName()->getText();
@@ -922,7 +926,7 @@ public:
 
         auto attributes = this->visitAttributes(context->attributes());
 
-        if (!attributes.accept_current_os())
+        if (!attributes.accept_current_target())
             return nullptr;
 
         auto class_scope = Scope::create(scope);
@@ -977,7 +981,7 @@ public:
 
         auto attributes = this->visitAttributes(context->attributes());
 
-        if (!attributes.accept_current_os())
+        if (!attributes.accept_current_target())
             return nullptr;
 
         auto name = context->VariableName()->getText();
@@ -1026,7 +1030,7 @@ public:
 
         auto attributes = this->visitAttributes(context->attributes());
 
-        if (!attributes.accept_current_os())
+        if (!attributes.accept_current_target())
             return nullptr;
 
         auto class_scope = Scope::create(scope);
@@ -2587,7 +2591,7 @@ public:
 
     Attributes visitAttributes(SanParser::AttributesContext *context)
     {
-        Attributes attributes;
+        Attributes attributes(this->env);
 
         for (auto &attribute_context : context->attribute())
         {

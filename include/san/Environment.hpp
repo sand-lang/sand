@@ -18,6 +18,16 @@ namespace fs = std::filesystem;
 #endif
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define CURRENT_OS "windows"
+#elif __APPLE__
+#define CURRENT_OS "darwin"
+#elif __linux__
+#define CURRENT_OS "linux"
+#else
+#define CURRENT_OS "unknown"
+#endif
+
 namespace San
 {
 class Environment
@@ -29,8 +39,33 @@ public:
 
     Debugger debugger;
 
-    Environment(std::string name) : builder(this->llvm_context),
-                                    module(std::make_unique<llvm::Module>(name, this->llvm_context)) {}
+    std::string target_os;
+    std::string target_arch;
+
+    Environment(const std::string &name,
+                const std::string &target_os_,
+                const std::string &target_arch_) : builder(this->llvm_context),
+                                                   module(std::make_unique<llvm::Module>(name, this->llvm_context)),
+                                                   target_os(target_os_),
+                                                   target_arch(target_arch_)
+    {
+        auto vendor = "";
+
+        if (this->target_os == "darwin")
+        {
+            vendor = "apple";
+        }
+        else if (this->target_os == "windows")
+        {
+            vendor = "pc";
+        }
+        else if (this->target_os == "linux")
+        {
+            vendor = "pc";
+        }
+
+        this->module->setTargetTriple(this->target_arch + "-" + vendor + "-" + this->target_os);
+    }
 
     static fs::path get_bin_directory()
     {

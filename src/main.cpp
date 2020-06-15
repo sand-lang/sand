@@ -18,11 +18,30 @@
 
 #include <llvm/Passes/PassBuilder.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define CURRENT_OS "windows"
+#elif __APPLE__
+#define CURRENT_OS "darwin"
+#elif __linux__
+#define CURRENT_OS "linux"
+#else
+#define CURRENT_OS "unknown"
+#endif
+
+#if __x86_64 || __x86_64__
+#define CURRENT_ARCH "x86_64"
+#elif i386 || __i386 || __i386__ || __i386 || __IA32__ || _M_I86 || _M_IX86 || __X86__ || _X86_ || __THW_INTEL__ || __I86__ || __INTEL__ || __386
+#define CURRENT_ARCH "i386"
+#endif
+
 struct Options
 {
     std::string entry_file;
     std::string output_file = "out";
     std::vector<std::string> include_paths;
+
+    std::string os = CURRENT_OS;
+    std::string arch = CURRENT_ARCH;
 
     std::vector<std::string> libraries;
     std::string args;
@@ -45,7 +64,7 @@ void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
 
 bool compile(const Options &options, San::Debugger &debug)
 {
-    San::Visitor visitor(options.include_paths);
+    San::Visitor visitor(options.os, options.arch, options.include_paths);
 
     debug.start_timer("bytecode");
 
@@ -85,7 +104,7 @@ bool compile(const Options &options, San::Debugger &debug)
     debug.start_timer("objects");
 
     San::Compiler compiler(visitor.env.module);
-    auto objects = compiler.generate_objects(llvm_optimization_level);
+    auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level);
 
     auto elapsed_objects = debug.end_timer("objects");
 
@@ -94,7 +113,7 @@ bool compile(const Options &options, San::Debugger &debug)
 
     debug.start_timer("linking");
 
-    San::Linker::link(objects, options.libraries, options.args, options.output_file);
+    San::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -127,6 +146,9 @@ int main(int argc, char **argv)
     build->add_option("-O", options.optimization_level, "Optimization level", true);
     build->add_option("-I", options.include_paths, "Include paths", true);
 
+    build->add_option("--arch", options.arch, "Target architecture", true);
+    build->add_option("--os", options.os, "Target operating system", true);
+
     build->add_option("-l", options.libraries, "Libraries to link with");
     build->add_option("--args", options.args, "Custom linker arguments");
 
@@ -147,6 +169,9 @@ int main(int argc, char **argv)
 
     run->add_option("-O", options.optimization_level, "Optimization level");
     run->add_option("-I", options.include_paths, "Include paths");
+
+    run->add_option("--arch", options.arch, "Target architecture", true);
+    run->add_option("--os", options.os, "Target operating system", true);
 
     run->add_option("-l", options.libraries, "Libraries to link with");
     run->add_option("--args", options.args, "Custom linker arguments");

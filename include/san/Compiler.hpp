@@ -4,6 +4,7 @@
 #include <llvm/Passes/PassBuilder.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace San
@@ -16,6 +17,6 @@ private:
 public:
     Compiler(std::unique_ptr<llvm::Module> &module_) : module(module_) {}
 
-    std::vector<std::string> generate_objects(const llvm::PassBuilder::OptimizationLevel &optimization_level);
+    std::vector<std::string> generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level);
 };
 } // namespace San
