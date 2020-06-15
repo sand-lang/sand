@@ -17,6 +17,22 @@
 #include <string>
 #include <vector>
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+
+std::string get_sdk_version()
+{
+    char str[250] = {0};
+    size_t size = sizeof(str);
+    int ret = sysctlbyname("kern.osproductversion", str, &size, NULL, 0);
+
+    if (ret == 0)
+        return str;
+
+    return "";
+}
+#endif
+
 namespace San
 {
 class Linker
@@ -84,9 +100,16 @@ public:
 
             raw_args.push_back(s);
         }
-
 #if __APPLE__
         raw_args.push_back("-lSystem");
+
+        auto sdk_version = get_sdk_version();
+
+        if (!sdk_version.empty())
+        {
+            raw_args.push_back("-sdk_version");
+            raw_args.push_back(sdk_version.c_str());
+        }
 #endif
 
         raw_args.push_back("-o");
