@@ -50,6 +50,7 @@ struct Options
 
     bool print_llvm = false;
     bool timer = false;
+    bool verbose = false;
 };
 
 void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
@@ -113,7 +114,7 @@ bool compile(const Options &options, San::Debugger &debug)
 
     debug.start_timer("linking");
 
-    San::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file);
+    San::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.verbose);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -156,6 +157,7 @@ int main(int argc, char **argv)
 
     build->add_flag("--print-llvm", options.print_llvm, "Print generated LLVM bytecode");
     build->add_flag("--timer", options.timer, "Output the elapsed build time");
+    build->add_flag("--verbose", options.verbose, "Verbose mode");
 
     build->callback([&]() {
         if (!compile(options, debug))
@@ -175,6 +177,8 @@ int main(int argc, char **argv)
 
     run->add_option("-l", options.libraries, "Libraries to link with");
     run->add_option("--args", options.args, "Custom linker arguments");
+
+    run->add_flag("--verbose", options.verbose, "Verbose mode");
 
     run->callback([&]() {
         options.output_file = std::tmpnam(nullptr);

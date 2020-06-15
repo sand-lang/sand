@@ -43,7 +43,8 @@ public:
                      const std::string &arch,
                      const std::vector<std::string> &libraries,
                      const std::string &args,
-                     const std::string &output_file)
+                     const std::string &output_file,
+                     const bool &verbose)
     {
         std::vector<const char *> raw_args = {"lld"};
 
@@ -136,7 +137,10 @@ public:
             passed_args += ' ';
         }
 
-        std::cout << "Linking with LLD: " << passed_args << std::endl;
+        if (verbose)
+        {
+            std::cout << "Linking with LLD: " << passed_args << std::endl;
+        }
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         return lld::coff::link(raw_args, false);
