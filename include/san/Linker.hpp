@@ -20,7 +20,7 @@
 #ifdef __APPLE__
 #include <sys/sysctl.h>
 
-std::string get_sdk_version()
+static std::string get_sdk_version()
 {
     char str[250] = {0};
     size_t size = sizeof(str);
@@ -32,6 +32,26 @@ std::string get_sdk_version()
     return "";
 }
 #endif
+
+static std::vector<char *> copies;
+
+static char *copy_str(const std::string &source)
+{
+    auto copy = new char[source.size() + 1];
+    strcpy(copy, source.c_str());
+
+    copies.push_back(copy);
+
+    return copy;
+}
+
+static void delete_copies()
+{
+    for (auto &copy : copies)
+    {
+        delete copy;
+    }
+}
 
 namespace San
 {
@@ -51,83 +71,90 @@ public:
         std::istringstream iss(args);
         std::vector<std::string> vectorized_args(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        // for (auto &library : libraries)
-        // {
-        //     auto option = "-l" + library;
-
-        //     auto s = new char[option.size() + 1];
-        //     strcpy(s, option.c_str());
-
-        //     raw_args.push_back(s);
-        // }
-
-        raw_args.push_back("/nodefaultlib");
-        raw_args.push_back("/entry:main");
-
-        auto option = "/out:" + output_file;
-        raw_args.push_back(option.c_str());
-
-        auto internal = Environment::get_internal_directory("windows", "x86_64").u8string();
-
-        auto ntdll_def = "/def:" + internal + (DIRECTORY_SEPARATOR "ntdll.def");
-        auto kernel32_def = "/def:" + internal + (DIRECTORY_SEPARATOR "kernel32.def");
-
-        auto ntdll_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_ntdll.a");
-        auto kernel32_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_kernel32.a");
-
-        raw_args.push_back(ntdll_def.c_str());
-        raw_args.push_back(kernel32_def.c_str());
-
-        for (auto &arg : vectorized_args)
+        if (os == "windows")
         {
-            raw_args.push_back(arg.c_str());
+            // for (auto &library : libraries)
+            // {
+            //     auto option = "-l" + library;
+
+            //     auto s = new char[option.size() + 1];
+            //     strcpy(s, option.c_str());
+
+            //     raw_args.push_back(s);
+            // }
+
+            raw_args.push_back("/nodefaultlib");
+            raw_args.push_back("/entry:main");
+
+            auto option = "/out:" + output_file;
+            raw_args.push_back(copy_str(option));
+
+            auto internal = Environment::get_internal_directory("windows", "x86_64").u8string();
+
+            auto ntdll_def = "/def:" + internal + (DIRECTORY_SEPARATOR "ntdll.def");
+            auto kernel32_def = "/def:" + internal + (DIRECTORY_SEPARATOR "kernel32.def");
+
+            auto ntdll_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_ntdll.a");
+            auto kernel32_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_kernel32.a");
+
+            raw_args.push_back(copy_str(ntdll_def));
+            raw_args.push_back(copy_str(kernel32_def));
+
+            for (auto &arg : vectorized_args)
+            {
+                raw_args.push_back(arg.c_str());
+            }
+
+            raw_args.push_back(copy_str(ntdll_lib));
+            raw_args.push_back(copy_str(kernel32_lib));
+
+            for (auto &object : objects)
+            {
+                raw_args.push_back(object.c_str());
+            }
         }
-
-        raw_args.push_back(ntdll_lib.c_str());
-        raw_args.push_back(kernel32_lib.c_str());
-
-        for (auto &object : objects)
+        else if (os == "linux" || os == "darwin")
         {
-            raw_args.push_back(object.c_str());
+            raw_args.push_back("-arch");
+            raw_args.push_back(arch.c_str());
+
+            for (auto &library : libraries)
+            {
+                auto option = "-l" + library;
+                raw_args.push_back(copy_str(option));
+            }
+
+            if (os == "darwin")
+            {
+                raw_args.push_back("-lSystem");
+
+                auto sdk_version = get_sdk_version();
+
+                if (!sdk_version.empty())
+                {
+                    raw_args.push_back("-sdk_version");
+                    raw_args.push_back(copy_str(sdk_version));
+                }
+            }
+
+            raw_args.push_back("-o");
+            raw_args.push_back(output_file.c_str());
+
+            for (auto &arg : vectorized_args)
+            {
+                raw_args.push_back(arg.c_str());
+            }
+
+            for (auto &object : objects)
+            {
+                raw_args.push_back(object.c_str());
+            }
         }
-#elif __APPLE__ || __linux__
-        for (auto &library : libraries)
+        else
         {
-            auto option = "-l" + library;
-
-            auto s = new char[option.size() + 1];
-            strcpy(s, option.c_str());
-
-            raw_args.push_back(s);
+            std::cerr << "Unknown platform" << std::endl;
+            return false;
         }
-#if __APPLE__
-        raw_args.push_back("-lSystem");
-
-        auto sdk_version = get_sdk_version();
-
-        if (!sdk_version.empty())
-        {
-            raw_args.push_back("-sdk_version");
-            raw_args.push_back(sdk_version.c_str());
-        }
-#endif
-
-        raw_args.push_back("-o");
-        raw_args.push_back(output_file.c_str());
-
-        for (auto &arg : vectorized_args)
-        {
-            raw_args.push_back(arg.c_str());
-        }
-
-        for (auto &object : objects)
-        {
-            raw_args.push_back(object.c_str());
-        }
-#else
-#error "Unknown platform"
-#endif
 
         std::string passed_args = "";
 
@@ -142,13 +169,18 @@ public:
             std::cout << "Linking with LLD: " << passed_args << std::endl;
         }
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        return lld::coff::link(raw_args, false);
-#elif __APPLE__
-        return lld::mach_o::link(raw_args, false);
-#elif __linux__
-        return lld::elf::link(raw_args, false);
-#endif
+        if (os == "windows")
+        {
+            return lld::coff::link(raw_args, false);
+        }
+        else if (os == "darwin")
+        {
+            return lld::mach_o::link(raw_args, false);
+        }
+        else if (os == "linux")
+        {
+            return lld::elf::link(raw_args, false);
+        }
     }
 };
 } // namespace San
