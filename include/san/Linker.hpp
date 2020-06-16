@@ -89,7 +89,7 @@ public:
             auto option = "/out:" + output_file;
             raw_args.push_back(copy_str(option));
 
-            auto internal = Environment::get_internal_directory("windows", "x86_64").u8string();
+            auto internal = Environment::get_internal_directory("windows", arch).u8string();
 
             auto ntdll_def = "/def:" + internal + (DIRECTORY_SEPARATOR "ntdll.def");
             auto kernel32_def = "/def:" + internal + (DIRECTORY_SEPARATOR "kernel32.def");

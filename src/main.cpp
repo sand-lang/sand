@@ -18,6 +18,8 @@
 
 #include <llvm/Passes/PassBuilder.h>
 
+#include <map>
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define CURRENT_OS "windows"
 #elif __APPLE__
@@ -33,6 +35,56 @@
 #elif i386 || __i386 || __i386__ || __i386 || __IA32__ || _M_I86 || _M_IX86 || __X86__ || _X86_ || __THW_INTEL__ || __I86__ || __INTEL__ || __386
 #define CURRENT_ARCH "i386"
 #endif
+
+std::map<const std::string_view, std::vector<const std::string_view>> available_architectures = {
+    {"windows", {"i386", "x86_64"}},
+    {"linux", {"i386", "x86_64"}},
+    {"darwin", {"i386", "x86_64"}},
+};
+
+bool is_os_available(const std::string &os)
+{
+    return available_architectures.find(os) != available_architectures.end();
+}
+
+bool is_arch_available(const std::string &os, const std::string &arch)
+{
+    return std::find(available_architectures[os].begin(), available_architectures[os].end(), arch) != available_architectures[os].end();
+}
+
+std::string get_available_os()
+{
+    std::string str = "";
+
+    for (const auto &[name, _] : available_architectures)
+    {
+        if (!str.empty())
+        {
+            str += ", ";
+        }
+
+        str += name;
+    }
+
+    return str;
+}
+
+std::string get_available_archs(const std::string &os)
+{
+    std::string str = "";
+
+    for (const auto &arch : available_architectures[os])
+    {
+        if (!str.empty())
+        {
+            str += ", ";
+        }
+
+        str += arch;
+    }
+
+    return str;
+}
 
 struct Options
 {
@@ -65,6 +117,18 @@ void print_bytecode(std::unique_ptr<llvm::Module> &module, San::Debugger &debug)
 
 bool compile(const Options &options, San::Debugger &debug)
 {
+    if (!is_os_available(options.os))
+    {
+        debug.err << "Unavailable operating system: '" + options.os + "'. Available operating system: " + get_available_os() + "." << std::endl;
+        return false;
+    }
+
+    if (!is_arch_available(options.os, options.arch))
+    {
+        debug.err << "Unavailable architecture: '" + options.arch + "' for operating system '" + options.os + "'. Available architectures: " + get_available_archs(options.os) + "." << std::endl;
+        return false;
+    }
+
     San::Visitor visitor(options.os, options.arch, options.include_paths);
 
     debug.start_timer("bytecode");
