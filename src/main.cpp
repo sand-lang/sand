@@ -36,7 +36,7 @@
 #define CURRENT_ARCH "i386"
 #endif
 
-std::map<const std::string_view, std::vector<const std::string_view>> available_architectures = {
+std::map<std::string_view, std::vector<std::string_view>> available_architectures = {
     {"windows", {"i386", "x86_64"}},
     {"linux", {"i386", "x86_64"}},
     {"darwin", {"i386", "x86_64"}},
