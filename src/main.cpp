@@ -30,7 +30,7 @@
 #define CURRENT_OS "unknown"
 #endif
 
-#if __x86_64 || __x86_64__
+#if __x86_64 || __x86_64__ || _M_X64 || _M_AMD64
 #define CURRENT_ARCH "x86_64"
 #elif i386 || __i386 || __i386__ || __i386 || __IA32__ || _M_I86 || _M_IX86 || __X86__ || _X86_ || __THW_INTEL__ || __I86__ || __INTEL__ || __386
 #define CURRENT_ARCH "i386"
