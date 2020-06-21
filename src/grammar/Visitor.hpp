@@ -1356,6 +1356,10 @@ public:
         {
             return this->visitPropertyExpression(property_expression_context);
         }
+        else if (const auto function_expression_context = dynamic_cast<SanParser::FunctionExpressionContext *>(context))
+        {
+            return this->visitFunction(function_expression_context->function());
+        }
         else if (const auto name_expression_context = dynamic_cast<SanParser::NameExpressionContext *>(context))
         {
             return this->visitNameExpression(name_expression_context);

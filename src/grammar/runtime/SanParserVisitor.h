@@ -45,6 +45,8 @@ public:
 
     virtual antlrcpp::Any visitThisExpression(SanParser::ThisExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionExpression(SanParser::FunctionExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitPropertyExpression(SanParser::PropertyExpressionContext *context) = 0;

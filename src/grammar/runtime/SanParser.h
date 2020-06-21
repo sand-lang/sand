@@ -311,6 +311,15 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  FunctionExpressionContext : public ExpressionContext {
+  public:
+    FunctionExpressionContext(ExpressionContext *ctx);
+
+    FunctionContext *function();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  BinaryMultiplicativeOperationContext : public ExpressionContext {
   public:
     BinaryMultiplicativeOperationContext(ExpressionContext *ctx);

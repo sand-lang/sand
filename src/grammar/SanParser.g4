@@ -41,6 +41,7 @@ expression:
 	| expression equalityOperatorStatement expression		# EqualityOperation
 	| expression 'as' type									# TypeCast
 	| 'this'												# ThisExpression
+	| function												# FunctionExpression
 	| scopedName											# NameExpression
 	| literal												# LiteralDeclaration;
 
