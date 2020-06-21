@@ -253,6 +253,13 @@ public:
         if (!attributes.accept_current_target())
             return nullptr;
 
+        Position position;
+
+        if (scope->in_function())
+        {
+            position = Position::save(scope->builder());
+        }
+
         auto type = this->visitFunctionDeclaration(context->functionDeclaration(), this_type);
 
         if (auto function_type = dynamic_cast<Types::FunctionType *>(type))
@@ -277,6 +284,8 @@ public:
                 this->generateFunctionBody(context, function);
             }
 
+            position.load(scope->builder());
+
             return function;
         }
         else if (auto generic_type = dynamic_cast<Types::GenericFunctionType *>(type))
@@ -289,12 +298,22 @@ public:
             scope->add_name(type->name, type);
         }
 
+        position.load(scope->builder());
+
         return type;
     }
 
     Values::Function *visitFunction(Types::GenericFunctionType *generic)
     {
         auto scope = this->scopes.top();
+
+        Position position;
+
+        if (scope->in_function())
+        {
+            position = Position::save(scope->builder());
+        }
+
         auto context = generic->context;
 
         auto type = this->visitFunctionDeclaration(context->functionDeclaration(), generic->parent, true);
@@ -305,6 +324,8 @@ public:
             generic->children.push_back(function);
 
             this->generateFunctionBody(context, function);
+
+            position.load(scope->builder());
 
             return function;
         }
