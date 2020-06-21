@@ -90,7 +90,7 @@ public:
                         if (auto destructor = dynamic_cast<Values::Function *>(name))
                         {
                             destructor->calling_variable = variable;
-                            destructor->call(scope->builder());
+                            destructor->call(scope->builder(), scope->module());
                         }
                     }
                 }

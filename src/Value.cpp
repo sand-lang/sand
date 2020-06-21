@@ -6,7 +6,7 @@
 
 using namespace San;
 
-Value *Value::call(llvm::IRBuilder<> &builder, std::vector<Value *> args)
+Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, std::vector<Value *> args)
 {
     auto called_type = this->type;
 
@@ -29,9 +29,21 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::vector<Value *> args)
     {
         auto arg = args[i];
 
-        if (i <= (type->args.size() - (type->is_variadic ? 1 : 0) - start))
+        auto not_variadic = i <= (type->args.size() - (type->is_variadic ? 1 : 0) - start);
+
+        if (not_variadic)
         {
-            auto casted = arg->cast(type->args[i + start].type, builder);
+            auto function_arg = type->args[i + start];
+
+            if (function_arg.type->is_reference && !(arg->type->is_reference || arg->is_alloca))
+            {
+                auto reference = Values::Variable::create("ref", arg->type, builder);
+                reference->store(arg, builder, module);
+
+                arg = reference;
+            }
+
+            auto casted = arg->cast(function_arg.type, builder);
             llvm_args.push_back(casted->get_ref());
         }
         else

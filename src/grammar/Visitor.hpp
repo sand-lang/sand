@@ -879,7 +879,7 @@ public:
 
                 if (begin != nullptr && end != nullptr)
                 {
-                    auto begin_value = begin->call(scope->builder())->load_alloca_and_reference(scope->builder());
+                    auto begin_value = begin->call(scope->builder(), scope->module())->load_alloca_and_reference(scope->builder());
 
                     auto iterator_name = context->VariableName()->getText();
                     auto iterator = Values::Variable::create(iterator_name, begin_value->type, scope->builder());
@@ -891,7 +891,7 @@ public:
                     scope->get_function()->insert(for_cond);
                     for_cond->insert_point(scope->builder());
 
-                    auto end_value = end->call(scope->builder())->load_alloca_and_reference(scope->builder());
+                    auto end_value = end->call(scope->builder(), scope->module())->load_alloca_and_reference(scope->builder());
 
                     auto condition = iterator->load_alloca_and_reference(scope->builder())->not_equal(scope->builder(), end_value);
                     for_body->conditional_br(scope->builder(), condition, for_end);
@@ -1537,7 +1537,7 @@ public:
             {
                 if (type->compare_args(args))
                 {
-                    auto return_value = value->call(scope->builder(), args);
+                    auto return_value = value->call(scope->builder(), scope->module(), args);
                     scope->add_name("", return_value);
 
                     return return_value;
@@ -1557,7 +1557,7 @@ public:
                 {
                     value = value->load_alloca_and_reference(scope->builder());
 
-                    auto return_value = value->call(scope->builder(), args);
+                    auto return_value = value->call(scope->builder(), scope->module(), args);
                     scope->add_name("", return_value);
 
                     return return_value;
@@ -1617,7 +1617,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("+", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->Sub())
@@ -1630,7 +1630,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("-", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
 
@@ -1667,7 +1667,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("*", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->Div())
@@ -1686,7 +1686,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("/", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->Mod())
@@ -1705,7 +1705,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("%", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
 
@@ -1737,7 +1737,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("^", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->BitwiseOr())
@@ -1751,7 +1751,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("|", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->BitwiseAnd())
@@ -1765,7 +1765,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("&", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
 
@@ -1802,7 +1802,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("==", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->NotEqualTo())
@@ -1815,7 +1815,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("!=", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->LessThan())
@@ -1834,7 +1834,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("<", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->LessThanOrEqualTo())
@@ -1853,7 +1853,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("<=", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->GreaterThan())
@@ -1872,7 +1872,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload(">", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
         else if (opt->GreaterThanOrEqualTo())
@@ -1891,7 +1891,7 @@ public:
             auto args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload(">=", args))
             {
-                return overload->call(scope->builder(), args);
+                return overload->call(scope->builder(), scope->module(), args);
             }
         }
 
@@ -1979,7 +1979,7 @@ public:
         auto args = {lexpr, rexpr};
         if (auto overload = this->getOperatorOverload("=", args))
         {
-            return overload->call(scope->builder(), args);
+            return overload->call(scope->builder(), scope->module(), args);
         }
         else
         {
@@ -2050,7 +2050,7 @@ public:
 
         if (auto function = this->getCastOverload(expr, type))
         {
-            return function->call(scope->builder(), {expr});
+            return function->call(scope->builder(), scope->module(), {expr});
         }
 
         return expr->cast(type, scope->builder(), true);
@@ -2759,7 +2759,7 @@ public:
         auto type = Types::FunctionType::create(scope->builder(), scope->module(), "inline.asm", new Type(".tmp.class", return_type), function_args, false, false, false);
 
         auto value = llvm::InlineAsm::get(type->get_ref(), code, operands_clobbers + clobbers + "~{dirflag},~{fpsr},~{flags}", true);
-        auto ret = Value("inline.asm", type, value).call(scope->builder(), args);
+        auto ret = Value("inline.asm", type, value).call(scope->builder(), scope->module(), args);
 
         if (return_type->isStructTy())
         {

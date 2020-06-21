@@ -39,7 +39,7 @@ public:
         return !!llvm::isa<llvm::AllocaInst>(ref) || !!llvm::isa<llvm::GlobalVariable>(ref);
     }
 
-    Value *call(llvm::IRBuilder<> &builder, std::vector<Value *> args = {});
+    Value *call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, std::vector<Value *> args = {});
 
     void store(Value *value, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &overwrite_reference = false)
     {
