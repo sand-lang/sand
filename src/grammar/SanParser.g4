@@ -134,7 +134,7 @@ functionDeclaration:
 				(Operator overloadableOperator)
 				| (Cast castFunctionType)
 				| VariableName
-			) classGenerics? '(' (
+			)? classGenerics? '(' (
 				functionArguments (',' functionVariadicArgument)?
 				| functionVariadicArgument?
 			) ')' (':' type)?

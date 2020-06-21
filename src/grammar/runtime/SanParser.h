@@ -722,8 +722,8 @@ public:
     antlr4::tree::TerminalNode *OpeningParen();
     antlr4::tree::TerminalNode *ClosingParen();
     antlr4::tree::TerminalNode *Destructor();
-    antlr4::tree::TerminalNode *VariableName();
     FunctionArgumentsContext *functionArguments();
+    antlr4::tree::TerminalNode *VariableName();
     ClassGenericsContext *classGenerics();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
