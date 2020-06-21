@@ -637,6 +637,11 @@ public:
             if (type == nullptr)
             {
                 type = rvalue->type;
+
+                if (type->is_function() && !type->is_pointer())
+                {
+                    type = type->pointer();
+                }
             }
         }
 
