@@ -8,7 +8,14 @@ using namespace San;
 
 Value *Value::call(llvm::IRBuilder<> &builder, std::vector<Value *> args)
 {
-    auto type = dynamic_cast<Types::FunctionType *>(this->type);
+    auto called_type = this->type;
+
+    if (called_type->is_pointer())
+    {
+        called_type = called_type->base;
+    }
+
+    auto type = dynamic_cast<Types::FunctionType *>(called_type);
 
     std::vector<llvm::Value *> llvm_args;
 

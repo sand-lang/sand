@@ -207,7 +207,11 @@ typeReference: '&';
 
 typeName: scopedName | functionType;
 
-functionType: 'fn' '(' functionArguments? ')' (':' type)?;
+functionType:
+	'fn' '(' (
+		functionArguments (',' functionVariadicArgument)?
+		| functionVariadicArgument?
+	) ')' (':' type)?;
 
 classTypeName: scopedName;
 

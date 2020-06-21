@@ -1180,6 +1180,8 @@ public:
     FunctionArgumentsContext *functionArguments();
     antlr4::tree::TerminalNode *Colon();
     TypeContext *type();
+    antlr4::tree::TerminalNode *Comma();
+    FunctionVariadicArgumentContext *functionVariadicArgument();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

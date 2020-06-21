@@ -88,7 +88,14 @@ public:
 
             if (auto value = dynamic_cast<Value *>(name))
             {
-                if (auto type = dynamic_cast<Types::FunctionType *>(value->type->behind_reference()))
+                auto value_type = value->type->behind_reference();
+
+                if (value_type->is_pointer() && value_type->base->is_function())
+                {
+                    value_type = value_type->base;
+                }
+
+                if (auto type = dynamic_cast<Types::FunctionType *>(value_type))
                 {
                     auto compatibility = type->compare_args(args);
 

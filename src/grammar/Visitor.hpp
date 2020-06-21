@@ -368,7 +368,7 @@ public:
 
         if (parent != nullptr)
         {
-            auto arg = Types::FunctionArgument("this", parent->pointer(scope->context()));
+            auto arg = Types::FunctionArgument("this", parent->pointer());
             args.insert(args.begin(), arg);
         }
 
@@ -1529,6 +1529,8 @@ public:
             {
                 if (auto value = dynamic_cast<Value *>(function))
                 {
+                    value = value->load_alloca_and_reference(scope->builder());
+
                     auto return_value = value->call(scope->builder(), args);
                     scope->add_name("", return_value);
 
@@ -1953,10 +1955,20 @@ public:
         {
             return overload->call(scope->builder(), args);
         }
-        else if (lexpr->type->compatibility(rexpr->type) != Type::NOT_COMPATIBLE)
+        else
         {
-            lexpr->store(rexpr, scope->builder(), scope->module());
-            return lexpr;
+            auto rtype = rexpr->type;
+
+            if (rtype->is_function() && !rtype->is_pointer())
+            {
+                rtype = rtype->pointer();
+            }
+
+            if (lexpr->type->compatibility(rtype) != Type::NOT_COMPATIBLE)
+            {
+                lexpr->store(rexpr, scope->builder(), scope->module());
+                return lexpr;
+            }
         }
 
         throw InvalidRightValueException(rexpr_context->getStart());
@@ -2537,12 +2549,12 @@ public:
 
         for (const auto &pointer : context->typePointer())
         {
-            type = type->pointer(scope->context());
+            type = type->pointer();
         }
 
         if (context->typeReference())
         {
-            type = type->reference(scope->context());
+            type = type->reference();
         }
 
         return type;
@@ -2555,10 +2567,33 @@ public:
             auto scoped_name = this->visitScopedName(scoped_name_context);
             return this->typeFromName(scoped_name, context);
         }
-
-        // implement function type
+        else if (auto function_type_context = context->functionType())
+        {
+            return this->visitFunctionType(function_type_context);
+        }
 
         return nullptr;
+    }
+
+    Type *visitFunctionType(SanParser::FunctionTypeContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto args = this->visitFunctionArguments(context->functionArguments());
+        auto is_variadic = (context->functionVariadicArgument() != nullptr);
+
+        Type *return_type = nullptr;
+
+        if (auto type_context = context->type())
+        {
+            return_type = this->visitType(type_context);
+        }
+        else
+        {
+            return_type = Type::voidt(scope->context());
+        }
+
+        return Types::FunctionType::create(scope->builder(), scope->module(), "", return_type, args, is_variadic, false)->pointer();
     }
 
     Types::ClassType *visitClassTypeName(SanParser::ClassTypeNameContext *context)

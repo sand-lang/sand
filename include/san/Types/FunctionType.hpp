@@ -63,7 +63,7 @@ public:
                 }
                 else
                 {
-                    argument_llvm_types.push_back(return_type->pointer(builder.getContext())->get_ref());
+                    argument_llvm_types.push_back(return_type->pointer()->get_ref());
                 }
 
                 return_llvm_type = Type::llvm_void(builder.getContext());
@@ -117,7 +117,14 @@ public:
 
         for (size_t i = start; i < this->args.size(); i++)
         {
-            auto compatibility = this->args[i].type->compatibility(args[i - start]);
+            auto arg = args[i - start];
+
+            if (arg->is_function() && !arg->is_pointer())
+            {
+                arg = arg->pointer();
+            }
+
+            auto compatibility = this->args[i].type->compatibility(arg);
 
             if (compatibility == Type::NOT_COMPATIBLE)
             {

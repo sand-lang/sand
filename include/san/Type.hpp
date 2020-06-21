@@ -61,21 +61,21 @@ public:
         return stream.str();
     }
 
-    Type *pointer(llvm::LLVMContext &context)
+    Type *pointer()
     {
         auto ref = this->get_ref();
 
         if (this->is_void())
         {
-            ref = Type::llvm_i8(context);
+            ref = Type::llvm_i8(ref->getContext());
         }
 
         return new Type(this->name + "*", ref->getPointerTo(), this);
     }
 
-    Type *reference(llvm::LLVMContext &context)
+    Type *reference()
     {
-        auto pointer_type = this->pointer(context);
+        auto pointer_type = this->pointer();
         pointer_type->is_reference = true;
 
         return pointer_type;

@@ -22,7 +22,7 @@ public:
         global->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
         global->setAlignment(1);
 
-        return new GlobalConstant(name, type->reference(constant->getContext()), global);
+        return new GlobalConstant(name, type->reference(), global);
     }
 
     llvm::GlobalVariable *get_ref() override
