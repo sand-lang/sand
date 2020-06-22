@@ -35,6 +35,10 @@ namespace std {
 
         let str = std::memory::allocate<i8>(len + 1);
 
+        if n == 0 {
+            str[0] = '0';
+        }
+
         while n != 0 {
             str[len - (1 as u64)] = (n % 10) + '0';
             n = n / 10;
