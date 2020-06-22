@@ -1,0 +1,101 @@
+import "./memory"
+import "./range"
+
+namespace std {
+    class Vec<T> {
+        ptr: T*;
+        capacity: u64 = 0;
+        length: u64 = 0;
+
+        static fn new() : Vec<T> {
+            return Vec<T> {
+                ptr = 0 as T*,
+            };
+        }
+
+        static fn new(capacity: u64) : Vec<T> {
+            return Vec<T> {
+                ptr = std::memory::allocate<T>(capacity),
+                capacity,
+            };
+        }
+
+        fn ensure_memory() {
+            if this.length == this.capacity {
+                this.capacity = (this.capacity + 1) * 2;
+                let copy = std::memory::allocate<T>(this.capacity);
+
+                if this.ptr != (0 as T*) {
+                    std::memory::copy(this.ptr, copy, this.length * sizeof(T));
+                    std::memory::deallocate(this.ptr as i8*);
+                }
+
+                this.ptr = copy;
+            }
+        }
+
+        fn push(value: T&) : u64 {
+            this.ensure_memory();
+
+            this.ptr[this.length] = value;
+            this.length = this.length + 1;
+
+            return this.length;
+        }
+
+        fn pop() : T {
+            let value = this.get(this.length - 1);
+
+            this.length = this.length - 1;
+
+            return value;
+        }
+
+        fn shift() : T {
+            let value = this.get(0);
+
+            for i in std::range<u64>::new(1, this.length) {
+                this.ptr[i - 1] = this.ptr[i];
+            }
+
+            this.length = this.length - 1;
+
+            return value;
+        }
+
+        fn copy(start: u64, end: u64) : Vec<T> {
+            let array = Vec<T>::new(end - start + 1);
+
+            for i in std::range<u64>::new(start, end) {
+                array.push(this.get(i));
+            }
+            
+            return array;
+        }
+
+        fn get(i : u64) : T& {
+            return this.ptr[i];
+        }
+
+        fn reduce<U>(cb: fn (U&, const T&) : U, default: U) : U {
+            let acc = default;
+
+            for i in std::range<u64>::new(0, this.length) {
+                acc = cb(acc, this.get(i));
+            }
+
+            return acc;
+        }
+
+        fn map<U>(cb: fn (T, u64, const Vec<T> &) : U) : Vec<U> {
+            let mapped = Vec<U>::new(this.length);
+
+            for i in std::range<u64>::new(0, this.length) {
+                let ret = cb(this.get(i), i, this);
+                mapped.push(ret);
+            }
+
+            return mapped;
+        }
+    }
+}
