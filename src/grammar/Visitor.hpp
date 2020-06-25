@@ -1201,19 +1201,6 @@ public:
 
     std::vector<Values::Function *> generatePendingMethods(Types::ClassType *type)
     {
-        for (auto property : type->properties)
-        {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
-            {
-                if (!class_type->pending_methods.empty())
-                {
-                    this->scopes.push(class_type->static_scope);
-                    this->generatePendingMethods(class_type);
-                    this->scopes.pop();
-                }
-            }
-        }
-
         std::vector<Values::Function *> methods;
 
         for (auto &class_method : type->pending_methods)
@@ -1250,6 +1237,19 @@ public:
         }
 
         type->pending_methods.clear();
+
+        for (auto property : type->properties)
+        {
+            if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
+            {
+                if (!class_type->pending_methods.empty())
+                {
+                    this->scopes.push(class_type->static_scope);
+                    this->generatePendingMethods(class_type);
+                    this->scopes.pop();
+                }
+            }
+        }
 
         return methods;
     }
