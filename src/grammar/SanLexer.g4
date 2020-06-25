@@ -50,7 +50,6 @@ Class: 'class';
 Extends: 'extends';
 Special: 'special';
 Static: 'static';
-This: 'this';
 Dot: '.';
 Arrow: '->';
 

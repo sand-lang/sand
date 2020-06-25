@@ -1349,10 +1349,6 @@ public:
         {
             return this->visitTypeCast(type_cast_context);
         }
-        else if (const auto this_expression_context = dynamic_cast<SanParser::ThisExpressionContext *>(context))
-        {
-            return this->visitThisExpression(this_expression_context);
-        }
         else if (const auto property_expression_context = dynamic_cast<SanParser::PropertyExpressionContext *>(context))
         {
             return this->visitPropertyExpression(property_expression_context);
@@ -2059,22 +2055,6 @@ public:
         }
 
         return expr->cast(type, scope->builder(), true);
-    }
-
-    Value *visitThisExpression(SanParser::ThisExpressionContext *context)
-    {
-        auto scope = this->scopes.top();
-        auto function = scope->get_function();
-
-        if (function == nullptr || !function->get_type()->is_method)
-        {
-            throw UnknownNameException(context->getStart());
-        }
-
-        auto names = scope->get_names("this");
-        auto value = this->valueFromName(names, context);
-
-        return value;
     }
 
     Name *visitPropertyExpression(SanParser::PropertyExpressionContext *context)
