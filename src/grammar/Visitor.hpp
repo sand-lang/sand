@@ -43,6 +43,7 @@
 #include <san/Exceptions/NotAClassException.hpp>
 #include <san/Exceptions/NotAClassOrNamespaceException.hpp>
 #include <san/Exceptions/NotAGenericException.hpp>
+#include <san/Exceptions/NotAPointerException.hpp>
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
 
@@ -2073,8 +2074,7 @@ public:
         auto names = scope->get_names("this");
         auto value = this->valueFromName(names, context);
 
-        auto index = 0UL;
-        return value->load(scope->builder())->gep(index, scope->builder());
+        return value;
     }
 
     Name *visitPropertyExpression(SanParser::PropertyExpressionContext *context)
@@ -2085,6 +2085,17 @@ public:
         if (expr->is_alloca)
         {
             expr = expr->load_reference(scope->builder());
+        }
+
+        if (context->Arrow())
+        {
+            if (!expr->type->is_pointer())
+            {
+                throw NotAPointerException(context->expression()->getStart());
+            }
+
+            auto index = 0UL;
+            expr = expr->load(scope->builder())->gep(index, scope->builder());
         }
 
         auto type = expr->type;

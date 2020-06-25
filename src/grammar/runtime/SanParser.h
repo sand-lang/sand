@@ -19,13 +19,14 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
     Class = 30, Extends = 31, Special = 32, Static = 33, This = 34, Dot = 35, 
-    Union = 36, Destructor = 37, Namespace = 38, ScopeResolver = 39, VariableDeclarator = 40, 
-    If = 41, Else = 42, While = 43, Break = 44, For = 45, In = 46, Function = 47, 
-    Extern = 48, Return = 49, Operator = 50, Cast = 51, Alias = 52, Comma = 53, 
-    Colon = 54, Attribute = 55, Assembly = 56, Import = 57, True = 58, False = 59, 
-    InstructionsSeparator = 60, VariableName = 61, StringLiteral = 62, CharLiteral = 63, 
-    DecimalLiteral = 64, FloatingLiteral = 65, ZeroLiteral = 66, HexadecimalLiteral = 67, 
-    BinaryLiteral = 68, Comment = 69, WhiteSpace = 70, LineTerminator = 71
+    Arrow = 36, Union = 37, Destructor = 38, Namespace = 39, ScopeResolver = 40, 
+    VariableDeclarator = 41, If = 42, Else = 43, While = 44, Break = 45, 
+    For = 46, In = 47, Function = 48, Extern = 49, Return = 50, Operator = 51, 
+    Cast = 52, Alias = 53, Comma = 54, Colon = 55, Attribute = 56, Assembly = 57, 
+    Import = 58, True = 59, False = 60, InstructionsSeparator = 61, VariableName = 62, 
+    StringLiteral = 63, CharLiteral = 64, DecimalLiteral = 65, FloatingLiteral = 66, 
+    ZeroLiteral = 67, HexadecimalLiteral = 68, BinaryLiteral = 69, Comment = 70, 
+    WhiteSpace = 71, LineTerminator = 72
   };
 
   enum {
@@ -336,8 +337,9 @@ public:
     PropertyExpressionContext(ExpressionContext *ctx);
 
     ExpressionContext *expression();
-    antlr4::tree::TerminalNode *Dot();
     NameContext *name();
+    antlr4::tree::TerminalNode *Dot();
+    antlr4::tree::TerminalNode *Arrow();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

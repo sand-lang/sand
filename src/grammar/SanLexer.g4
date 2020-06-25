@@ -52,6 +52,7 @@ Special: 'special';
 Static: 'static';
 This: 'this';
 Dot: '.';
+Arrow: '->';
 
 // Union
 Union: 'union';
