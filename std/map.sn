@@ -1,44 +1,46 @@
 import "./linked_list"
 
-class KeyValuePair<K, T> {
-    key: K;
-    value: T;
+namespace std {
+    class KeyValuePair<K, T> {
+        key: K;
+        value: T;
 
-    static fn new(key: K, value: T) : KeyValuePair<K, T> {
-        return KeyValuePair<K, T> {
-            key,
-            value,
-        };
-    }
-}
-
-class Map<K, T> {
-    list: LinkedList<KeyValuePair<K, T>>;
-
-    static fn new() : Map<K, T> {
-        return Map<K, T> {
-            list = LinkedList<KeyValuePair<K, T>>::new(),
-        };
+        static fn new(key: K, value: T) : KeyValuePair<K, T> {
+            return KeyValuePair<K, T> {
+                key,
+                value,
+            };
+        }
     }
 
-    fn insert(key: K, value: T) {
-        let pair = KeyValuePair<K, T>::new(key, value);
-        this->insert(pair);
-    }
+    class Map<K, T> {
+        list: LinkedList<KeyValuePair<K, T>>;
 
-    fn insert(pair: KeyValuePair<K, T>) {
-        this->list.insert(pair);
-    }
+        static fn new() : Map<K, T> {
+            return Map<K, T> {
+                list = LinkedList<KeyValuePair<K, T>>::new(),
+            };
+        }
 
-    fn get(key: K) : T& {
-        let node = this->list.first;
+        fn insert(key: K, value: T) {
+            let pair = KeyValuePair<K, T>::new(key, value);
+            this->insert(pair);
+        }
 
-        while node {
-            if node->value.key == key {
-                return node->value.value;
+        fn insert(pair: KeyValuePair<K, T>) {
+            this->list.insert(pair);
+        }
+
+        fn get(key: K) : T& {
+            let node = this->list.first;
+
+            while node {
+                if node->value.key == key {
+                    return node->value.value;
+                }
+
+                node = node->next;
             }
-
-            node = node->next;
         }
     }
 }
