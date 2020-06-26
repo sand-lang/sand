@@ -1202,9 +1202,26 @@ public:
 
     std::vector<Values::Function *> generatePendingMethods(Types::ClassType *type)
     {
+        // Extract and clear pending_methods to prevent recursive generation
+        auto pending_methods = type->pending_methods;
+        type->pending_methods.clear();
+
         std::vector<Values::Function *> methods;
 
-        for (auto &class_method : type->pending_methods)
+        for (auto &generic : type->generics)
+        {
+            if (auto class_type = dynamic_cast<Types::ClassType *>(generic->get_base()))
+            {
+                if (!class_type->pending_methods.empty())
+                {
+                    this->scopes.push(class_type->static_scope);
+                    this->generatePendingMethods(class_type);
+                    this->scopes.pop();
+                }
+            }
+        }
+
+        for (auto &class_method : pending_methods)
         {
             auto is_static = !!class_method->Static();
 
@@ -1225,20 +1242,6 @@ public:
             }
         }
 
-        for (size_t i = 0; i < methods.size(); i++)
-        {
-            auto method = methods[i];
-
-            // if (!method->is_base)
-            {
-                auto class_method = type->pending_methods[i];
-
-                this->generateClassMethodBody(class_method, method);
-            }
-        }
-
-        type->pending_methods.clear();
-
         for (auto property : type->properties)
         {
             if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
@@ -1249,6 +1252,18 @@ public:
                     this->generatePendingMethods(class_type);
                     this->scopes.pop();
                 }
+            }
+        }
+
+        for (size_t i = 0; i < methods.size(); i++)
+        {
+            auto method = methods[i];
+
+            // if (!method->is_base)
+            {
+                auto class_method = pending_methods[i];
+
+                this->generateClassMethodBody(class_method, method);
             }
         }
 
