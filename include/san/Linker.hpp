@@ -128,6 +128,7 @@ public:
             {
                 raw_args.push_back("-lSystem");
 
+#ifdef __APPLE__
                 auto sdk_version = get_sdk_version();
 
                 if (!sdk_version.empty())
@@ -135,6 +136,7 @@ public:
                     raw_args.push_back("-sdk_version");
                     raw_args.push_back(copy_str(sdk_version));
                 }
+#endif
             }
 
             raw_args.push_back("-o");
