@@ -18,11 +18,11 @@ namespace std {
         }
 
         fn begin() : T& {
-            return this._start;
+            return this->_start;
         }
 
         fn end() : T& {
-            return this._end;
+            return this->_end;
         }
     }
 }
