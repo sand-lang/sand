@@ -29,6 +29,10 @@ set(LLVM_TABLEGEN_FLAGS -I ${LLVM_MAIN_INCLUDE_DIR})
 
 set(LLVM_TABLEGEN_EXE "${LLVM_TOOLS_BINARY_DIR}/llvm-tblgen")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    set(LLVM_TABLEGEN_EXE "${LLVM_TABLEGEN_EXE}.exe")
+endif()
+
 set(LLD_BUILT_STANDALONE Off)
 
 cmake_policy(SET CMP0057 NEW)
@@ -46,9 +50,9 @@ include_directories(
   "${CMAKE_BINARY_DIR}/libs/lld"
 )
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lld")
-
 add_definitions(${LLVM_DEFINITIONS})
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lld")
 
 set(DEPENDENCIES_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c"

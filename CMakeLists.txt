@@ -14,6 +14,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 
     set(LLVM_USE_CRT_RELEASE MT)
     set(LLVM_USE_CRT_DEBUG MTd)
+elseif((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang"))
+    include(CheckCXXCompilerFlag)
+
+    check_cxx_compiler_flag("-fvisibility-inlines-hidden" SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG)
+
+    if(SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG)
+        list(APPEND CMAKE_CXX_FLAGS "-fvisibility-inlines-hidden")
+    endif()
 endif()
 
 set(TARGET_WebAssembly WebAssemblyCodeGen WebAssemblyAsmParser WebAssemblyDesc WebAssemblyInfo)
@@ -31,9 +39,9 @@ set(TARGET_BPF BPFCodeGen BPFAsmParser BPFDesc BPFInfo)
 set(TARGET_ARM ARMCodeGen ARMAsmParser ARMDesc ARMUtils ARMInfo) 
 set(TARGET_AMDGPU AMDGPUCodeGen AMDGPUAsmParser AMDGPUDesc AMDGPUUtils AMDGPUInfo)
 set(TARGET_X86 X86CodeGen X86AsmParser X86Desc X86Utils X86Info)
-set(TARGET_AARCH64 AArch64CodeGen AArch64AsmParser AArch64Desc AArch64Utils AArch64Info)
+set(TARGET_AArch64 AArch64CodeGen AArch64AsmParser AArch64Desc AArch64Utils AArch64Info)
 
-set(TARGETS_TO_BUILD "X86")
+set(TARGETS_TO_BUILD "WebAssembly" "XCore" "SystemZ" "Sparc" "RISCV" "PowerPC" "NVPTX" "MSP430" "Mips" "Lanai" "Hexagon" "BPF" "ARM" "AMDGPU" "X86" "AArch64")
 
 set(LLVM_TARGETS)
 foreach (target IN ITEMS ${TARGETS_TO_BUILD})
@@ -127,10 +135,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     list(APPEND NATIVE_LIBRARIES "stdc++fs")
 endif()
 
+message("CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+
 target_link_libraries(${PROJECT_NAME} 
-    ${NATIVE_LIBRARIES} 
-    antlr4_static 
-    ${llvm_libs} 
+    ${NATIVE_LIBRARIES}
+    antlr4_static
+    ${llvm_libs}
+    lldCore
     lldCommon
     lldCOFF
     lldDriver

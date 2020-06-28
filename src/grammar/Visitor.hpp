@@ -47,10 +47,9 @@
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
 
-#include <filesystem>
-#include <regex>
+#include <san/filesystem.hpp>
 
-namespace fs = std::filesystem;
+#include <regex>
 
 namespace San
 {
@@ -105,7 +104,7 @@ public:
             }
         }
 
-        auto fullpath = fs::absolute(path).lexically_normal();
+        auto fullpath = fs::absolute(path);
 
         if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath.u8string(), ".sn"))
         {
@@ -116,6 +115,8 @@ public:
         {
             throw FileNotFoundException();
         }
+
+        fullpath = fs::canonical(fullpath);
 
         if (std::find(imported.begin(), imported.end(), fullpath) != imported.end())
         {
@@ -464,7 +465,7 @@ public:
             position = Position::save(this->scopes.top()->builder());
         }
 
-        auto scope = generic->scope;
+        auto scope = Scope::create(generic->scope);
         this->scopes.push(scope);
 
         for (size_t i = 0; i < generic->generics.size(); i++)
@@ -1102,7 +1103,7 @@ public:
             position = Position::save(this->scopes.top()->builder());
         }
 
-        auto scope = generic->scope;
+        auto scope = Scope::create(generic->scope);
         this->scopes.push(scope);
 
         auto type = Types::ClassType::create(scope, generic->name, generics);
@@ -2912,7 +2913,7 @@ public:
 
     Alias *generateGenericAlias(Types::GenericAlias *generic, const std::vector<Type *> &generics)
     {
-        auto scope = generic->scope;
+        auto scope = Scope::create(generic->scope);
         this->scopes.push(scope);
 
         for (size_t i = 0; i < generic->generics.size(); i++)
