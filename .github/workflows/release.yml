@@ -33,11 +33,14 @@ jobs:
         run: tar -czf san-macos-binaries.tar.gz std bin/san examples internal
 
       - name: Upload the artifact
-        uses: skx/github-action-publish-binaries@master
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: "san-macos-binaries.tar.gz"
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: san-macos-binaries.tar.gz
+          asset_name: san-${{ github.event.release.tag_name }}-macos-binaries.tar.gz
+          asset_content_type: application/tar+gzip
 
   build-and-release-ubuntu:
     runs-on: ${{ matrix.os }}
@@ -80,8 +83,11 @@ jobs:
         run: tar -czf san-ubuntu-binaries.tar.gz std bin/san examples internal
 
       - name: Upload the artifact
-        uses: skx/github-action-publish-binaries@master
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: "san-ubuntu-binaries.tar.gz"
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: san-ubuntu-binaries.tar.gz
+          asset_name: san-${{ github.event.release.tag_name }}-ubuntu-binaries.tar.gz
+          asset_content_type: application/tar+gzip
