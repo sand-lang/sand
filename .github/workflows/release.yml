@@ -1,12 +1,11 @@
-name: Build
+name: Release
 
-on: [push]
-
-env:
-  BUILD_TYPE: Release
+on:
+  release:
+    types: [created]
 
 jobs:
-  build-macos:
+  build-and-release-macos:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -30,7 +29,17 @@ jobs:
         shell: bash
         run: cmake --build . --config $BUILD_TYPE --parallel 10
 
-  build-ubuntu:
+      - name: Compress files
+        run: tar -czf san-macos-binaries.tar.gz std bin/san examples internal
+
+      - name: Upload the artifact
+        uses: skx/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: "san-macos-binaries.tar.gz"
+
+  build-and-release-ubuntu:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -66,3 +75,13 @@ jobs:
           CC: ${{ matrix.cc[0] }}
           CXX: ${{ matrix.cc[1] }}
         run: cmake --build . --config $BUILD_TYPE --parallel 10
+
+      - name: Compress files
+        run: tar -czf san-ubuntu-binaries.tar.gz std bin/san examples internal
+
+      - name: Upload the artifact
+        uses: skx/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: "san-ubuntu-binaries.tar.gz"
