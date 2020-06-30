@@ -87,9 +87,9 @@ jobs:
       - name: Configure CMake
         shell: powershell
         working-directory: ${{runner.workspace}}/build
-        run: cmake $env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+        run: cmake $env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cmake --build . --config ${{ env.BUILD_TYPE }}
+        run: cmake --build . --config Release
