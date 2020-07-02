@@ -73,6 +73,8 @@ public:
 
         if (os == "windows")
         {
+            std::cout << "windows!" << std::endl;
+
             // for (auto &library : libraries)
             // {
             //     auto option = "-l" + library;

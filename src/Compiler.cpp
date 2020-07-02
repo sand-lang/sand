@@ -54,20 +54,23 @@ std::vector<std::string> San::Compiler::generate_objects(const std::string &os, 
         return {};
     }
 
-    llvm::PassBuilder builder;
-    llvm::LoopAnalysisManager loop_analisys_manager(false);
-    llvm::FunctionAnalysisManager function_analisys_manager(false);
-    llvm::CGSCCAnalysisManager CGSCC_analisys_manager(false);
-    llvm::ModuleAnalysisManager module_analisys_manager(false);
+    if (optimization_level != llvm::PassBuilder::OptimizationLevel::O0)
+    {
+        llvm::PassBuilder builder;
+        llvm::LoopAnalysisManager loop_analisys_manager(true);
+        llvm::FunctionAnalysisManager function_analisys_manager(true);
+        llvm::CGSCCAnalysisManager CGSCC_analisys_manager(true);
+        llvm::ModuleAnalysisManager module_analisys_manager(true);
 
-    builder.registerModuleAnalyses(module_analisys_manager);
-    builder.registerCGSCCAnalyses(CGSCC_analisys_manager);
-    builder.registerFunctionAnalyses(function_analisys_manager);
-    builder.registerLoopAnalyses(loop_analisys_manager);
-    builder.crossRegisterProxies(loop_analisys_manager, function_analisys_manager, CGSCC_analisys_manager, module_analisys_manager);
+        builder.registerModuleAnalyses(module_analisys_manager);
+        builder.registerCGSCCAnalyses(CGSCC_analisys_manager);
+        builder.registerFunctionAnalyses(function_analisys_manager);
+        builder.registerLoopAnalyses(loop_analisys_manager);
+        builder.crossRegisterProxies(loop_analisys_manager, function_analisys_manager, CGSCC_analisys_manager, module_analisys_manager);
 
-    llvm::ModulePassManager module_pass_manager = builder.buildModuleOptimizationPipeline(optimization_level);
-    module_pass_manager.run(*module, module_analisys_manager);
+        llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(optimization_level, true);
+        module_pass_manager.run(*module, module_analisys_manager);
+    }
 
     llvm::legacy::PassManager pass;
 
