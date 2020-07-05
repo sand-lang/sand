@@ -32,6 +32,7 @@
 
 #include <san/Exceptions/ExpressionHasNotClassTypeException.hpp>
 #include <san/Exceptions/ImportException.hpp>
+#include <san/Exceptions/IndexException.hpp>
 #include <san/Exceptions/InvalidInputConstraintException.hpp>
 #include <san/Exceptions/InvalidLeftValueException.hpp>
 #include <san/Exceptions/InvalidRangeException.hpp>
@@ -39,7 +40,6 @@
 #include <san/Exceptions/InvalidTypeException.hpp>
 #include <san/Exceptions/InvalidValueException.hpp>
 #include <san/Exceptions/MultipleInstancesException.hpp>
-#include <san/Exceptions/IndexException.hpp>
 #include <san/Exceptions/NoFunctionMatchException.hpp>
 #include <san/Exceptions/NotAClassException.hpp>
 #include <san/Exceptions/NotAClassOrNamespaceException.hpp>
@@ -1629,7 +1629,7 @@ public:
                 return value;
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("+", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1642,7 +1642,7 @@ public:
                 return value;
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("-", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1679,7 +1679,7 @@ public:
                 return new Value("mul", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("*", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1698,7 +1698,7 @@ public:
                 return new Value("div", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("/", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1717,7 +1717,7 @@ public:
                 return new Value("mod", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("%", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1749,7 +1749,7 @@ public:
                 return new Value("xor", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("^", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1763,7 +1763,7 @@ public:
                 return new Value("or", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("|", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1777,7 +1777,7 @@ public:
                 return new Value("and", lvalue->type, value);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("&", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1814,7 +1814,7 @@ public:
                 return new Value("eq", Type::i1(scope->context()), value, false);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("==", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1827,7 +1827,7 @@ public:
                 return value;
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("!=", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1846,7 +1846,7 @@ public:
                 return new Value("lt", Type::i1(scope->context()), value, false);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("<", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1865,7 +1865,7 @@ public:
                 return new Value("lte", Type::i1(scope->context()), value, false);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("<=", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1884,7 +1884,7 @@ public:
                 return new Value("gt", Type::i1(scope->context()), value, false);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload(">", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1903,7 +1903,7 @@ public:
                 return new Value("gte", Type::i1(scope->context()), value, false);
             }
 
-            auto args = {lexpr, rexpr};
+            std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload(">=", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
@@ -1991,7 +1991,7 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        auto args = {lexpr, rexpr};
+        std::vector<Value *> args = {lexpr, rexpr};
         if (auto overload = this->getOperatorOverload("=", args))
         {
             return overload->call(scope->builder(), scope->module(), args);
@@ -2015,9 +2015,31 @@ public:
         throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
-    Value *getOperatorOverload(const std::string &name, const std::vector<Value *> &args)
+    Value *getOperatorOverload(const std::string &name, std::vector<Value *> &args)
     {
         auto scope = this->scopes.top();
+
+        if (args[0]->is_alloca)
+        {
+            if (auto class_type = dynamic_cast<Types::ClassType *>(args[0]->type))
+            {
+                auto names = class_type->get_names(name, args[0], scope->builder(), scope->module());
+
+                auto method_args = std::vector<Value *>(args.begin() + 1, args.end());
+
+                if (auto match = names->get_function(method_args))
+                {
+                    if (auto value = dynamic_cast<Value *>(match))
+                    {
+                        value->calling_variable = args[0];
+                        args = method_args;
+
+                        return value;
+                    }
+                }
+            }
+        }
+
         auto names = scope->get_names(name);
 
         if (auto match = names->get_function(args))
@@ -2059,7 +2081,7 @@ public:
             return expression->gep(index, scope->builder());
         }
 
-        auto args = {expression, index};
+        std::vector<Value *> args = {expression, index};
         if (auto overload = this->getOperatorOverload("[]", args))
         {
             return overload->call(scope->builder(), scope->module(), args);
