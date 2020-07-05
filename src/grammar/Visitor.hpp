@@ -1205,13 +1205,13 @@ public:
         return type;
     }
 
-    std::vector<Values::Function *> generatePendingMethods(Types::ClassType *type)
+    void generatePendingMethods(Types::ClassType *type)
     {
         // Extract and clear pending_methods to prevent recursive generation
         auto pending_methods = type->pending_methods;
         type->pending_methods.clear();
 
-        std::vector<Values::Function *> methods;
+        std::unordered_map<Values::Function *, size_t> methods;
 
         for (auto &generic : type->generics)
         {
@@ -1226,15 +1226,16 @@ public:
             }
         }
 
-        for (auto &class_method : pending_methods)
+        for (size_t i = 0; i < pending_methods.size(); i++)
         {
+            auto &class_method = pending_methods[i];
             auto is_static = !!class_method->Static();
 
             auto method = this->generateClassMethodDeclaration(class_method, type, is_static);
 
             if (auto function = dynamic_cast<Values::Function *>(method))
             {
-                methods.push_back(function);
+                methods.insert(std::make_pair(function, i));
             }
 
             if (is_static)
@@ -1251,19 +1252,14 @@ public:
         {
             if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
             {
-                if (!class_type->pending_methods.empty())
-                {
-                    this->scopes.push(class_type->static_scope);
-                    this->generatePendingMethods(class_type);
-                    this->scopes.pop();
-                }
+                this->scopes.push(class_type->static_scope);
+                this->generatePendingMethods(class_type);
+                this->scopes.pop();
             }
         }
 
-        for (size_t i = 0; i < methods.size(); i++)
+        for (auto &[method, i] : methods)
         {
-            auto method = methods[i];
-
             // if (!method->is_base)
             {
                 auto class_method = pending_methods[i];
@@ -1271,8 +1267,6 @@ public:
                 this->generateClassMethodBody(class_method, method);
             }
         }
-
-        return methods;
     }
 
     Types::ClassProperty *visitClassProperty(SanParser::ClassPropertyContext *context)
