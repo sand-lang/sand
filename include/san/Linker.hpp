@@ -185,6 +185,8 @@ public:
         {
             return lld::elf::link(raw_args, false, llvm::outs(), llvm::errs());
         }
+
+        return false;
     }
 };
 } // namespace San
