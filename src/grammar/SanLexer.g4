@@ -80,7 +80,6 @@ Function: 'fn';
 Extern: 'extern';
 Return: 'return';
 
-Operator: 'operator';
 Cast: 'cast';
 
 // Alias

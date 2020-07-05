@@ -30,7 +30,7 @@ expression:
 	'(' expression ')'										# InParenExpression
 	| 'sizeof' (expression | type)							# SizeofExpression
 	| classTypeName '{' classInstantiationProperties? '}'	# ClassInstantiationExpression
-	| expression (Dot | Arrow) name									# PropertyExpression
+	| expression (Dot | Arrow) name							# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression '[' expression ']'							# Index
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
@@ -130,7 +130,7 @@ functionDeclaration:
 	Function (
 		(
 			(
-				(Operator overloadableOperator)
+				(overloadableOperator)
 				| (Cast castFunctionType)
 				| VariableName
 			)? classGenerics? '(' (

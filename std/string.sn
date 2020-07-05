@@ -93,7 +93,7 @@ namespace std {
     }
 }
 
-fn operator +(l: std::string&, r: i8*) : std::string {
+fn +(l: std::string&, r: i8*) : std::string {
   let r_length = std::strlen(r);
   let concat_length = l.length + r_length;
 
@@ -104,7 +104,7 @@ fn operator +(l: std::string&, r: i8*) : std::string {
   return std::string::assign(alloca, concat_length);
 }
 
-fn operator +(l: i8*, r: std::string&) : std::string {
+fn +(l: i8*, r: std::string&) : std::string {
   let l_length = std::strlen(l);
   let concat_length = r.length + l_length;
 
@@ -115,11 +115,11 @@ fn operator +(l: i8*, r: std::string&) : std::string {
   return std::string::assign(alloca, concat_length);
 }
 
-fn operator +(l: std::string&, r: std::string&) : std::string {
+fn +(l: std::string&, r: std::string&) : std::string {
     return l + r.ptr;
 }
 
-fn operator *(l: std::string&, r: u64) : std::string {
+fn *(l: std::string&, r: u64) : std::string {
   let string_length = l.length * r;
   let alloca = std::memory::allocate<i8>(string_length + 1);
 
