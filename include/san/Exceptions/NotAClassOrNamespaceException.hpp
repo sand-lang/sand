@@ -7,7 +7,7 @@ namespace San
 class NotAClassOrNamespaceException : public CompilationException
 {
 public:
-    NotAClassOrNamespaceException(antlr4::Token *token) : NotAClassOrNamespaceException(token, token->getText()) {}
-    NotAClassOrNamespaceException(antlr4::Token *token, const std::string &text) : CompilationException("Name is not a class or namespace: " + text, token) {}
+    NotAClassOrNamespaceException(const fs::path &source, antlr4::Token *token) : NotAClassOrNamespaceException(source, token, token->getText()) {}
+    NotAClassOrNamespaceException(const fs::path &source, antlr4::Token *token, const std::string &text) : CompilationException(source, "Name is not a class or namespace: " + text, token) {}
 };
 } // namespace San

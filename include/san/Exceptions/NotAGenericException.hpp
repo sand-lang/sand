@@ -7,7 +7,7 @@ namespace San
 class NotAGenericException : public CompilationException
 {
 public:
-    NotAGenericException(antlr4::Token *token) : NotAGenericException(token, token->getText()) {}
-    NotAGenericException(antlr4::Token *token, const std::string &text) : CompilationException("Name is not a generic: " + text, token) {}
+    NotAGenericException(const fs::path &source, antlr4::Token *token) : NotAGenericException(source, token, token->getText()) {}
+    NotAGenericException(const fs::path &source, antlr4::Token *token, const std::string &text) : CompilationException(source, "Name is not a generic: " + text, token) {}
 };
 } // namespace San

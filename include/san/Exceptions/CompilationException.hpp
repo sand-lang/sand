@@ -3,6 +3,8 @@
 #include <exception>
 #include <string>
 
+#include <san/filesystem.hpp>
+
 #include "antlr4-runtime.h"
 
 namespace San
@@ -10,11 +12,12 @@ namespace San
 class CompilationException : public std::exception
 {
 private:
+fs::path source;
     std::string error;
     antlr4::Token *token = nullptr;
 
 public:
-    CompilationException(const std::string &error_, antlr4::Token *token_) : error(error_), token(token_) {}
+    CompilationException(const fs::path &source_, const std::string &error_, antlr4::Token *token_) : source(source_), error(error_), token(token_) {}
 
     const char *what() const noexcept
     {
@@ -30,11 +33,12 @@ public:
     {
         std::stringstream ss;
 
-        ss << "[";
+        ss << this->source.u8string();
+        ss << ":";
         ss << this->token->getLine();
         ss << ":";
         ss << this->token->getCharPositionInLine() + 1;
-        ss << "] ";
+        ss << ": ";
 
         ss << this->error;
 

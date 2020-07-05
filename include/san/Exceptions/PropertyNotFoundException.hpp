@@ -9,6 +9,6 @@ namespace San
 class PropertyNotFoundException : public CompilationException
 {
 public:
-    PropertyNotFoundException(antlr4::Token *token, Types::ClassType *class_type) : CompilationException("Property '" + token->getText() + "' not found in class '" + class_type->name + "'", token) {}
+    PropertyNotFoundException(const fs::path &source, antlr4::Token *token, Types::ClassType *class_type) : CompilationException(source, "Property '" + token->getText() + "' not found in class '" + class_type->name + "'", token) {}
 };
 } // namespace San

@@ -7,7 +7,7 @@ namespace San
 class InvalidRightValueException : public CompilationException
 {
 public:
-    InvalidRightValueException(antlr4::Token *token) : InvalidRightValueException(token, token->getText()) {}
-    InvalidRightValueException(antlr4::Token *token, const std::string &text) : CompilationException("Invalid right-value: " + text, token) {}
+    InvalidRightValueException(const fs::path &source, antlr4::Token *token) : InvalidRightValueException(source, token, token->getText()) {}
+    InvalidRightValueException(const fs::path &source, antlr4::Token *token, const std::string &text) : CompilationException(source, "Invalid right-value: " + text, token) {}
 };
 } // namespace San

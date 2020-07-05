@@ -7,7 +7,7 @@ namespace San
 class ExpressionHasNotClassTypeException : public CompilationException
 {
 public:
-    ExpressionHasNotClassTypeException(antlr4::Token *token) : ExpressionHasNotClassTypeException(token, token->getText()) {}
-    ExpressionHasNotClassTypeException(antlr4::Token *token, const std::string &text) : CompilationException("Expression has not class type: " + text, token) {}
+    ExpressionHasNotClassTypeException(const fs::path &source, antlr4::Token *token) : ExpressionHasNotClassTypeException(source, token, token->getText()) {}
+    ExpressionHasNotClassTypeException(const fs::path &source, antlr4::Token *token, const std::string &text) : CompilationException(source, "Expression has not class type: " + text, token) {}
 };
 } // namespace San

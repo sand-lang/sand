@@ -12,7 +12,7 @@ class FileNotFoundException : public std::exception
 class ImportException : public CompilationException
 {
 public:
-    ImportException(antlr4::Token *token) : ImportException(token, token->getText()) {}
-    ImportException(antlr4::Token *token, const std::string &text) : CompilationException("Import failed: " + text, token) {}
+    ImportException(const fs::path &source, antlr4::Token *token) : ImportException(source, token, token->getText()) {}
+    ImportException(const fs::path &source, antlr4::Token *token, const std::string &text) : CompilationException(source, "Import failed: " + text, token) {}
 };
 } // namespace San

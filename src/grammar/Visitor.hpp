@@ -718,7 +718,7 @@ public:
             }
             else
             {
-                throw InvalidRightValueException(context->expression()->getStart());
+                throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
             }
         }
 
@@ -935,7 +935,7 @@ public:
 
         this->scopes.pop();
 
-        throw InvalidRangeException(context->expression()->getStart());
+        throw InvalidRangeException(this->files.top(), context->expression()->getStart());
     }
 
     void visitImportStatement(SanParser::ImportStatementContext *context)
@@ -948,7 +948,7 @@ public:
         }
         catch (FileNotFoundException e)
         {
-            throw ImportException(context->StringLiteral()->getSymbol());
+            throw ImportException(this->files.top(), context->StringLiteral()->getSymbol());
         }
     }
 
@@ -1004,7 +1004,7 @@ public:
             }
         }
 
-        throw NotAGenericException(scoped_name_context->getStart());
+        throw NotAGenericException(this->files.top(), scoped_name_context->getStart());
     }
 
     Name *visitUnionStatement(SanParser::UnionStatementContext *context)
@@ -1292,7 +1292,7 @@ public:
             }
             else
             {
-                throw InvalidRightValueException(expression_context->getStart());
+                throw InvalidRightValueException(this->files.top(), expression_context->getStart());
             }
         }
 
@@ -1423,7 +1423,7 @@ public:
                 }
                 else
                 {
-                    throw InvalidRightValueException(expression_context->getStart());
+                    throw InvalidRightValueException(this->files.top(), expression_context->getStart());
                 }
             }
             else if (auto value = dynamic_cast<Value *>(expression))
@@ -1432,7 +1432,7 @@ public:
             }
             else
             {
-                throw InvalidRightValueException(expression_context->getStart());
+                throw InvalidRightValueException(this->files.top(), expression_context->getStart());
             }
         }
         else if (auto type_context = context->type())
@@ -1529,7 +1529,7 @@ public:
 
         if (property_position == nullptr)
         {
-            throw PropertyNotFoundException(context->VariableName()->getSymbol(), type);
+            throw PropertyNotFoundException(this->files.top(), context->VariableName()->getSymbol(), type);
         }
 
         Value *container = var;
@@ -1586,7 +1586,7 @@ public:
             }
         }
 
-        throw NoFunctionMatchException(context->expression()->getStart(), args);
+        throw NoFunctionMatchException(this->files.top(), context->expression()->getStart(), args);
     }
 
     std::vector<Value *> visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context)
@@ -1655,7 +1655,7 @@ public:
             }
         }
 
-        throw InvalidRightValueException(rexpr_context->getStart());
+        throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
     Value *visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context)
@@ -2018,7 +2018,7 @@ public:
             }
         }
 
-        throw InvalidRightValueException(rexpr_context->getStart());
+        throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
     Value *getOperatorOverload(const std::string &name, const std::vector<Value *> &args)
@@ -2071,7 +2071,7 @@ public:
             return overload->call(scope->builder(), scope->module(), args);
         }
 
-        throw IndexException(context->getStart(), index->type, expression->type);
+        throw IndexException(this->files.top(), context->expression(1)->getStart(), index->type, expression->type);
     }
 
     Value *visitTypeCast(SanParser::TypeCastContext *context)
@@ -2102,7 +2102,7 @@ public:
         {
             if (!expr->type->is_pointer())
             {
-                throw NotAPointerException(context->expression()->getStart());
+                throw NotAPointerException(this->files.top(), context->expression()->getStart());
             }
 
             auto index = 0UL;
@@ -2125,7 +2125,7 @@ public:
             return this->visitName(context->name(), expr);
         }
 
-        throw NotAClassException(context->expression()->getStart());
+        throw NotAClassException(this->files.top(), context->expression()->getStart());
     }
 
     NameArray *visitNameExpression(SanParser::NameExpressionContext *context)
@@ -2150,7 +2150,7 @@ public:
 
             if (array->size() > 1 && !dynamic_cast<Values::Variable *>(array->get(0)))
             {
-                throw MultipleInstancesException(context->getStart());
+                throw MultipleInstancesException(this->files.top(), context->getStart());
             }
 
             if (auto value = dynamic_cast<Value *>(array->last()))
@@ -2163,7 +2163,7 @@ public:
             return value;
         }
 
-        throw InvalidValueException(context->getStart());
+        throw InvalidValueException(this->files.top(), context->getStart());
     }
 
     Type *typeFromName(Name *name, antlr4::ParserRuleContext *context)
@@ -2185,7 +2185,7 @@ public:
             return type;
         }
 
-        throw InvalidTypeException(context->getStart());
+        throw InvalidTypeException(this->files.top(), context->getStart());
     }
 
     NameArray *visitScopedName(SanParser::ScopedNameContext *context)
@@ -2253,7 +2253,7 @@ public:
             return resolved_scope;
         }
 
-        throw NotAClassOrNamespaceException(context->name()->getStart());
+        throw NotAClassOrNamespaceException(this->files.top(), context->name()->getStart());
     }
 
     NameArray *visitName(SanParser::NameContext *context, std::shared_ptr<Scope> &scope)
@@ -2271,7 +2271,7 @@ public:
             return names;
         }
 
-        throw UnknownNameException(context->VariableName()->getSymbol());
+        throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
     }
 
     NameArray *visitName(SanParser::NameContext *context, Value *value)
@@ -2301,7 +2301,7 @@ public:
                 return names;
             }
 
-            throw UnknownNameException(context->VariableName()->getSymbol());
+            throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
         }
         else if (auto type = dynamic_cast<Types::UnionType *>(value->type->behind_reference()))
         {
@@ -2313,10 +2313,10 @@ public:
                 return new NameArray({value->union_cast(property->type, scope->builder())});
             }
 
-            throw UnknownNameException(context->VariableName()->getSymbol());
+            throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
         }
 
-        throw ExpressionHasNotClassTypeException(context->getStart());
+        throw ExpressionHasNotClassTypeException(this->files.top(), context->getStart());
     }
 
     NameArray *visitNameNoGeneric(SanParser::NameNoGenericContext *context, std::shared_ptr<Scope> &scope)
@@ -2329,7 +2329,7 @@ public:
             return names;
         }
 
-        throw UnknownNameException(context->VariableName()->getSymbol());
+        throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
     }
 
     NameArray *visitTypeNameClassGenerics(SanParser::ClassTypeNameGenericsContext *context, NameArray *names)
@@ -2390,7 +2390,7 @@ public:
 
             if (array->empty())
             {
-                throw NotAGenericException(context->getStart());
+                throw NotAGenericException(this->files.top(), context->getStart());
             }
         }
 
@@ -2658,7 +2658,7 @@ public:
             return class_type;
         }
 
-        throw NotAClassException(context->getStart());
+        throw NotAClassException(this->files.top(), context->getStart());
     }
 
     std::vector<Type *> visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context)
@@ -2824,14 +2824,14 @@ public:
 
         if (!value->is_alloca)
         {
-            throw InvalidLeftValueException(context->expression()->getStart());
+            throw InvalidLeftValueException(this->files.top(), context->expression()->getStart());
         }
 
         auto operand = this->createAssemblyOperand(name, value);
 
         if (operand.type == AssemblyConstraintModifier::None)
         {
-            throw InvalidInputConstraintException(context->StringLiteral()->getSymbol());
+            throw InvalidInputConstraintException(this->files.top(), context->StringLiteral()->getSymbol());
         }
 
         return operand;
