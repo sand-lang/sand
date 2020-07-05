@@ -39,6 +39,7 @@
 #include <san/Exceptions/InvalidTypeException.hpp>
 #include <san/Exceptions/InvalidValueException.hpp>
 #include <san/Exceptions/MultipleInstancesException.hpp>
+#include <san/Exceptions/IndexException.hpp>
 #include <san/Exceptions/NoFunctionMatchException.hpp>
 #include <san/Exceptions/NotAClassException.hpp>
 #include <san/Exceptions/NotAClassOrNamespaceException.hpp>
@@ -2059,13 +2060,18 @@ public:
         auto expression = this->valueFromExpression(context->expression(0));
         auto index = this->valueFromExpression(context->expression(1));
 
+        if (expression->type->is_array() || expression->type->is_pointer())
+        {
+            return expression->gep(index, scope->builder());
+        }
+
         auto args = {expression, index};
         if (auto overload = this->getOperatorOverload("[]", args))
         {
             return overload->call(scope->builder(), scope->module(), args);
         }
 
-        return expression->gep(index, scope->builder());
+        throw IndexException(context->getStart(), index->type, expression->type);
     }
 
     Value *visitTypeCast(SanParser::TypeCastContext *context)
