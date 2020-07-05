@@ -331,6 +331,9 @@ public:
 
             return function;
         }
+
+        std::cerr << "The generated function is a generic but that doesn't make any sense, seems like it lacks implementation?" << std::endl;
+        return nullptr;
     }
 
     Values::Function *generateFunctionBody(SanParser::FunctionContext *context, Values::Function *base)
