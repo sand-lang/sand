@@ -11,7 +11,7 @@ class Constant : public Value
 public:
     llvm::GlobalVariable *global = nullptr;
 
-    Constant(const std::string &name, Type *type, llvm::Constant *ref) : Value(name, type, ref)
+    Constant(const std::string &name, Type *type, llvm::Constant *ref, const bool &is_alloca = false) : Value(name, type, ref, is_alloca)
     {
     }
 

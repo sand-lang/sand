@@ -2059,6 +2059,12 @@ public:
         auto expression = this->valueFromExpression(context->expression(0));
         auto index = this->valueFromExpression(context->expression(1));
 
+        auto args = {expression, index};
+        if (auto overload = this->getOperatorOverload("[]", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
         return expression->gep(index, scope->builder());
     }
 

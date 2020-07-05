@@ -11,7 +11,7 @@ class GlobalConstant : public Constant
 public:
     llvm::GlobalVariable *global = nullptr;
 
-    GlobalConstant(const std::string &name, Type *type, llvm::GlobalVariable *ref) : Constant(name, type, ref->getInitializer()), global(ref)
+    GlobalConstant(const std::string &name, Type *type, llvm::GlobalVariable *ref) : Constant(name, type, ref->getInitializer(), true), global(ref)
     {
         this->is_alloca = true;
     }
@@ -22,7 +22,7 @@ public:
         global->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
         global->setAlignment(llvm::Align(1));
 
-        return new GlobalConstant(name, type->reference(), global);
+        return new GlobalConstant(name, type, global);
     }
 
     llvm::GlobalVariable *get_ref() override

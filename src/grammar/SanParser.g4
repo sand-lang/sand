@@ -118,7 +118,8 @@ overloadableOperator:
 	| '<'
 	| '<='
 	| '>'
-	| '>=';
+	| '>='
+	| '[' ']';
 
 function:
 	attributes Extern? functionDeclaration (

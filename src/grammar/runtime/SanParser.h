@@ -681,6 +681,8 @@ public:
     antlr4::tree::TerminalNode *LessThanOrEqualTo();
     antlr4::tree::TerminalNode *GreaterThan();
     antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
+    antlr4::tree::TerminalNode *OpeningBracket();
+    antlr4::tree::TerminalNode *ClosingBracket();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
