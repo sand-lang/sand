@@ -187,7 +187,7 @@ public:
         auto value = this->load_alloca_and_reference(builder);
         std::vector<llvm::Value *> idxs;
 
-        if (!this->type->is_pointer())
+        if (!value->type->is_pointer())
         {
             idxs.push_back(llvm::ConstantInt::get(Type::llvm_i64(context), 0));
         }
