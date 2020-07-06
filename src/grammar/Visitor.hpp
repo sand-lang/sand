@@ -759,7 +759,8 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = value->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+                value = value->load_alloca_and_reference(scope->builder());
+                value = value->not_equal(scope->builder(), Values::Constant::null_value(value->type));
             }
 
             if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
@@ -831,7 +832,8 @@ public:
         auto value = this->valueFromExpression(context->expression());
         if (!value->type->is_boolean())
         {
-            value = value->load_alloca_and_reference(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+            value = value->load_alloca_and_reference(scope->builder());
+            value = value->not_equal(scope->builder(), Values::Constant::null_value(value->type));
         }
 
         while_body->conditional_br(scope->builder(), value, while_end);
@@ -1211,6 +1213,8 @@ public:
         auto pending_methods = type->pending_methods;
         type->pending_methods.clear();
 
+        type->generated = true;
+
         std::unordered_map<Values::Function *, size_t> methods;
 
         for (auto &generic : type->generics)
@@ -1252,9 +1256,12 @@ public:
         {
             if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
             {
-                this->scopes.push(class_type->static_scope);
-                this->generatePendingMethods(class_type);
-                this->scopes.pop();
+                if (!class_type->generated)
+                {
+                    this->scopes.push(class_type->static_scope);
+                    this->generatePendingMethods(class_type);
+                    this->scopes.pop();
+                }
             }
         }
 
@@ -2021,7 +2028,7 @@ public:
 
         if (args[0]->is_alloca)
         {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(args[0]->type))
+            if (auto class_type = dynamic_cast<Types::ClassType *>(args[0]->type->behind_reference()))
             {
                 auto names = class_type->get_names(name, args[0], scope->builder(), scope->module());
 
@@ -2031,7 +2038,7 @@ public:
                 {
                     if (auto value = dynamic_cast<Value *>(match))
                     {
-                        value->calling_variable = args[0];
+                        value->calling_variable = args[0]->load_reference(scope->builder());
                         args = method_args;
 
                         return value;
@@ -2076,7 +2083,9 @@ public:
         auto expression = this->valueFromExpression(context->expression(0));
         auto index = this->valueFromExpression(context->expression(1));
 
-        if (expression->type->is_array() || expression->type->is_pointer())
+        auto type = expression->type->behind_reference();
+
+        if (type->is_array() || type->is_pointer())
         {
             return expression->gep(index, scope->builder());
         }

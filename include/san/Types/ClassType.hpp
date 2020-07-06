@@ -41,6 +41,7 @@ public:
     std::vector<ClassProperty *> properties;
 
     std::vector<SanParser::ClassMethodContext *> pending_methods;
+    bool generated = false;
 
     ClassType(const std::string &name,
               llvm::StructType *ref,
