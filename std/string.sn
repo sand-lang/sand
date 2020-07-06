@@ -159,3 +159,15 @@ fn ==(l: std::string&, r: i8*) : bool {
 fn ==(l: i8*, r: std::string&) : bool {
   return std::string::assign(l) == r;
 }
+
+fn !=(l: std::string&, r: std::string&) : bool {
+    return (l == r) == false;
+}
+
+fn !=(l: std::string&, r: i8*) : bool {
+  return (l == r) == false;
+}
+
+fn !=(l: i8*, r: std::string&) : bool {
+  return (l == r) == false;
+}
