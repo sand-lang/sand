@@ -97,5 +97,9 @@ namespace std {
 
             return mapped;
         }
+
+        fn [](i: u64) : T& {
+            return this->get(i);
+        }
     }
 }

@@ -42,5 +42,9 @@ namespace std {
                 node = node->next;
             }
         }
+
+        fn [](key: K) : T& {
+            return this->get(key);
+        }
     }
 }

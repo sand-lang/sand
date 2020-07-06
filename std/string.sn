@@ -90,6 +90,10 @@ namespace std {
                 length = std::strlen(ptr),
             };
         }
+
+        fn [](i: u64) : i8& {
+            return this->ptr[i];
+        }
     }
 }
 
