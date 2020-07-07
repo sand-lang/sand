@@ -1036,16 +1036,24 @@ public:
     Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type)
     {
         auto scope = this->scopes.top();
+        auto generate_methods = generating_properties_stack == 0;
 
         std::vector<Types::UnionProperty *> properties;
 
+        this->generating_properties_stack++;
         for (auto &union_property : context->unionProperty())
         {
             auto property = this->visitUnionProperty(union_property);
             properties.push_back(property);
         }
+        this->generating_properties_stack--;
 
         type->set_properties(properties, scope->builder(), scope->module());
+
+        if (generate_methods)
+        {
+            this->generatePendingMethods(type);
+        }
 
         return type;
     }
@@ -1254,15 +1262,7 @@ public:
 
         for (auto property : type->properties)
         {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(property->type->get_base()))
-            {
-                if (!class_type->generated)
-                {
-                    this->scopes.push(class_type->static_scope);
-                    this->generatePendingMethods(class_type);
-                    this->scopes.pop();
-                }
-            }
+            this->generatePropertyPendingMethods(property->type);
         }
 
         for (auto &[method, i] : methods)
@@ -1272,6 +1272,38 @@ public:
                 auto class_method = pending_methods[i];
 
                 this->generateClassMethodBody(class_method, method);
+            }
+        }
+    }
+
+    void generatePendingMethods(Types::UnionType *type)
+    {
+        type->generated = true;
+
+        for (auto property : type->properties)
+        {
+            this->generatePropertyPendingMethods(property->type);
+        }
+    }
+
+    void generatePropertyPendingMethods(Type *type)
+    {
+        if (auto class_type = dynamic_cast<Types::ClassType *>(type->get_base()))
+        {
+            if (!class_type->generated)
+            {
+                this->scopes.push(class_type->static_scope);
+                this->generatePendingMethods(class_type);
+                this->scopes.pop();
+            }
+        }
+        else if (auto union_type = dynamic_cast<Types::UnionType *>(type->get_base()))
+        {
+            if (!union_type->generated)
+            {
+                this->scopes.push(union_type->static_scope);
+                this->generatePendingMethods(union_type);
+                this->scopes.pop();
             }
         }
     }
@@ -2335,7 +2367,8 @@ public:
 
             if (property != nullptr)
             {
-                return new NameArray({value->union_cast(property->type, scope->builder())});
+                auto casted = value->union_cast(property->type, scope->builder());
+                return new NameArray({casted});
             }
 
             throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());

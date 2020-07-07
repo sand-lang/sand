@@ -28,6 +28,8 @@ public:
     std::vector<UnionProperty *> properties;
     Type *main_type = nullptr;
 
+    bool generated = false;
+
     UnionType(const std::string &name,
               llvm::StructType *ref,
               std::shared_ptr<Scope> static_scope_,

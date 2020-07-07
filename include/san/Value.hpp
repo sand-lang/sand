@@ -170,8 +170,8 @@ public:
 
     Value *gep(Value *index, llvm::IRBuilder<> &builder)
     {
-        auto index_value = index->cast(Type::i64(builder.getContext()), builder)->get_ref();
-        return this->gep(index_value, builder);
+        auto index_value = index->cast(Type::i64(builder.getContext()), builder);
+        return this->gep(index_value->get_ref(), builder);
     }
 
     Value *gep(const size_t &index, llvm::IRBuilder<> &builder)
