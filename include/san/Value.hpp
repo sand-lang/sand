@@ -24,7 +24,7 @@ public:
         return this->ref;
     }
 
-    std::string to_string()
+    std::string to_string() const
     {
         std::string str;
         llvm::raw_string_ostream stream(str);

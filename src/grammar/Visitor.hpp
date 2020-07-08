@@ -46,6 +46,8 @@
 #include <san/Exceptions/NotAGenericException.hpp>
 #include <san/Exceptions/NotAPointerException.hpp>
 #include <san/Exceptions/PropertyNotFoundException.hpp>
+#include <san/Exceptions/ReturnOutsideOfFunctionException.hpp>
+#include <san/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
 
 #include <san/filesystem.hpp>
@@ -730,10 +732,25 @@ public:
         auto scope = this->scopes.top();
         auto function = scope->get_function();
 
+        if (!function)
+        {
+            throw ReturnOutsideOfFunctionException(this->files.top(), context->getStart());
+        }
+
         if (auto expression_context = context->expression())
         {
             auto rvalue = this->valueFromExpression(expression_context);
-            function->return_value->store(rvalue, scope->builder(), scope->module(), true);
+            auto function_return_type = function->get_type()->return_type;
+
+            if (rvalue->type->compatibility(function_return_type) == Type::NOT_COMPATIBLE)
+            {
+                throw ReturnValueDoesNotMatchReturnTypeException(this->files.top(), expression_context->getStart(), rvalue->type, function_return_type);
+            }
+
+            if (!function_return_type->is_void())
+            {
+                function->return_value->store(rvalue, scope->builder(), scope->module(), true);
+            }
         }
 
         this->scopes.call_destructors(scope);
