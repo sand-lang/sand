@@ -2663,17 +2663,17 @@ public:
                 integer *= -1;
             }
 
-            auto type = Type::i32(scope->context());
+            auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, true);
 
-            return new Values::Constant("literal_i32", type, value);
+            return new Values::Constant("literal_i64", type, value);
         }
         else if (context->ZeroLiteral())
         {
-            auto type = Type::i32(scope->context());
+            auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), 0, true);
 
-            return new Values::Constant("literal_i32", type, value);
+            return new Values::Constant("literal_i64", type, value);
         }
         else if (auto literal = context->HexadecimalLiteral())
         {
@@ -2687,10 +2687,10 @@ public:
                 integer *= -1;
             }
 
-            auto type = Type::i32(scope->context());
+            auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
 
-            return new Values::Constant("literal_i32", type, value);
+            return new Values::Constant("literal_i64", type, value);
         }
         else if (auto literal = context->BinaryLiteral())
         {
@@ -2704,10 +2704,10 @@ public:
                 integer *= -1;
             }
 
-            auto type = Type::i32(scope->context());
+            auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
 
-            return new Values::Constant("literal_i32", type, value);
+            return new Values::Constant("literal_i64", type, value);
         }
 
         return nullptr;
