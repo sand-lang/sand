@@ -127,6 +127,12 @@ public:
 
     virtual antlrcpp::Any visitUnionProperty(SanParser::UnionPropertyContext *context) = 0;
 
+    virtual antlrcpp::Any visitEnumStatement(SanParser::EnumStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitEnumBody(SanParser::EnumBodyContext *context) = 0;
+
+    virtual antlrcpp::Any visitEnumProperty(SanParser::EnumPropertyContext *context) = 0;
+
     virtual antlrcpp::Any visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitClassStatement(SanParser::ClassStatementContext *context) = 0;

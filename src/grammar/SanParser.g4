@@ -22,6 +22,7 @@ statement:
 	| specialClassStatement
 	| classStatement
 	| unionStatement
+	| enumStatement
 	| importStatement
 	| assemblyStatement InstructionsSeparator
 	| alias InstructionsSeparator;
@@ -168,6 +169,12 @@ unionStatement: attributes 'union' VariableName unionBody;
 unionBody: '{' unionProperty* '}';
 
 unionProperty: VariableName ':' type InstructionsSeparator;
+
+enumStatement: attributes 'enum' VariableName enumBody;
+
+enumBody: '{' (enumProperty (',' enumProperty)* ','?)? '}';
+
+enumProperty: VariableName ('=' expression)?;
 
 specialClassStatement:
 	attributes Special 'class' scopedNameNoGeneric classTypeNameGenerics (

@@ -19,13 +19,14 @@ public:
     ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
     InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
     Class = 30, Extends = 31, Special = 32, Static = 33, Dot = 34, Arrow = 35, 
-    Union = 36, Destructor = 37, Namespace = 38, ScopeResolver = 39, VariableDeclarator = 40, 
-    If = 41, Else = 42, While = 43, Break = 44, For = 45, In = 46, Function = 47, 
-    Extern = 48, Return = 49, Cast = 50, Alias = 51, Comma = 52, Colon = 53, 
-    Attribute = 54, Assembly = 55, Import = 56, True = 57, False = 58, InstructionsSeparator = 59, 
-    VariableName = 60, StringLiteral = 61, CharLiteral = 62, DecimalLiteral = 63, 
-    FloatingLiteral = 64, ZeroLiteral = 65, HexadecimalLiteral = 66, BinaryLiteral = 67, 
-    Comment = 68, WhiteSpace = 69, LineTerminator = 70
+    Union = 36, Enum = 37, Destructor = 38, Namespace = 39, ScopeResolver = 40, 
+    VariableDeclarator = 41, If = 42, Else = 43, While = 44, Break = 45, 
+    For = 46, In = 47, Function = 48, Extern = 49, Return = 50, Cast = 51, 
+    Alias = 52, Comma = 53, Colon = 54, Attribute = 55, Assembly = 56, Import = 57, 
+    True = 58, False = 59, InstructionsSeparator = 60, VariableName = 61, 
+    StringLiteral = 62, CharLiteral = 63, DecimalLiteral = 64, FloatingLiteral = 65, 
+    ZeroLiteral = 66, HexadecimalLiteral = 67, BinaryLiteral = 68, Comment = 69, 
+    WhiteSpace = 70, LineTerminator = 71
   };
 
   enum {
@@ -42,15 +43,16 @@ public:
     RuleReturnStatement = 30, RuleIfStatement = 31, RuleElseStatement = 32, 
     RuleWhileStatement = 33, RuleForStatement = 34, RuleBreakStatement = 35, 
     RuleUnionStatement = 36, RuleUnionBody = 37, RuleUnionProperty = 38, 
-    RuleSpecialClassStatement = 39, RuleClassStatement = 40, RuleClassGenerics = 41, 
-    RuleClassExtends = 42, RuleClassBody = 43, RuleClassProperty = 44, RuleClassMethod = 45, 
-    RuleClassInstantiationProperties = 46, RuleClassInstantiationProperty = 47, 
-    RuleType = 48, RuleTypeQualifier = 49, RuleTypeDimensions = 50, RuleTypePointer = 51, 
-    RuleTypeReference = 52, RuleTypeName = 53, RuleFunctionType = 54, RuleClassTypeName = 55, 
-    RuleClassTypeNameGenerics = 56, RuleNamespaceStatement = 57, RuleImportStatement = 58, 
-    RuleAttributes = 59, RuleAttribute = 60, RuleAlias = 61, RuleAssemblyStatement = 62, 
-    RuleAssemblyTemplate = 63, RuleAssemblyOutput = 64, RuleAssemblyInput = 65, 
-    RuleAssemblyClobber = 66, RuleEos = 67
+    RuleEnumStatement = 39, RuleEnumBody = 40, RuleEnumProperty = 41, RuleSpecialClassStatement = 42, 
+    RuleClassStatement = 43, RuleClassGenerics = 44, RuleClassExtends = 45, 
+    RuleClassBody = 46, RuleClassProperty = 47, RuleClassMethod = 48, RuleClassInstantiationProperties = 49, 
+    RuleClassInstantiationProperty = 50, RuleType = 51, RuleTypeQualifier = 52, 
+    RuleTypeDimensions = 53, RuleTypePointer = 54, RuleTypeReference = 55, 
+    RuleTypeName = 56, RuleFunctionType = 57, RuleClassTypeName = 58, RuleClassTypeNameGenerics = 59, 
+    RuleNamespaceStatement = 60, RuleImportStatement = 61, RuleAttributes = 62, 
+    RuleAttribute = 63, RuleAlias = 64, RuleAssemblyStatement = 65, RuleAssemblyTemplate = 66, 
+    RuleAssemblyOutput = 67, RuleAssemblyInput = 68, RuleAssemblyClobber = 69, 
+    RuleEos = 70
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -102,6 +104,9 @@ public:
   class UnionStatementContext;
   class UnionBodyContext;
   class UnionPropertyContext;
+  class EnumStatementContext;
+  class EnumBodyContext;
+  class EnumPropertyContext;
   class SpecialClassStatementContext;
   class ClassStatementContext;
   class ClassGenericsContext;
@@ -181,6 +186,7 @@ public:
     SpecialClassStatementContext *specialClassStatement();
     ClassStatementContext *classStatement();
     UnionStatementContext *unionStatement();
+    EnumStatementContext *enumStatement();
     ImportStatementContext *importStatement();
     AssemblyStatementContext *assemblyStatement();
     AliasContext *alias();
@@ -928,6 +934,55 @@ public:
   };
 
   UnionPropertyContext* unionProperty();
+
+  class  EnumStatementContext : public antlr4::ParserRuleContext {
+  public:
+    EnumStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
+    antlr4::tree::TerminalNode *Enum();
+    antlr4::tree::TerminalNode *VariableName();
+    EnumBodyContext *enumBody();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  EnumStatementContext* enumStatement();
+
+  class  EnumBodyContext : public antlr4::ParserRuleContext {
+  public:
+    EnumBodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *OpeningBrace();
+    antlr4::tree::TerminalNode *ClosingBrace();
+    std::vector<EnumPropertyContext *> enumProperty();
+    EnumPropertyContext* enumProperty(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  EnumBodyContext* enumBody();
+
+  class  EnumPropertyContext : public antlr4::ParserRuleContext {
+  public:
+    EnumPropertyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Equal();
+    ExpressionContext *expression();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  EnumPropertyContext* enumProperty();
 
   class  SpecialClassStatementContext : public antlr4::ParserRuleContext {
   public:

@@ -21,6 +21,7 @@
 #include <san/ScopeStack.hpp>
 #include <san/StatementStatus.hpp>
 #include <san/Types/ClassType.hpp>
+#include <san/Types/EnumType.hpp>
 #include <san/Types/GenericAlias.hpp>
 #include <san/Types/GenericClassType.hpp>
 #include <san/Types/GenericFunctionType.hpp>
@@ -229,6 +230,10 @@ public:
         else if (auto union_statement = context->unionStatement())
         {
             return this->visitUnionStatement(union_statement);
+        }
+        else if (auto enum_statement = context->enumStatement())
+        {
+            return this->visitEnumStatement(enum_statement);
         }
         else if (auto import_statement = context->importStatement())
         {
@@ -1081,6 +1086,80 @@ public:
         auto type = this->visitType(context->type());
 
         return new Types::UnionProperty(name, type);
+    }
+
+    Types::EnumType *visitEnumStatement(SanParser::EnumStatementContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_target())
+            return nullptr;
+
+        auto name = context->VariableName()->getText();
+        auto enum_scope = Scope::create(scope);
+
+        auto type = new Types::EnumType(name, enum_scope, Type::llvm_i64(scope->context()));
+        scope->add_name(name, type);
+
+        this->scopes.push(enum_scope);
+
+        this->visitEnumBody(context->enumBody(), type);
+
+        this->scopes.pop();
+
+        return type;
+    }
+
+    Types::EnumType *visitEnumBody(SanParser::EnumBodyContext *context, Types::EnumType *type)
+    {
+        auto scope = this->scopes.top();
+        auto builder = scope->builder();
+
+        for (auto &enum_property : context->enumProperty())
+        {
+            auto property = this->visitEnumProperty(enum_property, type);
+
+            if (property.value == nullptr)
+            {
+                if (!type->values.empty())
+                {
+                    auto pair = type->values.back();
+                    auto result = llvm::ConstantExpr::getAdd(pair.value->get_ref(), llvm::ConstantInt::get(type->get_ref(), 1));
+                    property.value = new Values::Constant(property.name, type, result);
+                }
+                else
+                {
+                    property.value = Values::Constant::null_value(type);
+                }
+            }
+
+            type->add_value(property);
+            type->static_scope->add_name(property.name, property.value);
+        }
+
+        return type;
+    }
+
+    Types::EnumValue visitEnumProperty(SanParser::EnumPropertyContext *context, Types::EnumType *type)
+    {
+        auto scope = this->scopes.top();
+        auto name = context->VariableName()->getText();
+
+        if (auto expression = context->expression())
+        {
+            auto value = this->valueFromExpression(expression);
+
+            if (auto constant = dynamic_cast<Values::Constant *>(value))
+            {
+                return Types::EnumValue(name, constant->cast(type, scope->builder()));
+            }
+
+            throw InvalidRightValueException(this->files.top(), expression->getStart(), "Enum's value should be a constant");
+        }
+
+        return Types::EnumValue(name, nullptr);
     }
 
     Name *visitClassStatement(SanParser::ClassStatementContext *context)
@@ -2305,6 +2384,10 @@ public:
         else if (auto nsp = dynamic_cast<Namespace *>(name))
         {
             return nsp->scope;
+        }
+        else if (auto enumeration = dynamic_cast<Types::EnumType *>(name))
+        {
+            return enumeration->static_scope;
         }
 
         return nullptr;

@@ -56,6 +56,9 @@ Arrow: '->';
 // Union
 Union: 'union';
 
+// Enum
+Enum: 'enum';
+
 Destructor: '@destructor';
 
 // Namespaces

@@ -231,6 +231,18 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitEnumStatement(SanParser::EnumStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitEnumBody(SanParser::EnumBodyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitEnumProperty(SanParser::EnumPropertyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitSpecialClassStatement(SanParser::SpecialClassStatementContext *ctx) override {
     return visitChildren(ctx);
   }
