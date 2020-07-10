@@ -39,6 +39,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitUnaryPositiveExpression(SanParser::UnaryPositiveExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitNameExpression(SanParser::NameExpressionContext *ctx) override {
     return visitChildren(ctx);
   }

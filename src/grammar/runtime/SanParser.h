@@ -244,6 +244,16 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  UnaryPositiveExpressionContext : public ExpressionContext {
+  public:
+    UnaryPositiveExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *Add();
+    ExpressionContext *expression();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  NameExpressionContext : public ExpressionContext {
   public:
     NameExpressionContext(ExpressionContext *ctx);

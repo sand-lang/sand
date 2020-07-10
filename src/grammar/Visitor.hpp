@@ -1490,9 +1490,13 @@ public:
         {
             return this->visitEqualityOperation(equality_operation_context);
         }
-        else if (const auto negation_expression_context = dynamic_cast<SanParser::UnaryNegativeExpressionContext *>(context))
+        else if (const auto nagative_expression_context = dynamic_cast<SanParser::UnaryNegativeExpressionContext *>(context))
         {
-            return this->visitUnaryNegativeExpression(negation_expression_context);
+            return this->visitUnaryNegativeExpression(nagative_expression_context);
+        }
+        else if (const auto positive_expression_context = dynamic_cast<SanParser::UnaryPositiveExpressionContext *>(context))
+        {
+            return this->visitUnaryPositiveExpression(positive_expression_context);
         }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
@@ -2232,6 +2236,28 @@ public:
         if (auto value = Value::sub(scope->builder(), one, expression))
         {
             return value;
+        }
+
+        throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+    }
+
+    Value *visitUnaryPositiveExpression(SanParser::UnaryPositiveExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("+", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        auto type = expression->type;
+
+        if (type->is_integer() || type->is_floating_point() || type->is_pointer())
+        {
+            return expression;
         }
 
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());

@@ -35,6 +35,7 @@ expression:
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression '[' expression ']'							# Index
 	| '-' expression										# UnaryNegativeExpression
+	| '+' expression										# UnaryPositiveExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression
 	| scopedName											# NameExpression

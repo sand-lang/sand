@@ -31,6 +31,8 @@ public:
 
     virtual antlrcpp::Any visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitUnaryPositiveExpression(SanParser::UnaryPositiveExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitNameExpression(SanParser::NameExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) = 0;
