@@ -1490,9 +1490,9 @@ public:
         {
             return this->visitEqualityOperation(equality_operation_context);
         }
-        else if (const auto negation_expression_context = dynamic_cast<SanParser::NegationExpressionContext *>(context))
+        else if (const auto negation_expression_context = dynamic_cast<SanParser::UnaryNegativeExpressionContext *>(context))
         {
-            return this->visitNegationExpression(negation_expression_context);
+            return this->visitUnaryNegativeExpression(negation_expression_context);
         }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
@@ -2208,7 +2208,7 @@ public:
         return nullptr;
     }
 
-    Value *visitNegationExpression(SanParser::NegationExpressionContext *context)
+    Value *visitUnaryNegativeExpression(SanParser::UnaryNegativeExpressionContext *context)
     {
         auto scope = this->scopes.top();
 

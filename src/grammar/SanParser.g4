@@ -40,7 +40,7 @@ expression:
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
-	| '-' expression										# NegationExpression
+	| '-' expression										# UnaryNegativeExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression
 	| scopedName											# NameExpression

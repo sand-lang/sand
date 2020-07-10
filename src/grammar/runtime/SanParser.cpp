@@ -686,6 +686,25 @@ antlrcpp::Any SanParser::SizeofExpressionContext::accept(tree::ParseTreeVisitor 
   else
     return visitor->visitChildren(this);
 }
+//----------------- UnaryNegativeExpressionContext ------------------------------------------------------------------
+
+tree::TerminalNode* SanParser::UnaryNegativeExpressionContext::Sub() {
+  return getToken(SanParser::Sub, 0);
+}
+
+SanParser::ExpressionContext* SanParser::UnaryNegativeExpressionContext::expression() {
+  return getRuleContext<SanParser::ExpressionContext>(0);
+}
+
+SanParser::UnaryNegativeExpressionContext::UnaryNegativeExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
+
+
+antlrcpp::Any SanParser::UnaryNegativeExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
+    return parserVisitor->visitUnaryNegativeExpression(this);
+  else
+    return visitor->visitChildren(this);
+}
 //----------------- FunctionExpressionContext ------------------------------------------------------------------
 
 SanParser::FunctionContext* SanParser::FunctionExpressionContext::function() {
@@ -824,25 +843,6 @@ antlrcpp::Any SanParser::ClassInstantiationExpressionContext::accept(tree::Parse
   else
     return visitor->visitChildren(this);
 }
-//----------------- NegationExpressionContext ------------------------------------------------------------------
-
-tree::TerminalNode* SanParser::NegationExpressionContext::Sub() {
-  return getToken(SanParser::Sub, 0);
-}
-
-SanParser::ExpressionContext* SanParser::NegationExpressionContext::expression() {
-  return getRuleContext<SanParser::ExpressionContext>(0);
-}
-
-SanParser::NegationExpressionContext::NegationExpressionContext(ExpressionContext *ctx) { copyFrom(ctx); }
-
-
-antlrcpp::Any SanParser::NegationExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<SanParserVisitor*>(visitor))
-    return parserVisitor->visitNegationExpression(this);
-  else
-    return visitor->visitChildren(this);
-}
 //----------------- BinaryComparisonOperationContext ------------------------------------------------------------------
 
 std::vector<SanParser::ExpressionContext *> SanParser::BinaryComparisonOperationContext::expression() {
@@ -952,7 +952,7 @@ SanParser::ExpressionContext* SanParser::expression(int precedence) {
     }
 
     case 4: {
-      _localctx = _tracker.createInstance<NegationExpressionContext>(_localctx);
+      _localctx = _tracker.createInstance<UnaryNegativeExpressionContext>(_localctx);
       _ctx = _localctx;
       previousContext = _localctx;
       setState(207);

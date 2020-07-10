@@ -308,6 +308,16 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  UnaryNegativeExpressionContext : public ExpressionContext {
+  public:
+    UnaryNegativeExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *Sub();
+    ExpressionContext *expression();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  FunctionExpressionContext : public ExpressionContext {
   public:
     FunctionExpressionContext(ExpressionContext *ctx);
@@ -370,16 +380,6 @@ public:
     antlr4::tree::TerminalNode *OpeningBrace();
     antlr4::tree::TerminalNode *ClosingBrace();
     ClassInstantiationPropertiesContext *classInstantiationProperties();
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  NegationExpressionContext : public ExpressionContext {
-  public:
-    NegationExpressionContext(ExpressionContext *ctx);
-
-    antlr4::tree::TerminalNode *Sub();
-    ExpressionContext *expression();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

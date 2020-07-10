@@ -43,6 +43,8 @@ public:
 
     virtual antlrcpp::Any visitSizeofExpression(SanParser::SizeofExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitUnaryNegativeExpression(SanParser::UnaryNegativeExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitFunctionExpression(SanParser::FunctionExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context) = 0;
@@ -54,8 +56,6 @@ public:
     virtual antlrcpp::Any visitTypeCast(SanParser::TypeCastContext *context) = 0;
 
     virtual antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) = 0;
-
-    virtual antlrcpp::Any visitNegationExpression(SanParser::NegationExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) = 0;
 
