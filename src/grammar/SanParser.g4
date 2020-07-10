@@ -75,7 +75,16 @@ comparisonOperatorStatement:
 	| LessThan
 	| GreaterThan;
 
-equalityOperatorStatement: Equal | AddEqual | SubEqual | MulEqual | DivEqual | ModEqual | XorEqual | OrEqual | AndEqual;
+equalityOperatorStatement:
+	Equal
+	| AddEqual
+	| SubEqual
+	| MulEqual
+	| DivEqual
+	| ModEqual
+	| XorEqual
+	| OrEqual
+	| AndEqual;
 
 literal:
 	booleanLiteral
