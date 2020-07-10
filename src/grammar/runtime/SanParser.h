@@ -211,6 +211,16 @@ public:
    
   };
 
+  class  SuffixUnaryNegationExpressionContext : public ExpressionContext {
+  public:
+    SuffixUnaryNegationExpressionContext(ExpressionContext *ctx);
+
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *Not();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  InParenExpressionContext : public ExpressionContext {
   public:
     InParenExpressionContext(ExpressionContext *ctx);

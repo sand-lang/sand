@@ -1502,6 +1502,10 @@ public:
         {
             return this->visitUnaryNegationExpression(negation_expression_context);
         }
+        else if (const auto suffix_negation_expression_context = dynamic_cast<SanParser::SuffixUnaryNegationExpressionContext *>(context))
+        {
+            return this->visitSuffixUnaryNegationExpression(suffix_negation_expression_context);
+        }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
@@ -2298,6 +2302,21 @@ public:
         }
 
         return Value::boolean_xor(scope->builder(), expression, Values::Constant::boolean_value(true, scope->context()));
+    }
+
+    Value *visitSuffixUnaryNegationExpression(SanParser::SuffixUnaryNegationExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("+!", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
     }
 
     Value *visitIndex(SanParser::IndexContext *context)

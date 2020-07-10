@@ -27,6 +27,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitSuffixUnaryNegationExpression(SanParser::SuffixUnaryNegationExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
