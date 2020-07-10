@@ -38,7 +38,7 @@ namespace std {
             this->ensure_memory();
 
             this->ptr[this->length] = value;
-            this->length = this->length + 1;
+            this->length += 1;
 
             return this->length;
         }
@@ -46,7 +46,7 @@ namespace std {
         fn pop() : T {
             let value = this->get(this->length - 1);
 
-            this->length = this->length - 1;
+            this->length -= 1;
 
             return value;
         }
@@ -58,7 +58,7 @@ namespace std {
                 this->ptr[i - 1] = this->ptr[i];
             }
 
-            this->length = this->length - 1;
+            this->length -= 1;
 
             return value;
         }

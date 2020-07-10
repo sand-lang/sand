@@ -6,7 +6,7 @@ namespace std {
         let len: u64 = 0;
 
         while str[len] != 0 {
-            len = len + 1;
+            len += 1;
         }
 
         return len;
@@ -16,8 +16,8 @@ namespace std {
         let len: u64 = 0;
 
         while n != 0 {
-            len = len + 1;
-            n = n / 10;
+            len += 1;
+            n /= 10;
         }
 
         return len;
@@ -29,7 +29,7 @@ namespace std {
         let len = numlen(n);
 
         if is_negative {
-            len = len + (1 as u64);
+            len += 1;
             n = 0 - n;
         }
 
@@ -41,8 +41,8 @@ namespace std {
 
         while n != 0 {
             str[len - (1 as u64)] = (n % 10) + '0';
-            n = n / 10;
-            len = len - (1 as u64);
+            n /= 10;
+            len -= 1;
         }
 
         if is_negative {
