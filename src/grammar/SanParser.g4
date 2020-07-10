@@ -34,17 +34,17 @@ expression:
 	| expression (Dot | Arrow) name							# PropertyExpression
 	| expression '(' functionCallArguments? ')'				# FunctionCallExpression
 	| expression '[' expression ']'							# Index
+	| '-' expression										# UnaryNegativeExpression
+	| expression 'as' type									# TypeCast
+	| function												# FunctionExpression
+	| scopedName											# NameExpression
+	| literal												# LiteralDeclaration
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
-	| expression equalityOperatorStatement expression		# EqualityOperation
-	| '-' expression										# UnaryNegativeExpression
-	| expression 'as' type									# TypeCast
-	| function												# FunctionExpression
-	| scopedName											# NameExpression
-	| literal												# LiteralDeclaration;
+	| expression equalityOperatorStatement expression		# EqualityOperation;
 
 scopedName: scopeResolver? name;
 
