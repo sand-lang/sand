@@ -485,5 +485,23 @@ public:
 
         return nullptr;
     }
+
+    static Value *boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (ltype->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateXor(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("xor", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
 };
 } // namespace San

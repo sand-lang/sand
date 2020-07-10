@@ -21,6 +21,14 @@ public:
         return new Values::Constant("null_" + type->name, type, value);
     }
 
+    static Constant *boolean_value(const bool &boolean, llvm::LLVMContext &context)
+    {
+        auto type = Type::i1(context);
+        auto value = llvm::ConstantInt::get(type->get_ref(), boolean, false);
+
+        return new Values::Constant(boolean ? "true" : "false", type, value);
+    }
+
     virtual llvm::Constant *get_ref() override
     {
         return llvm::cast<llvm::Constant>(this->ref);

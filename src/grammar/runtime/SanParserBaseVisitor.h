@@ -67,6 +67,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitUnaryNegationExpression(SanParser::UnaryNegationExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitUnaryNegativeExpression(SanParser::UnaryNegativeExpressionContext *ctx) override {
     return visitChildren(ctx);
   }

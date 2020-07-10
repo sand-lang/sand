@@ -12,21 +12,21 @@
 class  SanParser : public antlr4::Parser {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, ConditionalOr = 6, ConditionalAnd = 7, 
-    EqualTo = 8, NotEqualTo = 9, LessThanOrEqualTo = 10, GreaterThanOrEqualTo = 11, 
-    LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
-    Equal = 17, OpeningParen = 18, ClosingParen = 19, OpeningBrace = 20, 
-    ClosingBrace = 21, OpeningBracket = 22, ClosingBracket = 23, Variadic = 24, 
-    InclusiveRange = 25, ExclusiveRange = 26, As = 27, SizeOf = 28, Const = 29, 
-    Class = 30, Extends = 31, Special = 32, Static = 33, Dot = 34, Arrow = 35, 
-    Union = 36, Enum = 37, Destructor = 38, Namespace = 39, ScopeResolver = 40, 
-    VariableDeclarator = 41, If = 42, Else = 43, While = 44, Break = 45, 
-    For = 46, In = 47, Function = 48, Extern = 49, Return = 50, Cast = 51, 
-    Alias = 52, Comma = 53, Colon = 54, Attribute = 55, Assembly = 56, Import = 57, 
-    True = 58, False = 59, InstructionsSeparator = 60, VariableName = 61, 
-    StringLiteral = 62, CharLiteral = 63, DecimalLiteral = 64, FloatingLiteral = 65, 
-    ZeroLiteral = 66, HexadecimalLiteral = 67, BinaryLiteral = 68, Comment = 69, 
-    WhiteSpace = 70, LineTerminator = 71
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, ConditionalOr = 7, 
+    ConditionalAnd = 8, EqualTo = 9, NotEqualTo = 10, LessThanOrEqualTo = 11, 
+    GreaterThanOrEqualTo = 12, LessThan = 13, GreaterThan = 14, Xor = 15, 
+    BitwiseOr = 16, BitwiseAnd = 17, Equal = 18, OpeningParen = 19, ClosingParen = 20, 
+    OpeningBrace = 21, ClosingBrace = 22, OpeningBracket = 23, ClosingBracket = 24, 
+    Variadic = 25, InclusiveRange = 26, ExclusiveRange = 27, As = 28, SizeOf = 29, 
+    Const = 30, Class = 31, Extends = 32, Special = 33, Static = 34, Dot = 35, 
+    Arrow = 36, Union = 37, Enum = 38, Destructor = 39, Namespace = 40, 
+    ScopeResolver = 41, VariableDeclarator = 42, If = 43, Else = 44, While = 45, 
+    Break = 46, For = 47, In = 48, Function = 49, Extern = 50, Return = 51, 
+    Cast = 52, Alias = 53, Comma = 54, Colon = 55, Attribute = 56, Assembly = 57, 
+    Import = 58, True = 59, False = 60, InstructionsSeparator = 61, VariableName = 62, 
+    StringLiteral = 63, CharLiteral = 64, DecimalLiteral = 65, FloatingLiteral = 66, 
+    ZeroLiteral = 67, HexadecimalLiteral = 68, BinaryLiteral = 69, Comment = 70, 
+    WhiteSpace = 71, LineTerminator = 72
   };
 
   enum {
@@ -314,6 +314,16 @@ public:
     antlr4::tree::TerminalNode *SizeOf();
     ExpressionContext *expression();
     TypeContext *type();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  UnaryNegationExpressionContext : public ExpressionContext {
+  public:
+    UnaryNegationExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *Not();
+    ExpressionContext *expression();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -696,6 +706,7 @@ public:
     antlr4::tree::TerminalNode *Mul();
     antlr4::tree::TerminalNode *Div();
     antlr4::tree::TerminalNode *Mod();
+    antlr4::tree::TerminalNode *Not();
     antlr4::tree::TerminalNode *Xor();
     antlr4::tree::TerminalNode *BitwiseOr();
     antlr4::tree::TerminalNode *BitwiseAnd();

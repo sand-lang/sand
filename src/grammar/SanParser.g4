@@ -36,6 +36,7 @@ expression:
 	| expression '[' expression ']'							# Index
 	| '-' expression										# UnaryNegativeExpression
 	| '+' expression										# UnaryPositiveExpression
+	| '!' expression										# UnaryNegationExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression
 	| scopedName											# NameExpression
@@ -113,6 +114,7 @@ overloadableOperator:
 	| '*'
 	| '/'
 	| '%'
+	| '!'
 	| '^'
 	| '|'
 	| '&'

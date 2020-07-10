@@ -1498,6 +1498,10 @@ public:
         {
             return this->visitUnaryPositiveExpression(positive_expression_context);
         }
+        else if (const auto negation_expression_context = dynamic_cast<SanParser::UnaryNegationExpressionContext *>(context))
+        {
+            return this->visitUnaryNegationExpression(negation_expression_context);
+        }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
@@ -1886,10 +1890,9 @@ public:
 
         if (opt->Xor())
         {
-            if (lvalue->type->is_integer())
+            if (auto value = Value::boolean_xor(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateXor(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("xor", lvalue->type, value);
+                return value;
             }
 
             std::vector<Value *> args = {lexpr, rexpr};
@@ -2261,6 +2264,40 @@ public:
         }
 
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+    }
+
+    Value *visitUnaryNegationExpression(SanParser::UnaryNegationExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("!", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        auto type = expression->type;
+
+        if (!type->is_boolean())
+        {
+            if (auto function = this->getCastOverload(expression, Type::i1(scope->context())))
+            {
+                expression = function->call(scope->builder(), scope->module(), {expression});
+            }
+            else if (type->is_integer() || type->is_floating_point() || type->is_pointer())
+            {
+                expression->load_alloca_and_reference(scope->builder());
+                expression = expression->not_equal(scope->builder(), Values::Constant::null_value(expression->type));
+            }
+            else
+            {
+                throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+            }
+        }
+
+        return Value::boolean_xor(scope->builder(), expression, Values::Constant::boolean_value(true, scope->context()));
     }
 
     Value *visitIndex(SanParser::IndexContext *context)
@@ -2692,13 +2729,9 @@ public:
     Values::Constant *visitBooleanLiteral(SanParser::BooleanLiteralContext *context)
     {
         auto scope = this->scopes.top();
-
         auto is_true = (context->True() != nullptr);
 
-        auto type = Type::i1(scope->context());
-        auto value = llvm::ConstantInt::get(type->get_ref(), is_true, false);
-
-        return new Values::Constant(is_true ? "true" : "false", type, value);
+        return Values::Constant::boolean_value(is_true, scope->context());
     }
 
     Values::Constant *visitIntegerLiteral(SanParser::IntegerLiteralContext *context)

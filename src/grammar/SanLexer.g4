@@ -6,6 +6,7 @@ Sub: '-';
 Mul: '*';
 Div: '/';
 Mod: '%';
+Not: '!';
 
 ConditionalOr: '||';
 ConditionalAnd: '&&';
