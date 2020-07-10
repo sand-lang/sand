@@ -1775,28 +1775,28 @@ public:
 
         if (opt->Add())
         {
-            if (auto value = Value::add(scope->builder(), lvalue, rvalue))
-            {
-                return value;
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("+", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
-        }
-        else if (opt->Sub())
-        {
-            if (auto value = Value::sub(scope->builder(), lvalue, rvalue))
+
+            if (auto value = Value::add(scope->builder(), lvalue, rvalue))
             {
                 return value;
             }
-
+        }
+        else if (opt->Sub())
+        {
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("-", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::sub(scope->builder(), lvalue, rvalue))
+            {
+                return value;
             }
         }
 
@@ -1819,59 +1819,41 @@ public:
 
         if (opt->Mul())
         {
-            if (lvalue->type->is_integer())
-            {
-                auto value = this->env.builder.CreateNSWMul(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("mul", lvalue->type, value);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFMul(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("mul", lvalue->type, value);
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("*", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
+
+            if (auto value = Value::mul(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
         }
         else if (opt->Div())
         {
-            if (lvalue->type->is_integer())
-            {
-                auto value = this->env.builder.CreateSDiv(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("div", lvalue->type, value);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFDiv(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("div", lvalue->type, value);
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("/", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
+
+            if (auto value = Value::div(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
         }
         else if (opt->Mod())
         {
-            if (lvalue->type->is_integer())
-            {
-                auto value = this->env.builder.CreateSRem(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("mod", lvalue->type, value);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFRem(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("mod", lvalue->type, value);
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("%", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::mod(scope->builder(), lvalue, rvalue))
+            {
+                return value;
             }
         }
 
@@ -1894,43 +1876,41 @@ public:
 
         if (opt->Xor())
         {
-            if (auto value = Value::boolean_xor(scope->builder(), lvalue, rvalue))
-            {
-                return value;
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("^", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
+
+            if (auto value = Value::boolean_xor(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
         }
         else if (opt->BitwiseOr())
         {
-            if (lvalue->type->is_integer())
-            {
-                auto value = this->env.builder.CreateOr(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("or", lvalue->type, value);
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("|", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
+
+            if (auto value = Value::bitwise_or(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
         }
         else if (opt->BitwiseAnd())
         {
-            if (lvalue->type->is_integer())
-            {
-                auto value = this->env.builder.CreateAnd(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("and", lvalue->type, value);
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("&", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::bitwise_and(scope->builder(), lvalue, rvalue))
+            {
+                return value;
             }
         }
 
@@ -1953,6 +1933,12 @@ public:
 
         if (opt->EqualTo())
         {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("==", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             if (lvalue->type->is_integer() || lvalue->type->is_pointer())
             {
                 auto value = this->env.builder.CreateICmpEQ(lvalue->get_ref(), rvalue->get_ref());
@@ -1963,28 +1949,28 @@ public:
                 auto value = this->env.builder.CreateFCmpOEQ(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("eq", Type::i1(scope->context()), value, false);
             }
-
-            std::vector<Value *> args = {lexpr, rexpr};
-            if (auto overload = this->getOperatorOverload("==", args))
-            {
-                return overload->call(scope->builder(), scope->module(), args);
-            }
         }
         else if (opt->NotEqualTo())
         {
-            if (auto value = lvalue->not_equal(scope->builder(), rvalue))
-            {
-                return value;
-            }
-
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload("!=", args))
             {
                 return overload->call(scope->builder(), scope->module(), args);
             }
+
+            if (auto value = lvalue->not_equal(scope->builder(), rvalue))
+            {
+                return value;
+            }
         }
         else if (opt->LessThan())
         {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("<", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             if (lvalue->type->is_integer() || lvalue->type->is_pointer())
             {
                 auto value = this->env.builder.CreateICmpSLT(lvalue->get_ref(), rvalue->get_ref());
@@ -1995,15 +1981,15 @@ public:
                 auto value = this->env.builder.CreateFCmpOLT(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("lt", Type::i1(scope->context()), value, false);
             }
-
-            std::vector<Value *> args = {lexpr, rexpr};
-            if (auto overload = this->getOperatorOverload("<", args))
-            {
-                return overload->call(scope->builder(), scope->module(), args);
-            }
         }
         else if (opt->LessThanOrEqualTo())
         {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("<=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             if (lvalue->type->is_integer() || lvalue->type->is_pointer())
             {
                 auto value = this->env.builder.CreateICmpSLE(lvalue->get_ref(), rvalue->get_ref());
@@ -2014,15 +2000,15 @@ public:
                 auto value = this->env.builder.CreateFCmpOLE(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("lte", Type::i1(scope->context()), value, false);
             }
-
-            std::vector<Value *> args = {lexpr, rexpr};
-            if (auto overload = this->getOperatorOverload("<=", args))
-            {
-                return overload->call(scope->builder(), scope->module(), args);
-            }
         }
         else if (opt->GreaterThan())
         {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             if (lvalue->type->is_integer() || lvalue->type->is_pointer())
             {
                 auto value = this->env.builder.CreateICmpSGT(lvalue->get_ref(), rvalue->get_ref());
@@ -2033,15 +2019,15 @@ public:
                 auto value = this->env.builder.CreateFCmpOGT(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("gt", Type::i1(scope->context()), value, false);
             }
-
-            std::vector<Value *> args = {lexpr, rexpr};
-            if (auto overload = this->getOperatorOverload(">", args))
-            {
-                return overload->call(scope->builder(), scope->module(), args);
-            }
         }
         else if (opt->GreaterThanOrEqualTo())
         {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             if (lvalue->type->is_integer() || lvalue->type->is_pointer())
             {
                 auto value = this->env.builder.CreateICmpSGE(lvalue->get_ref(), rvalue->get_ref());
@@ -2051,12 +2037,6 @@ public:
             {
                 auto value = this->env.builder.CreateFCmpOGE(lvalue->get_ref(), rvalue->get_ref());
                 return new Value("gte", Type::i1(scope->context()), value, false);
-            }
-
-            std::vector<Value *> args = {lexpr, rexpr};
-            if (auto overload = this->getOperatorOverload(">=", args))
-            {
-                return overload->call(scope->builder(), scope->module(), args);
             }
         }
 
@@ -2141,13 +2121,20 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        std::vector<Value *> args = {lexpr, rexpr};
-        if (auto overload = this->getOperatorOverload("=", args))
+        if (!lexpr->is_alloca && !lexpr->type->is_reference)
         {
-            return overload->call(scope->builder(), scope->module(), args);
+            throw InvalidLeftValueException(this->files.top(), lexpr_context->getStart());
         }
-        else
+
+        std::vector<Value *> args = {lexpr, rexpr};
+
+        if (opt->Equal())
         {
+            if (auto overload = this->getOperatorOverload("=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
             auto rtype = rexpr->type;
 
             if (rtype->is_function() && !rtype->is_pointer())
@@ -2159,6 +2146,102 @@ public:
             {
                 lexpr->store(rexpr, scope->builder(), scope->module());
                 return lexpr;
+            }
+        }
+        else if (opt->AddEqual())
+        {
+            if (auto overload = this->getOperatorOverload("+=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->add(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->SubEqual())
+        {
+            if (auto overload = this->getOperatorOverload("-=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->sub(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->MulEqual())
+        {
+            if (auto overload = this->getOperatorOverload("*=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->mul(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->DivEqual())
+        {
+            if (auto overload = this->getOperatorOverload("/=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->div(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->ModEqual())
+        {
+            if (auto overload = this->getOperatorOverload("%=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->mod(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->XorEqual())
+        {
+            if (auto overload = this->getOperatorOverload("^=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->boolean_xor(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->OrEqual())
+        {
+            if (auto overload = this->getOperatorOverload("|=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->bitwise_or(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
+            }
+        }
+        else if (opt->AndEqual())
+        {
+            if (auto overload = this->getOperatorOverload("&=", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = lexpr->bitwise_and(scope->module(), scope->builder(), rexpr))
+            {
+                return value;
             }
         }
 

@@ -75,7 +75,7 @@ comparisonOperatorStatement:
 	| LessThan
 	| GreaterThan;
 
-equalityOperatorStatement: Equal;
+equalityOperatorStatement: Equal | AddEqual | SubEqual | MulEqual | DivEqual | ModEqual | XorEqual | OrEqual | AndEqual;
 
 literal:
 	booleanLiteral
@@ -120,6 +120,14 @@ overloadableOperator:
 	| '^'
 	| '|'
 	| '&'
+	| '+='
+	| '-='
+	| '*='
+	| '/='
+	| '%='
+	| '^='
+	| '|='
+	| '&='
 	| '=='
 	| '!='
 	| '<'

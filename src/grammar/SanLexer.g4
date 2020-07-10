@@ -24,6 +24,15 @@ BitwiseAnd: '&';
 
 Equal: '=';
 
+AddEqual: '+=';
+SubEqual: '-=';
+MulEqual: '*=';
+DivEqual: '/=';
+ModEqual: '%=';
+XorEqual: '^=';
+OrEqual: '|=';
+AndEqual: '&=';
+
 // Pairs
 OpeningParen: '(';
 ClosingParen: ')';

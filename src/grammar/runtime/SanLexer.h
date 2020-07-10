@@ -15,18 +15,20 @@ public:
     Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, ConditionalOr = 7, 
     ConditionalAnd = 8, EqualTo = 9, NotEqualTo = 10, LessThanOrEqualTo = 11, 
     GreaterThanOrEqualTo = 12, LessThan = 13, GreaterThan = 14, Xor = 15, 
-    BitwiseOr = 16, BitwiseAnd = 17, Equal = 18, OpeningParen = 19, ClosingParen = 20, 
-    OpeningBrace = 21, ClosingBrace = 22, OpeningBracket = 23, ClosingBracket = 24, 
-    Variadic = 25, InclusiveRange = 26, ExclusiveRange = 27, As = 28, SizeOf = 29, 
-    Const = 30, Class = 31, Extends = 32, Special = 33, Static = 34, Dot = 35, 
-    Arrow = 36, Union = 37, Enum = 38, Destructor = 39, Namespace = 40, 
-    ScopeResolver = 41, VariableDeclarator = 42, If = 43, Else = 44, While = 45, 
-    Break = 46, For = 47, In = 48, Function = 49, Extern = 50, Return = 51, 
-    Cast = 52, Alias = 53, Comma = 54, Colon = 55, Attribute = 56, Assembly = 57, 
-    Import = 58, True = 59, False = 60, InstructionsSeparator = 61, VariableName = 62, 
-    StringLiteral = 63, CharLiteral = 64, DecimalLiteral = 65, FloatingLiteral = 66, 
-    ZeroLiteral = 67, HexadecimalLiteral = 68, BinaryLiteral = 69, Comment = 70, 
-    WhiteSpace = 71, LineTerminator = 72
+    BitwiseOr = 16, BitwiseAnd = 17, Equal = 18, AddEqual = 19, SubEqual = 20, 
+    MulEqual = 21, DivEqual = 22, ModEqual = 23, XorEqual = 24, OrEqual = 25, 
+    AndEqual = 26, OpeningParen = 27, ClosingParen = 28, OpeningBrace = 29, 
+    ClosingBrace = 30, OpeningBracket = 31, ClosingBracket = 32, Variadic = 33, 
+    InclusiveRange = 34, ExclusiveRange = 35, As = 36, SizeOf = 37, Const = 38, 
+    Class = 39, Extends = 40, Special = 41, Static = 42, Dot = 43, Arrow = 44, 
+    Union = 45, Enum = 46, Destructor = 47, Namespace = 48, ScopeResolver = 49, 
+    VariableDeclarator = 50, If = 51, Else = 52, While = 53, Break = 54, 
+    For = 55, In = 56, Function = 57, Extern = 58, Return = 59, Cast = 60, 
+    Alias = 61, Comma = 62, Colon = 63, Attribute = 64, Assembly = 65, Import = 66, 
+    True = 67, False = 68, InstructionsSeparator = 69, VariableName = 70, 
+    StringLiteral = 71, CharLiteral = 72, DecimalLiteral = 73, FloatingLiteral = 74, 
+    ZeroLiteral = 75, HexadecimalLiteral = 76, BinaryLiteral = 77, Comment = 78, 
+    WhiteSpace = 79, LineTerminator = 80
   };
 
   SanLexer(antlr4::CharStream *input);

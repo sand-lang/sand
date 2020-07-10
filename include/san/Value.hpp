@@ -462,7 +462,115 @@ public:
         if (auto result = Value::sub(builder, this, rvalue))
         {
             this->store(result, builder, module);
-            return result;
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (lvalue->type->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateNSWMul(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("mul", lvalue->type, value);
+        }
+        else if (lvalue->type->is_floating_point())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFMul(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("mul", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *mul(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::mul(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (lvalue->type->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateSDiv(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("div", lvalue->type, value);
+        }
+        else if (lvalue->type->is_floating_point())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFDiv(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("div", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *div(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::div(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (lvalue->type->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateSRem(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("mod", lvalue->type, value);
+        }
+        else if (lvalue->type->is_floating_point())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFRem(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("mod", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *mod(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::mod(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
         }
 
         return nullptr;
@@ -499,6 +607,75 @@ public:
 
             auto value = builder.CreateXor(lvalue->get_ref(), rvalue->get_ref());
             return new Value("xor", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *boolean_xor(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::boolean_xor(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (ltype->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateOr(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("or", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *bitwise_or(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::bitwise_or(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = lvalue->type->behind_reference();
+        auto rtype = rvalue->type->behind_reference();
+
+        lvalue = lvalue->load_alloca_and_reference(builder);
+
+        if (ltype->is_integer())
+        {
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateAnd(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("and", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *bitwise_and(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::bitwise_and(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
         }
 
         return nullptr;
