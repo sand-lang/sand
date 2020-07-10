@@ -40,6 +40,7 @@ expression:
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation
+	| '-' expression										# NegationExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression
 	| scopedName											# NameExpression
@@ -83,14 +84,14 @@ literal:
 booleanLiteral: True | False;
 
 integerLiteral:
-	Sub? (
+	(
 		DecimalLiteral
 		| ZeroLiteral
 		| HexadecimalLiteral
 		| BinaryLiteral
 	);
 
-floatingLiteral: Sub? FloatingLiteral;
+floatingLiteral: FloatingLiteral;
 
 stringLiteral: StringLiteral+;
 

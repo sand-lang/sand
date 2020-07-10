@@ -55,6 +55,8 @@ public:
 
     virtual antlrcpp::Any visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitNegationExpression(SanParser::NegationExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitScopedName(SanParser::ScopedNameContext *context) = 0;

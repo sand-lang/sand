@@ -1490,6 +1490,10 @@ public:
         {
             return this->visitEqualityOperation(equality_operation_context);
         }
+        else if (const auto negation_expression_context = dynamic_cast<SanParser::NegationExpressionContext *>(context))
+        {
+            return this->visitNegationExpression(negation_expression_context);
+        }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
@@ -2204,6 +2208,35 @@ public:
         return nullptr;
     }
 
+    Value *visitNegationExpression(SanParser::NegationExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("-", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        auto one_llvm = llvm::ConstantInt::get(expression->type->get_ref(), 0);
+
+        if (auto constant = dynamic_cast<Values::Constant *>(expression))
+        {
+            auto value = llvm::ConstantExpr::getSub(one_llvm, constant->get_ref());
+            return new Values::Constant("literal_i64", constant->type, value);
+        }
+
+        auto one = new Values::Constant("literal_i64", expression->type, one_llvm);
+        if (auto value = Value::sub(scope->builder(), one, expression))
+        {
+            return value;
+        }
+
+        throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+    }
+
     Value *visitIndex(SanParser::IndexContext *context)
     {
         auto scope = this->scopes.top();
@@ -2658,11 +2691,6 @@ public:
 
             auto integer = std::stol(str);
 
-            if (context->Sub())
-            {
-                integer *= -1;
-            }
-
             auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, true);
 
@@ -2682,11 +2710,6 @@ public:
 
             auto integer = std::stol(str, nullptr, 16);
 
-            if (context->Sub())
-            {
-                integer *= -1;
-            }
-
             auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
 
@@ -2698,11 +2721,6 @@ public:
             remove_digit_separators(str);
 
             auto integer = std::stol(str, nullptr, 2);
-
-            if (context->Sub())
-            {
-                integer *= -1;
-            }
 
             auto type = Type::i64(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
@@ -2726,11 +2744,6 @@ public:
         remove_digit_separators(str);
 
         auto floating = std::stod(str);
-
-        if (context->Sub())
-        {
-            floating *= -1;
-        }
 
         auto type = Type::f64(scope->context());
         auto value = llvm::ConstantFP::get(type->get_ref(), floating);

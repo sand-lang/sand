@@ -374,6 +374,16 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  NegationExpressionContext : public ExpressionContext {
+  public:
+    NegationExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *Sub();
+    ExpressionContext *expression();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  BinaryComparisonOperationContext : public ExpressionContext {
   public:
     BinaryComparisonOperationContext(ExpressionContext *ctx);
@@ -585,7 +595,6 @@ public:
     antlr4::tree::TerminalNode *ZeroLiteral();
     antlr4::tree::TerminalNode *HexadecimalLiteral();
     antlr4::tree::TerminalNode *BinaryLiteral();
-    antlr4::tree::TerminalNode *Sub();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -599,7 +608,6 @@ public:
     FloatingLiteralContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *FloatingLiteral();
-    antlr4::tree::TerminalNode *Sub();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
