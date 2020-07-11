@@ -109,6 +109,7 @@ Import: 'import';
 
 True: 'true';
 False: 'false';
+NullLiteral: 'null';
 
 InstructionsSeparator: ';'+;
 

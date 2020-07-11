@@ -2794,6 +2794,13 @@ public:
 
             return new Values::Constant("literal_i32", type, value);
         }
+        else if (const auto literal = context->NullLiteral())
+        {
+            auto type = scope->get_primary_type("void")->pointer();
+            auto value = llvm::ConstantPointerNull::get(llvm::cast<llvm::PointerType>(type->get_ref()));
+
+            return new Values::Constant("null", type, value);
+        }
 
         return nullptr;
     }

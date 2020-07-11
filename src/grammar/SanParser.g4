@@ -91,7 +91,8 @@ literal:
 	| integerLiteral
 	| floatingLiteral
 	| stringLiteral
-	| CharLiteral;
+	| CharLiteral
+	| NullLiteral;
 
 booleanLiteral: True | False;
 
