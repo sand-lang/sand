@@ -27,7 +27,7 @@ public:
         return static_cast<Types::FunctionType *>(this->type);
     }
 
-    llvm::Function *get_ref() override
+    llvm::Function *get_ref() const override
     {
         return llvm::cast<llvm::Function>(this->ref);
     }

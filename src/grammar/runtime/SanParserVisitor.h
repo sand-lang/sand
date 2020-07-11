@@ -159,17 +159,13 @@ public:
 
     virtual antlrcpp::Any visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context) = 0;
 
-    virtual antlrcpp::Any visitType(SanParser::TypeContext *context) = 0;
+    virtual antlrcpp::Any visitTypeArray(SanParser::TypeArrayContext *context) = 0;
 
-    virtual antlrcpp::Any visitTypeQualifier(SanParser::TypeQualifierContext *context) = 0;
-
-    virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *context) = 0;
+    virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitTypePointer(SanParser::TypePointerContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeReference(SanParser::TypeReferenceContext *context) = 0;
-
-    virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitFunctionType(SanParser::FunctionTypeContext *context) = 0;
 

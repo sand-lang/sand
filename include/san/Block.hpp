@@ -31,7 +31,7 @@ public:
         this->ref->setName(name);
     }
 
-    llvm::BasicBlock *get_ref()
+    llvm::BasicBlock *get_ref() const
     {
         return this->ref;
     }

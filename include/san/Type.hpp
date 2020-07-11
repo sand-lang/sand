@@ -38,7 +38,7 @@ public:
     {
     }
 
-    virtual llvm::Type *get_ref()
+    virtual llvm::Type *get_ref() const
     {
         return this->ref;
     }
@@ -86,6 +86,14 @@ public:
     {
         auto ref = this->get_ref();
         return new Type(this->name + "[" + std::to_string(size) + "]", llvm::ArrayType::get(ref, size), this);
+    }
+
+    Type *constant() const
+    {
+        auto type = this->copy();
+        type->is_constant = true;
+
+        return type;
     }
 
     Type *copy() const

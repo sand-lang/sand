@@ -79,7 +79,7 @@ public:
         return new FunctionType(name, ref, return_type, args, is_variadic, is_sret, is_method);
     }
 
-    llvm::FunctionType *get_ref()
+    llvm::FunctionType *get_ref() const override
     {
         return llvm::cast<llvm::FunctionType>(this->ref);
     }

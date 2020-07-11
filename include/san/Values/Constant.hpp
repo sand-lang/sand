@@ -29,7 +29,7 @@ public:
         return new Values::Constant(boolean ? "true" : "false", type, value);
     }
 
-    virtual llvm::Constant *get_ref() override
+    virtual llvm::Constant *get_ref() const override
     {
         return llvm::cast<llvm::Constant>(this->ref);
     }

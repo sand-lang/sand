@@ -48,13 +48,11 @@ public:
     RuleEnumStatement = 39, RuleEnumBody = 40, RuleEnumProperty = 41, RuleSpecialClassStatement = 42, 
     RuleClassStatement = 43, RuleClassGenerics = 44, RuleClassExtends = 45, 
     RuleClassBody = 46, RuleClassProperty = 47, RuleClassMethod = 48, RuleClassInstantiationProperties = 49, 
-    RuleClassInstantiationProperty = 50, RuleType = 51, RuleTypeQualifier = 52, 
-    RuleTypeDimensions = 53, RuleTypePointer = 54, RuleTypeReference = 55, 
-    RuleTypeName = 56, RuleFunctionType = 57, RuleClassTypeName = 58, RuleClassTypeNameGenerics = 59, 
-    RuleNamespaceStatement = 60, RuleImportStatement = 61, RuleAttributes = 62, 
-    RuleAttribute = 63, RuleAlias = 64, RuleAssemblyStatement = 65, RuleAssemblyTemplate = 66, 
-    RuleAssemblyOutput = 67, RuleAssemblyInput = 68, RuleAssemblyClobber = 69, 
-    RuleEos = 70
+    RuleClassInstantiationProperty = 50, RuleType = 51, RuleFunctionType = 52, 
+    RuleClassTypeName = 53, RuleClassTypeNameGenerics = 54, RuleNamespaceStatement = 55, 
+    RuleImportStatement = 56, RuleAttributes = 57, RuleAttribute = 58, RuleAlias = 59, 
+    RuleAssemblyStatement = 60, RuleAssemblyTemplate = 61, RuleAssemblyOutput = 62, 
+    RuleAssemblyInput = 63, RuleAssemblyClobber = 64, RuleEos = 65
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -119,11 +117,6 @@ public:
   class ClassInstantiationPropertiesContext;
   class ClassInstantiationPropertyContext;
   class TypeContext;
-  class TypeQualifierContext;
-  class TypeDimensionsContext;
-  class TypePointerContext;
-  class TypeReferenceContext;
-  class TypeNameContext;
   class FunctionTypeContext;
   class ClassTypeNameContext;
   class ClassTypeNameGenericsContext;
@@ -1200,91 +1193,63 @@ public:
   class  TypeContext : public antlr4::ParserRuleContext {
   public:
     TypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    TypeContext() = default;
+    void copyFrom(TypeContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
-    TypeNameContext *typeName();
-    std::vector<TypeQualifierContext *> typeQualifier();
-    TypeQualifierContext* typeQualifier(size_t i);
-    std::vector<TypeDimensionsContext *> typeDimensions();
-    TypeDimensionsContext* typeDimensions(size_t i);
-    std::vector<TypePointerContext *> typePointer();
-    TypePointerContext* typePointer(size_t i);
-    TypeReferenceContext *typeReference();
 
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    
   };
 
-  TypeContext* type();
-
-  class  TypeQualifierContext : public antlr4::ParserRuleContext {
+  class  TypeArrayContext : public TypeContext {
   public:
-    TypeQualifierContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Const();
+    TypeArrayContext(TypeContext *ctx);
 
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  TypeQualifierContext* typeQualifier();
-
-  class  TypeDimensionsContext : public antlr4::ParserRuleContext {
-  public:
-    TypeDimensionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
+    TypeContext *type();
     antlr4::tree::TerminalNode *OpeningBracket();
     ExpressionContext *expression();
     antlr4::tree::TerminalNode *ClosingBracket();
 
-
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
   };
 
-  TypeDimensionsContext* typeDimensions();
-
-  class  TypePointerContext : public antlr4::ParserRuleContext {
+  class  TypeNameContext : public TypeContext {
   public:
-    TypePointerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Mul();
+    TypeNameContext(TypeContext *ctx);
 
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  TypePointerContext* typePointer();
-
-  class  TypeReferenceContext : public antlr4::ParserRuleContext {
-  public:
-    TypeReferenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *BitwiseAnd();
-
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  TypeReferenceContext* typeReference();
-
-  class  TypeNameContext : public antlr4::ParserRuleContext {
-  public:
-    TypeNameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
     ScopedNameContext *scopedName();
     FunctionTypeContext *functionType();
-
+    antlr4::tree::TerminalNode *Const();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
   };
 
-  TypeNameContext* typeName();
+  class  TypePointerContext : public TypeContext {
+  public:
+    TypePointerContext(TypeContext *ctx);
 
+    TypeContext *type();
+    antlr4::tree::TerminalNode *Mul();
+    antlr4::tree::TerminalNode *Const();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  TypeReferenceContext : public TypeContext {
+  public:
+    TypeReferenceContext(TypeContext *ctx);
+
+    TypeContext *type();
+    antlr4::tree::TerminalNode *BitwiseAnd();
+    antlr4::tree::TerminalNode *Const();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  TypeContext* type();
+  TypeContext* type(int precedence);
   class  FunctionTypeContext : public antlr4::ParserRuleContext {
   public:
     FunctionTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -1520,6 +1485,7 @@ public:
 
   virtual bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;
   bool expressionSempred(ExpressionContext *_localctx, size_t predicateIndex);
+  bool typeSempred(TypeContext *_localctx, size_t predicateIndex);
 
 private:
   static std::vector<antlr4::dfa::DFA> _decisionToDFA;

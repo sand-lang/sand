@@ -19,7 +19,7 @@ public:
     {
     }
 
-    virtual llvm::Value *get_ref()
+    virtual llvm::Value *get_ref() const
     {
         return this->ref;
     }

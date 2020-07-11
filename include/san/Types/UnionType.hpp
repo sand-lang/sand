@@ -52,7 +52,7 @@ public:
         return new UnionType(name, ref, scope);
     }
 
-    llvm::StructType *get_ref() override
+    llvm::StructType *get_ref() const override
     {
         return llvm::cast<llvm::StructType>(this->ref);
     }

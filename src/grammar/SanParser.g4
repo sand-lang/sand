@@ -227,17 +227,10 @@ classInstantiationProperties:
 classInstantiationProperty: VariableName ('=' expression)?;
 
 type:
-	typeQualifier* typeName typeDimensions* typePointer* typeReference?;
-
-typeQualifier: Const;
-
-typeDimensions: '[' expression ']';
-
-typePointer: '*';
-
-typeReference: '&';
-
-typeName: scopedName | functionType;
+	type '[' expression ']'					# TypeArray
+	| type Const? '*'						# TypePointer
+	| type Const? '&'						# TypeReference
+	| Const? (scopedName | functionType)	# TypeName;
 
 functionType:
 	'fn' '(' (

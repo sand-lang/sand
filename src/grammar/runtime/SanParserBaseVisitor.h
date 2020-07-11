@@ -295,15 +295,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitType(SanParser::TypeContext *ctx) override {
+  virtual antlrcpp::Any visitTypeArray(SanParser::TypeArrayContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitTypeQualifier(SanParser::TypeQualifierContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitTypeDimensions(SanParser::TypeDimensionsContext *ctx) override {
+  virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -312,10 +308,6 @@ public:
   }
 
   virtual antlrcpp::Any visitTypeReference(SanParser::TypeReferenceContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitTypeName(SanParser::TypeNameContext *ctx) override {
     return visitChildren(ctx);
   }
 

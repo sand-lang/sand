@@ -25,7 +25,7 @@ public:
         return new GlobalConstant(name, type, global);
     }
 
-    llvm::GlobalVariable *get_ref() override
+    llvm::GlobalVariable *get_ref() const override
     {
         return this->global;
     }

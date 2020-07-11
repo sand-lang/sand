@@ -2936,16 +2936,56 @@ public:
     Type *visitType(SanParser::TypeContext *context)
     {
         auto scope = this->scopes.top();
-        auto type = this->visitTypeName(context->typeName());
 
-        for (const auto &pointer : context->typePointer())
+        if (auto child = dynamic_cast<SanParser::TypeArrayContext *>(context))
         {
-            type = type->pointer();
+            return this->visitTypeArray(child);
+        }
+        else if (auto child = dynamic_cast<SanParser::TypePointerContext *>(context))
+        {
+            return this->visitTypePointer(child);
+        }
+        else if (auto child = dynamic_cast<SanParser::TypeReferenceContext *>(context))
+        {
+            return this->visitTypeReference(child);
+        }
+        else if (auto child = dynamic_cast<SanParser::TypeNameContext *>(context))
+        {
+            return this->visitTypeName(child);
         }
 
-        if (context->typeReference())
+        return nullptr;
+    }
+
+    Type *visitTypeArray(SanParser::TypeArrayContext *context)
+    {
+        auto type = this->visitType(context->type());
+        type = type->pointer();
+
+        return type;
+    }
+
+    Type *visitTypePointer(SanParser::TypePointerContext *context)
+    {
+        auto type = this->visitType(context->type());
+        type = type->pointer();
+
+        if (context->Const())
         {
-            type = type->reference();
+            type->is_constant = true;
+        }
+
+        return type;
+    }
+
+    Type *visitTypeReference(SanParser::TypeReferenceContext *context)
+    {
+        auto type = this->visitType(context->type());
+        type = type->reference();
+
+        if (context->Const())
+        {
+            type->is_constant = true;
         }
 
         return type;
@@ -2953,17 +2993,24 @@ public:
 
     Type *visitTypeName(SanParser::TypeNameContext *context)
     {
+        Type *type = nullptr;
+
         if (auto scoped_name_context = context->scopedName())
         {
             auto scoped_name = this->visitScopedName(scoped_name_context);
-            return this->typeFromName(scoped_name, context);
+            type = this->typeFromName(scoped_name, context);
         }
         else if (auto function_type_context = context->functionType())
         {
-            return this->visitFunctionType(function_type_context);
+            type = this->visitFunctionType(function_type_context);
         }
 
-        return nullptr;
+        if (context->Const())
+        {
+            type = type->constant();
+        }
+
+        return type;
     }
 
     Type *visitFunctionType(SanParser::FunctionTypeContext *context)

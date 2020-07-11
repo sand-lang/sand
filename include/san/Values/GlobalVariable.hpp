@@ -18,7 +18,7 @@ public:
         return new GlobalVariable(name, type, global);
     }
 
-    llvm::GlobalVariable *get_ref()
+    llvm::GlobalVariable *get_ref() const override
     {
         return llvm::cast<llvm::GlobalVariable>(this->ref);
     }

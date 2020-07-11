@@ -117,7 +117,7 @@ public:
         return new ClassType(name, ref, scope, generics);
     }
 
-    llvm::StructType *get_ref() override
+    llvm::StructType *get_ref() const override
     {
         return llvm::cast<llvm::StructType>(this->ref);
     }
