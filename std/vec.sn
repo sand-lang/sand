@@ -3,14 +3,12 @@ import "./range"
 
 namespace std {
     class Vec<T> {
-        ptr: T*;
+        ptr: T* = null;
         capacity: u64 = 0;
         length: u64 = 0;
 
         static fn new() : Vec<T> {
-            return Vec<T> {
-                ptr = 0 as T*,
-            };
+            return Vec<T> {};
         }
 
         static fn new(capacity: u64) : Vec<T> {
@@ -25,7 +23,7 @@ namespace std {
                 this->capacity = (this->capacity + 1) * 2;
                 let copy = std::memory::allocate<T>(this->capacity);
 
-                if this->ptr != (0 as T*) {
+                if this->ptr != null {
                     std::memory::copy(this->ptr, copy, this->length * sizeof(T));
                     std::memory::deallocate(this->ptr as i8*);
                 }

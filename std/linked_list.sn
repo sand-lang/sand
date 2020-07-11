@@ -7,7 +7,7 @@ namespace std {
     }
 
     class LinkedList<T> {
-        first: LinkedListNode<T>* = 0;
+        first: LinkedListNode<T>* = null;
 
         static fn new() : LinkedList<T> {
             return LinkedList<T> {};
