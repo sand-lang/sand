@@ -31,7 +31,7 @@ namespace std {
         print(std::to_string(n));
     }
 
-    fn print(str: std::string&) {
+    fn print(str: const std::string&) {
         print(str.ptr);
     }
 }

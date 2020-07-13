@@ -59,7 +59,7 @@ public:
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
 
-            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), lvalue->type->size(module));
+            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), Type::get_origin(lvalue->type)->size(module));
 
             builder.CreateMemCpy(lvalue->get_ref(), llvm::Align(1), rvalue->get_ref(), llvm::Align(1), llvm::cast<llvm::Value>(size));
         }
@@ -70,7 +70,7 @@ public:
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
 
-            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), lvalue->type->size(module));
+            auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), Type::get_origin(lvalue->type)->size(module));
 
             builder.CreateMemCpy(lvalue->get_ref(), this->get_ref()->getPointerAlignment(module->getDataLayout()), rvalue->get_ref(), value->get_ref()->getPointerAlignment(module->getDataLayout()), llvm::cast<llvm::Value>(size));
         }
@@ -262,14 +262,7 @@ public:
         }
         else if (load)
         {
-            if (dest->is_struct())
-            {
-                value = value->load_reference(builder);
-            }
-            else
-            {
-                value = value->load_alloca_and_reference(builder);
-            }
+            value = value->load_alloca_and_reference(builder);
         }
 
         if (value->is_alloca && value->type->is_reference)

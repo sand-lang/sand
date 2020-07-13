@@ -101,12 +101,14 @@ public:
 
     std::shared_ptr<Scope> get_static_scope()
     {
-        std::vector<std::shared_ptr<Scope>> scopes = {this->static_scope};
+        std::vector<std::shared_ptr<Scope>> scopes;
 
         for (auto &parent : this->parents)
         {
             scopes.push_back(parent->static_scope);
         }
+
+        scopes.push_back(this->static_scope);
 
         return Scope::from(this->static_scope->env, scopes);
     }

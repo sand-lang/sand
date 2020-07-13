@@ -1623,7 +1623,7 @@ public:
 
                 if (class_property->from != nullptr)
                 {
-                    container = container->struct_cast(class_property->from, class_property->padding, scope->builder());
+                    container = container->struct_cast(Type::get_origin(class_property->from), class_property->padding, scope->builder());
                 }
 
                 auto ptr = container->struct_gep(class_property->property->name, class_property->property->type, class_property->index, scope->builder());
@@ -2464,7 +2464,7 @@ public:
             expr = expr->load(scope->builder())->gep(index, scope->builder());
         }
 
-        auto type = Type::behind_reference(expr->type);
+        auto type = Type::get_origin(Type::behind_reference(expr->type));
 
         if (auto class_type = dynamic_cast<Types::ClassType *>(type))
         {
@@ -2632,9 +2632,9 @@ public:
     {
         auto scope = this->scopes.top();
 
-        auto behind = Type::behind_reference(value->type);
+        auto behind = Type::get_origin(Type::behind_reference(value->type));
 
-        if (auto type = dynamic_cast<Types::ClassType *>(Type::get_origin(behind)))
+        if (auto type = dynamic_cast<Types::ClassType *>(behind))
         {
             auto name = context->VariableName()->getText();
             auto names = type->get_names(name, value, scope->builder(), scope->module());

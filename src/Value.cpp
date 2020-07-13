@@ -38,7 +38,7 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &mo
             if (function_arg.type->is_reference && !Type::equals((arg->is_alloca && !arg->is_temporary) ? Type::reference(arg->type) : arg->type, function_arg.type))
             {
                 auto reference = Values::Variable::create("ref", function_arg.type->base, builder);
-                reference->store(arg->cast(function_arg.type->base, builder), builder, module);
+                reference->store(arg, builder, module);
 
                 arg = reference;
             }
