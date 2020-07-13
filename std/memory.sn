@@ -11,10 +11,10 @@ namespace std {
             return calloc(count, (sizeof T) as u64) as T*;
         }
 
-        fn deallocate(ptr: i8*&) {
+        fn deallocate(ptr: void*&) {
             if ptr != 0 {
                 free(ptr);
-                ptr = (0 as i8*);
+                ptr = null;
             }
         }
     }
@@ -28,10 +28,10 @@ namespace std {
             return VirtualAlloc(0 as i8*, count * (sizeof T), 12288 as u64, 4 as u64);
         }
 
-        fn deallocate(ptr: i8*&) {
+        fn deallocate(ptr: void*&) {
             if ptr != 0 {
                 if VirtualFree(ptr, 0 as u64, 0x8000 as u64) {
-                    ptr = (0 as i8*);
+                    ptr = null;
                 }
             }
         }

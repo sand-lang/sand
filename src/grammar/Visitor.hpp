@@ -402,7 +402,7 @@ public:
 
         if (parent != nullptr)
         {
-            auto arg = Types::FunctionArgument("this", parent->pointer());
+            auto arg = Types::FunctionArgument("this", Type::pointer(parent));
             args.insert(args.begin(), arg);
         }
 
@@ -674,7 +674,7 @@ public:
 
                 if (type->is_function() && !type->is_pointer())
                 {
-                    type = type->pointer();
+                    type = Type::pointer(type);
                 }
             }
         }
@@ -747,7 +747,7 @@ public:
             auto rvalue = this->valueFromExpression(expression_context);
             auto function_return_type = function->get_type()->return_type;
 
-            if (rvalue->type->compatibility(function_return_type) == Type::NOT_COMPATIBLE)
+            if (Type::compatibility((rvalue->is_alloca && !rvalue->is_temporary) ? Type::reference(rvalue->type) : rvalue->type, function_return_type) == Type::NOT_COMPATIBLE)
             {
                 throw ReturnValueDoesNotMatchReturnTypeException(this->files.top(), expression_context->getStart(), rvalue->type, function_return_type);
             }
@@ -1323,7 +1323,7 @@ public:
 
         for (auto &generic : type->generics)
         {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(generic->get_base()))
+            if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::get_base(generic))))
             {
                 if (!class_type->pending_methods.empty())
                 {
@@ -1384,7 +1384,7 @@ public:
 
     void generatePropertyPendingMethods(Type *type)
     {
-        if (auto class_type = dynamic_cast<Types::ClassType *>(type->get_base()))
+        if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::get_base(type))))
         {
             if (!class_type->generated)
             {
@@ -1393,7 +1393,7 @@ public:
                 this->scopes.pop();
             }
         }
-        else if (auto union_type = dynamic_cast<Types::UnionType *>(type->get_base()))
+        else if (auto union_type = dynamic_cast<Types::UnionType *>(Type::get_origin(Type::get_base(type))))
         {
             if (!union_type->generated)
             {
@@ -1857,7 +1857,7 @@ public:
             }
         }
 
-        return nullptr;
+        throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
     Value *visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context)
@@ -1914,7 +1914,7 @@ public:
             }
         }
 
-        return nullptr;
+        throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
     Value *visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context)
@@ -2040,7 +2040,7 @@ public:
             }
         }
 
-        return nullptr;
+        throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
     Value *visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *context)
@@ -2139,10 +2139,10 @@ public:
 
             if (rtype->is_function() && !rtype->is_pointer())
             {
-                rtype = rtype->pointer();
+                rtype = Type::pointer(rtype);
             }
 
-            if (lexpr->type->compatibility(rtype) != Type::NOT_COMPATIBLE)
+            if (Type::compatibility((lexpr->is_alloca && !lexpr->is_temporary) ? Type::reference(lexpr->type) : lexpr->type, rtype) != Type::NOT_COMPATIBLE)
             {
                 lexpr->store(rexpr, scope->builder(), scope->module());
                 return lexpr;
@@ -2254,7 +2254,9 @@ public:
 
         if (args[0]->is_alloca)
         {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(args[0]->type->behind_reference()))
+            auto type = Type::get_origin(Type::behind_reference(args[0]->type));
+
+            if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(type)))
             {
                 auto names = class_type->get_names(name, args[0], scope->builder(), scope->module());
 
@@ -2409,7 +2411,7 @@ public:
         auto expression = this->valueFromExpression(context->expression(0));
         auto index = this->valueFromExpression(context->expression(1));
 
-        auto type = expression->type->behind_reference();
+        auto type = Type::get_origin(Type::behind_reference(expression->type));
 
         if (type->is_array() || type->is_pointer())
         {
@@ -2460,12 +2462,7 @@ public:
             expr = expr->load(scope->builder())->gep(index, scope->builder());
         }
 
-        auto type = expr->type;
-
-        if (type->is_reference)
-        {
-            type = type->base;
-        }
+        auto type = Type::behind_reference(expr->type);
 
         if (auto class_type = dynamic_cast<Types::ClassType *>(type))
         {
@@ -2633,7 +2630,9 @@ public:
     {
         auto scope = this->scopes.top();
 
-        if (auto type = dynamic_cast<Types::ClassType *>(value->type->behind_reference()))
+        auto behind = Type::behind_reference(value->type);
+
+        if (auto type = dynamic_cast<Types::ClassType *>(Type::get_origin(behind)))
         {
             auto name = context->VariableName()->getText();
             auto names = type->get_names(name, value, scope->builder(), scope->module());
@@ -2658,7 +2657,7 @@ public:
 
             throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
         }
-        else if (auto type = dynamic_cast<Types::UnionType *>(value->type->behind_reference()))
+        else if (auto type = dynamic_cast<Types::UnionType *>(behind))
         {
             auto name = context->VariableName()->getText();
             auto property = type->get_property(name);
@@ -2796,7 +2795,7 @@ public:
         }
         else if (const auto literal = context->NullLiteral())
         {
-            auto type = scope->get_primary_type("void")->pointer();
+            auto type = Type::pointer(scope->get_primary_type("void"));
             auto value = llvm::ConstantPointerNull::get(llvm::cast<llvm::PointerType>(type->get_ref()));
 
             return new Values::Constant("null", type, value);
@@ -2927,7 +2926,7 @@ public:
 
         auto constant = llvm::ConstantDataArray::getString(this->env.llvm_context, str, true);
 
-        auto type = scope->get_primary_type("i8")->array(str.size() + 1);
+        auto type = Type::array(scope->get_primary_type("i8"), str.size() + 1);
         auto value = Values::GlobalConstant::create(".str", type, constant, scope->module());
 
         return value;
@@ -2960,7 +2959,7 @@ public:
     Type *visitTypeArray(SanParser::TypeArrayContext *context)
     {
         auto type = this->visitType(context->type());
-        type = type->pointer();
+        type = Type::pointer(type);
 
         return type;
     }
@@ -2968,7 +2967,7 @@ public:
     Type *visitTypePointer(SanParser::TypePointerContext *context)
     {
         auto type = this->visitType(context->type());
-        type = type->pointer();
+        type = Type::pointer(type);
 
         if (context->Const())
         {
@@ -2981,7 +2980,7 @@ public:
     Type *visitTypeReference(SanParser::TypeReferenceContext *context)
     {
         auto type = this->visitType(context->type());
-        type = type->reference();
+        type = Type::reference(type);
 
         if (context->Const())
         {
@@ -3007,7 +3006,7 @@ public:
 
         if (context->Const())
         {
-            type = type->constant();
+            type = Type::constant(type);
         }
 
         return type;
@@ -3031,7 +3030,9 @@ public:
             return_type = Type::voidt(scope->context());
         }
 
-        return Types::FunctionType::create(scope->builder(), scope->module(), "", return_type, args, is_variadic, false)->pointer();
+        auto type = Types::FunctionType::create(scope->builder(), scope->module(), "", return_type, args, is_variadic, false);
+
+        return Type::pointer(type);
     }
 
     Types::ClassType *visitClassTypeName(SanParser::ClassTypeNameContext *context)

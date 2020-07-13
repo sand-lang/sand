@@ -97,7 +97,7 @@ namespace std {
     }
 }
 
-fn +(l: std::string&, r: i8*) : std::string {
+fn +(l: const std::string&, r: i8*) : std::string {
   let r_length = std::strlen(r);
   let concat_length = l.length + r_length;
 
@@ -108,7 +108,7 @@ fn +(l: std::string&, r: i8*) : std::string {
   return std::string::assign(alloca, concat_length);
 }
 
-fn +(l: i8*, r: std::string&) : std::string {
+fn +(l: i8*, r: const std::string&) : std::string {
   let l_length = std::strlen(l);
   let concat_length = r.length + l_length;
 
@@ -119,11 +119,11 @@ fn +(l: i8*, r: std::string&) : std::string {
   return std::string::assign(alloca, concat_length);
 }
 
-fn +(l: std::string&, r: std::string&) : std::string {
+fn +(l: const std::string&, r: const std::string&) : std::string {
     return l + r.ptr;
 }
 
-fn *(l: std::string&, r: u64) : std::string {
+fn *(l: const std::string&, r: u64) : std::string {
   let string_length = l.length * r;
   let alloca = std::memory::allocate<i8>(string_length + 1);
 
@@ -134,7 +134,7 @@ fn *(l: std::string&, r: u64) : std::string {
   return std::string::assign(alloca, l.length * r);
 }
 
-fn ==(l: std::string&, r: std::string&) : bool {
+fn ==(l: const std::string&, r: const std::string&) : bool {
   if l.ptr == r.ptr {
       return true;
   }
@@ -152,22 +152,22 @@ fn ==(l: std::string&, r: std::string&) : bool {
   return true;
 }
 
-fn ==(l: std::string&, r: i8*) : bool {
+fn ==(l: const std::string&, r: i8*) : bool {
   return l == std::string::assign(r);
 }
 
-fn ==(l: i8*, r: std::string&) : bool {
+fn ==(l: i8*, r: const std::string&) : bool {
   return std::string::assign(l) == r;
 }
 
-fn !=(l: std::string&, r: std::string&) : bool {
+fn !=(l: const std::string&, r: const std::string&) : bool {
     return (l == r) == false;
 }
 
-fn !=(l: std::string&, r: i8*) : bool {
+fn !=(l: const std::string&, r: i8*) : bool {
   return (l == r) == false;
 }
 
-fn !=(l: i8*, r: std::string&) : bool {
+fn !=(l: i8*, r: const std::string&) : bool {
   return (l == r) == false;
 }

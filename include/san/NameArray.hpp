@@ -70,7 +70,14 @@ public:
 
         for (auto &arg : args)
         {
-            args_types.push_back(arg->type);
+            auto type = arg->type;
+
+            if (arg->is_alloca && !arg->is_temporary)
+            {
+                type = Type::reference(type);
+            }
+
+            args_types.push_back(type);
         }
 
         return this->get_function({}, args_types, return_type);
@@ -88,7 +95,7 @@ public:
 
             if (auto value = dynamic_cast<Value *>(name))
             {
-                auto value_type = value->type->behind_reference();
+                auto value_type =Type::behind_reference( value->type);
 
                 if (value_type->is_pointer() && value_type->base->is_function())
                 {
@@ -101,7 +108,12 @@ public:
 
                     if (return_type)
                     {
-                        auto return_type_compatiblity = type->return_type->compatibility(return_type);
+                        if (type->return_type->is_reference && !return_type->is_reference)
+                        {
+                            return_type = Type::reference(return_type);
+                        }
+
+                        auto return_type_compatiblity = Type::compatibility(return_type, type->return_type);
 
                         if (return_type_compatiblity == Type::NOT_COMPATIBLE)
                         {

@@ -58,7 +58,7 @@ public:
     {
         size_t size = 0;
 
-        auto base = this->get_base();
+        auto base = Type::get_base(this);
 
         if (base != this)
         {

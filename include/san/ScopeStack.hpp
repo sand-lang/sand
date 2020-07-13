@@ -76,7 +76,7 @@ public:
         {
             if (auto variable = dynamic_cast<Value *>(name))
             {
-                if (auto class_type = dynamic_cast<Types::ClassType *>(variable->type))
+                if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(variable->type)))
                 {
                     if (class_type->is_pointer() || class_type->is_array())
                     {

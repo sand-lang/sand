@@ -25,14 +25,14 @@ namespace std {
 
                 if this->ptr != null {
                     std::memory::copy(this->ptr, copy, this->length * sizeof(T));
-                    std::memory::deallocate(this->ptr as i8*);
+                    std::memory::deallocate(this->ptr);
                 }
 
                 this->ptr = copy;
             }
         }
 
-        fn push(value: T&) : u64 {
+        fn push(value: const T&) : u64 {
             this->ensure_memory();
 
             this->ptr[this->length] = value;

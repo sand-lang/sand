@@ -63,7 +63,7 @@ public:
                 }
                 else
                 {
-                    argument_llvm_types.push_back(return_type->pointer()->get_ref());
+                    argument_llvm_types.push_back(Type::pointer(return_type)->get_ref());
                 }
 
                 return_llvm_type = Type::llvm_void(builder.getContext());
@@ -90,7 +90,14 @@ public:
 
         for (auto &arg : args)
         {
-            args_types.push_back(arg->type);
+            auto type = arg->type;
+
+            if (arg->is_alloca && !arg->is_temporary)
+            {
+                type = Type::reference(type);
+            }
+
+            args_types.push_back(type);
         }
 
         return this->compare_args(args_types);
@@ -121,12 +128,12 @@ public:
 
             if (arg->is_function() && !arg->is_pointer())
             {
-                arg = arg->pointer();
+                arg = Type::pointer(arg);
             }
 
-            auto compatibility = this->args[i].type->compatibility(arg);
+            auto compatibility = Type::compatibility(arg, this->args[i].type);
 
-            if (compatibility == Type::NOT_COMPATIBLE)
+            if (compatibility == Type::NOT_COMPATIBLE || ((Type::NOT_COMPATIBLE - score) < compatibility))
             {
                 return Type::NOT_COMPATIBLE;
             }

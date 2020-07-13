@@ -14,6 +14,7 @@ public:
     Value *calling_variable = nullptr;
 
     bool is_alloca = false;
+    bool is_temporary = false;
 
     Value(const std::string &name_, Type *type_, llvm::Value *ref_, const bool &is_alloca_ = false) : Name(name_), type(type_), ref(ref_), is_alloca(is_alloca_)
     {
@@ -53,7 +54,7 @@ public:
 
         if (this->type->is_struct() && value->type->is_struct())
         {
-            auto i8ptr = Type::i8(builder.getContext())->pointer();
+            auto i8ptr = Type::pointer(Type::i8(builder.getContext()));
 
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
@@ -64,7 +65,7 @@ public:
         }
         else if (this->type->is_array() && value->type->is_array())
         {
-            auto i8ptr = Type::i8(builder.getContext())->pointer();
+            auto i8ptr = Type::pointer(Type::i8(builder.getContext()));
 
             auto rvalue = value->cast(i8ptr, builder, false);
             lvalue = lvalue->cast(i8ptr, builder, false);
@@ -118,9 +119,9 @@ public:
 
         auto type = this->type;
 
-        if (!this->is_alloca && load_reference && this->type->is_reference)
+        if (!this->is_alloca && load_reference && type->is_reference)
         {
-            type = type->get_base(false);
+            type = Type::get_base(type, false);
         }
 
         return new Value(this->name + ".load", type, value);
@@ -137,7 +138,7 @@ public:
         if (this->type->is_reference)
         {
             auto value = builder.CreateLoad(this->get_ref());
-            auto type = this->type->get_base(false);
+            auto type = Type::get_base(this->type, false);
 
             return new Value(this->name + ".load", type, value);
         }
@@ -195,7 +196,7 @@ public:
         idxs.push_back(index);
 
         auto pointer = builder.CreateInBoundsGEP(value->get_ref(), idxs, "idx");
-        auto type = value->type->get_base(false);
+        auto type = Type::get_base(value->type, false);
 
         return new Value("idx", type, pointer, true);
     }
@@ -232,7 +233,7 @@ public:
         };
 
         auto value = builder.CreateInBoundsGEP(bytes, idxs, "idx");
-        value = builder.CreateBitCast(value, dest->pointer()->get_ref());
+        value = builder.CreateBitCast(value, Type::pointer(dest)->get_ref());
 
         return new Value(this->name, dest, value, true);
     }
@@ -261,7 +262,14 @@ public:
         }
         else if (load)
         {
-            value = value->load_alloca_and_reference(builder);
+            if (dest->is_struct())
+            {
+                value = value->load_reference(builder);
+            }
+            else
+            {
+                value = value->load_alloca_and_reference(builder);
+            }
         }
 
         if (value->is_alloca && value->type->is_reference)
@@ -380,8 +388,8 @@ public:
 
     static Value *add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         if (ltype->is_integer())
         {
@@ -427,8 +435,8 @@ public:
 
     static Value *sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         if (ltype->is_integer())
         {
@@ -470,8 +478,8 @@ public:
 
     static Value *mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 
@@ -506,8 +514,8 @@ public:
 
     static Value *div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 
@@ -542,8 +550,8 @@ public:
 
     static Value *mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 
@@ -596,8 +604,8 @@ public:
 
     static Value *boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 
@@ -625,8 +633,8 @@ public:
 
     static Value *bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 
@@ -654,8 +662,8 @@ public:
 
     static Value *bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
-        auto ltype = lvalue->type->behind_reference();
-        auto rtype = rvalue->type->behind_reference();
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
 
         lvalue = lvalue->load_alloca_and_reference(builder);
 

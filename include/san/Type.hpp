@@ -15,6 +15,7 @@ class Type : public Name
 {
 public:
     static constexpr size_t NOT_COMPATIBLE = std::numeric_limits<size_t>::max();
+    static constexpr size_t KIND_OF_COMPATIBLE = std::numeric_limits<size_t>::max() / 1000000UL;
 
 public:
     bool is_constant = false;
@@ -23,6 +24,7 @@ public:
 
     llvm::Type *ref;
     Type *base = nullptr;
+    Type *origin = nullptr;
 
     Type(const std::string &name,
          llvm::Type *ref_,
@@ -43,14 +45,24 @@ public:
         return this->ref;
     }
 
-    Type *behind_reference()
+    static Type *behind_reference(Type *type)
     {
-        if (this->is_reference)
+        if (type->is_reference)
         {
-            return this->base;
+            return type->base;
         }
 
-        return this;
+        return type;
+    }
+
+    static Type *get_origin(Type *type)
+    {
+        if (type->origin != nullptr)
+        {
+            return type->origin;
+        }
+
+        return type;
     }
 
     std::string to_string() const
@@ -62,43 +74,48 @@ public:
         return stream.str();
     }
 
-    Type *pointer()
+    static Type *pointer(Type *base)
     {
-        auto ref = this->get_ref();
+        auto ref = base->get_ref();
 
-        if (this->is_void())
+        if (base->is_void())
         {
             ref = Type::llvm_i8(ref->getContext());
         }
 
-        return new Type(this->name + "*", ref->getPointerTo(), this);
+        return new Type(base->name + "*", ref->getPointerTo(), base);
     }
 
-    Type *reference()
+    static Type *reference(Type *base)
     {
-        auto pointer_type = this->pointer();
+        auto pointer_type = Type::pointer(base);
         pointer_type->is_reference = true;
+        pointer_type->is_constant = base->is_constant;
 
         return pointer_type;
     }
 
-    Type *array(const size_t &size)
+    static Type *array(Type *base, const size_t &size)
     {
-        auto ref = this->get_ref();
-        return new Type(this->name + "[" + std::to_string(size) + "]", llvm::ArrayType::get(ref, size), this);
+        auto ref = base->get_ref();
+        return new Type(base->name + "[" + std::to_string(size) + "]", llvm::ArrayType::get(ref, size), base);
     }
 
-    Type *constant() const
+    static Type *constant(Type *origin)
     {
-        auto type = this->copy();
+        auto type = Type::copy(origin);
+        type->name = "const " + origin->name;
         type->is_constant = true;
 
         return type;
     }
 
-    Type *copy() const
+    static Type *copy(Type *origin)
     {
-        return new Type(*this);
+        auto type = new Type(*origin);
+        type->origin = origin;
+
+        return type;
     }
 
     llvm::Constant *default_value()
@@ -132,18 +149,18 @@ public:
         return this->ref->getScalarSizeInBits() / 8;
     }
 
-    Type *get_base(const bool &root = true)
+    static Type *get_base(Type *type, const bool &root = true)
     {
-        if (this->base == nullptr)
+        if (type->base == nullptr)
         {
-            return this;
+            return Type::get_origin(type);
         }
         else if (!root)
         {
-            return this->base;
+            return Type::get_origin(Type::get_origin(type)->base);
         }
 
-        return this->base->get_base();
+        return Type::get_base(type->base);
     }
 
     inline bool is_void() const
@@ -288,6 +305,11 @@ public:
 
     static bool equals(Type *left, Type *right)
     {
+        if (left->is_constant != right->is_constant)
+        {
+            return false;
+        }
+
         if (left->is_reference)
         {
             return equals(left->base, right);
@@ -433,13 +455,24 @@ public:
         }
     }
 
-    inline size_t compatibility(Type *right)
-    {
-        return Type::compatibility(this, right);
-    }
-
     static size_t compatibility(Type *left, Type *right)
     {
+        if (right->is_reference && !right->is_constant)
+        {
+            if (!left->is_reference)
+            {
+                return NOT_COMPATIBLE;
+            }
+
+            auto behind = Type::behind_reference(right);
+            if (behind->is_pointer() && behind->base->is_void())
+            {
+                return KIND_OF_COMPATIBLE;
+            }
+
+            return (Type::compatibility(left, right->base) == 0UL) ? 0UL : NOT_COMPATIBLE;
+        }
+
         if (left->is_reference)
         {
             return compatibility(left->base, right);
@@ -455,6 +488,11 @@ public:
             if (!right->is_pointer() && !right->is_array())
             {
                 return NOT_COMPATIBLE;
+            }
+
+            if (right->base->is_void())
+            {
+                return KIND_OF_COMPATIBLE;
             }
 
             return Type::compatibility(left->base, right->base);
@@ -487,7 +525,15 @@ public:
             }
         }
 
-        return Type::equals(left->ref, right->ref) ? 0UL : NOT_COMPATIBLE;
+        if (left->is_constant) {
+            return Type::compatibility(left->origin, right);
+        }
+
+        if (right->is_constant) {
+            return Type::compatibility(left, right->origin);
+        }
+
+        return Type::equals(left, right) ? 0UL : NOT_COMPATIBLE;
     }
 };
 } // namespace San
