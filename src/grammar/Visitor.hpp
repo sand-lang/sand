@@ -686,6 +686,8 @@ public:
                 if (variable->can_be_taken && variable->type->equals(type))
                 {
                     variable->get_ref()->setName(name);
+                    variable->is_temporary = false;
+
                     scope->add_name(name, variable);
 
                     return variable;

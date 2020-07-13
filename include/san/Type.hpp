@@ -525,11 +525,13 @@ public:
             }
         }
 
-        if (left->is_constant) {
+        if (left->is_constant)
+        {
             return Type::compatibility(left->origin, right);
         }
 
-        if (right->is_constant) {
+        if (right->is_constant)
+        {
             return Type::compatibility(left, right->origin);
         }
 
