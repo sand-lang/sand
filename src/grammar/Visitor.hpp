@@ -2494,11 +2494,6 @@ public:
         auto scope = this->scopes.top();
         auto expr = this->valueFromExpression(context->expression());
 
-        if (expr->is_alloca)
-        {
-            expr = expr->load_reference(scope->builder());
-        }
-
         if (context->Arrow())
         {
             if (!expr->type->is_pointer())
@@ -2507,7 +2502,12 @@ public:
             }
 
             auto index = 0UL;
-            expr = expr->load(scope->builder())->gep(index, scope->builder());
+            // expr = expr->load(scope->builder())->gep(index, scope->builder());
+            expr = expr->gep(index, scope->builder());
+        }
+        else if (expr->is_alloca)
+        {
+            expr = expr->load_reference(scope->builder());
         }
 
         auto type = Type::get_origin(Type::behind_reference(expr->type));
