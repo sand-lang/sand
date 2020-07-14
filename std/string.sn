@@ -77,6 +77,16 @@ namespace std {
             };
         }
 
+        static fn new(value: i8) : string {
+            let ptr = std::memory::allocate<i8>(2);
+            ptr[0] = value;
+
+            return string {
+                ptr,
+                length = 1,
+            };
+        }
+
         static fn assign(ptr: i8*, length: u64) : string {
             return string {
                 ptr,
@@ -93,6 +103,28 @@ namespace std {
 
         fn [](i: u64) : i8& {
             return this->ptr[i];
+        }
+
+        fn +=(r: const std::string&) : std::string& {
+            let total = this->length + r.length;
+            let ptr = std::memory::allocate<i8>(total + 1);
+
+            std::memory::copy(this->ptr, ptr, this->length);
+            std::memory::copy(r.ptr, ptr + this->length, r.length);
+
+            std::memory::deallocate(this->ptr);
+            this->ptr = ptr;
+            this->length = total;
+
+            return this[0];
+        }
+
+        fn +=(r: const i8*) : std::string& {
+            return this[0] += std::string::assign(r);
+        }
+
+        fn +=(r: const i8&) : std::string& {
+            return this[0] += std::string::new(r);
         }
     }
 }
