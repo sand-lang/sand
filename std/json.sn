@@ -1,0 +1,255 @@
+import "./map"
+import "./vec"
+import "./string"
+import "./range"
+
+enum JsonValueType {
+    Number,
+    String,
+    Array,
+    Object,
+    Boolean,
+    Null,
+}
+
+union JsonValueT<Node> {
+    map: std::Map<std::string, Node>;
+    array: std::Vec<Node>;
+    str: std::string;
+    int: i64;
+}
+
+class JsonNode {
+    type: JsonValueType;
+    value: JsonValueT<JsonNode>;
+
+    static fn new_object() : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.map = std::Map<std::string, JsonNode>::new();
+
+        return JsonNode {
+            type = JsonValueType::Object,
+            value,
+        };
+    }
+
+    static fn new_array() : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.array = std::Vec<JsonNode>::new();
+
+        return JsonNode {
+            type = JsonValueType::Array,
+            value,
+        };
+    }
+
+    static fn new_string(str: const std::string&) : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.str = str;
+
+        return JsonNode {
+            type = JsonValueType::String,
+            value,
+        };
+    }
+
+    static fn new_string(str: const i8*) : JsonNode {
+        return new_string(std::string::new(str));
+    }
+
+    static fn new_int(int: const i64&) : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.int = int;
+
+        return JsonNode {
+            type = JsonValueType::Number,
+            value,
+        };
+    }
+
+    static fn new_boolean(boolean: const bool&) : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.int = boolean;
+
+        return JsonNode {
+            type = JsonValueType::Boolean,
+            value,
+        };
+    }
+
+    static fn new_null() : JsonNode {
+        let value: JsonValueT<JsonNode>;
+        value.int = 0;
+
+        return JsonNode {
+            type = JsonValueType::Null,
+            value,
+        };
+    }
+
+    // JsonNode insertion in map
+    fn insert(key: const std::string&, value: const JsonNode&) : JsonNode& {
+        this->value.map.insert(key, value);
+        return this[0];
+    }
+
+    fn insert(key: const i8*, value: const JsonNode&) : JsonNode& {
+        this->value.map.insert(std::string::new(key), value);
+        return this[0];
+    }
+
+    // std::string insertion in map
+    fn insert(key: const std::string&, value: const std::string&) : JsonNode& {
+        this->insert(key, JsonNode::new_string(value));
+        return this[0];
+    }
+
+    fn insert(key: const i8*, value: const std::string&) : JsonNode& {
+        this->insert(key, JsonNode::new_string(value));
+        return this[0];
+    }
+
+    // i8* insertion in map
+    fn insert(key: const std::string&, value: const i8*) : JsonNode& {
+        this->insert(key, JsonNode::new_string(value));
+        return this[0];
+    }
+
+    fn insert(key: const i8*, value: const i8*) : JsonNode& {
+        this->insert(key, JsonNode::new_string(value));
+        return this[0];
+    }
+
+    // i64 insertion in map
+    fn insert(key: const std::string&, value: const i64&) : JsonNode& {
+        this->insert(key, JsonNode::new_int(value));
+        return this[0];
+    }
+
+    fn insert(key: const i8*, value: const i64&) : JsonNode& {
+        this->insert(key, JsonNode::new_int(value));
+        return this[0];
+    }
+
+    // JsonNode insertion in vector
+    fn insert(value: const JsonNode&) : JsonNode& {
+        this->value.array.push(value);
+        return this[0];
+    }
+
+    // std::string insertion in vector
+    fn insert(value: const std::string&) : JsonNode& {
+        this->insert(JsonNode::new_string(value));
+        return this[0];
+    }
+
+    // i8* insertion in vector
+    fn insert(value: const i8*) : JsonNode& {
+        this->insert(JsonNode::new_string(value));
+        return this[0];
+    }
+
+    // i64 insertion in vector
+    fn insert(value: const i64&) : JsonNode& {
+        this->insert(JsonNode::new_int(value));
+        return this[0];
+    }
+
+    fn get(key: const std::string&) : JsonNode& {
+        return this->value.map[key];
+    }
+
+    fn get(key: const i8*) : JsonNode& {
+        return this->value.map[std::string::assign(key)];
+    }
+
+    fn get(key: const i64&) : JsonNode& {
+        return this->value.array[key];
+    }
+
+    fn [](key: const std::string&) : JsonNode& {
+        return this->get(key);
+    }
+
+    fn [](key: const i8*) : JsonNode& {
+        return this->get(key);
+    }
+
+    fn [](key: const i64&) : JsonNode& {
+        return this->get(key);
+    }
+
+    fn get_int(key: const std::string&) : i64 {
+        return this->get(key).value.int;
+    }
+
+    fn get_int(key: const i8*) : i64 {
+        return this->get(std::string::assign(key)).value.int;
+    }
+
+    fn get_int(key: const i64&) : i64& {
+        return this->get(key).value.int;
+    }
+
+    fn get_string(key: const std::string&) : std::string& {
+        return this->get(key).value.str;
+    }
+
+    fn get_string(key: const i8*) : std::string& {
+        return this->get(std::string::assign(key)).value.str;
+    }
+
+    fn get_string(key: const i64&) : std::string& {
+        return this->get(key).value.str;
+    }
+
+    fn stringify() : std::string {
+        let str = std::string::new("");
+
+        if this->type == JsonValueType::Object {
+            str += "{";
+
+            let node = this->value.map.list.first;
+
+            while node != null {
+                str += "\"" + node->value.key.replace('"', std::string::assign("\\\"")) + "\":";
+                str += node->value.value.stringify();
+
+                if node->next != null {
+                    str += ",";
+                }
+
+                node = node->next;
+            }
+
+            str += "}";
+        } else if this->type == JsonValueType::Array {
+            str += "[";
+
+            let vector = this->value.array;
+            for i in std::range<u64>::new(vector.length) {
+                str += vector[i].stringify();
+
+                if (i + 1) < vector.length {
+                    str += ",";
+                }
+            }
+
+            str += "]";
+        } else if this->type == JsonValueType::Number {
+            str += std::to_string(this->value.int);
+        } else if this->type == JsonValueType::String {
+            str += "\"" + this->value.str.replace('"', std::string::assign("\\\"")) + "\"";
+        } else if this->type == JsonValueType::Boolean {
+            if this->value.int == 0 {
+                str += "false";
+            } else {
+                str += "true";
+            }
+        } else if this->type == JsonValueType::Boolean {
+            str += "null";
+        }
+
+        return str;
+    }
+}
