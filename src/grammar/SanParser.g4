@@ -188,7 +188,8 @@ forStatement: 'for' VariableName 'in' expression statement;
 
 breakStatement: 'break';
 
-unionStatement: attributes 'union' VariableName unionBody;
+unionStatement:
+	attributes 'union' VariableName classGenerics? unionBody;
 
 unionBody: '{' unionProperty* '}';
 

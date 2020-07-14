@@ -46,10 +46,10 @@ public:
         return this->main_type->size(module);
     }
 
-    static UnionType *create(std::shared_ptr<Scope> scope, const std::string &name = "")
+    static UnionType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Type *> &generics = {})
     {
         auto ref = llvm::StructType::create(scope->context(), name + ".union");
-        return new UnionType(name, ref, scope);
+        return new UnionType(name, ref, scope, generics);
     }
 
     llvm::StructType *get_ref() const override

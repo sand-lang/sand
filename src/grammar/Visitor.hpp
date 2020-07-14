@@ -25,6 +25,7 @@
 #include <san/Types/GenericAlias.hpp>
 #include <san/Types/GenericClassType.hpp>
 #include <san/Types/GenericFunctionType.hpp>
+#include <san/Types/GenericUnionType.hpp>
 #include <san/Types/UnionType.hpp>
 #include <san/Values/Function.hpp>
 #include <san/Values/GlobalConstant.hpp>
@@ -1045,16 +1046,28 @@ public:
         auto name = context->VariableName()->getText();
         auto union_scope = Scope::create(scope);
 
-        auto type = Types::UnionType::create(union_scope, name);
-        scope->add_name(name, type);
+        if (auto generics_context = context->classGenerics())
+        {
+            auto generics = this->visitClassGenerics(generics_context);
+            auto type = new Types::GenericUnionType(union_scope, name, generics, context);
 
-        this->scopes.push(union_scope);
+            scope->add_name(name, type);
 
-        this->visitUnionBody(context->unionBody(), type);
+            return type;
+        }
+        else
+        {
+            auto type = Types::UnionType::create(union_scope, name);
+            scope->add_name(name, type);
 
-        this->scopes.pop();
+            this->scopes.push(union_scope);
 
-        return type;
+            this->visitUnionBody(context->unionBody(), type);
+
+            this->scopes.pop();
+
+            return type;
+        }
     }
 
     Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type)
@@ -1233,6 +1246,36 @@ public:
         }
 
         this->visitClassBody(generic->context->classBody(), type->parents, type);
+
+        this->scopes.pop();
+
+        position.load(this->scopes.top()->builder());
+
+        return type;
+    }
+
+    Types::UnionType *generateGenericUnionType(Types::GenericUnionType *generic, const std::vector<Type *> &generics)
+    {
+        Position position;
+
+        if (this->scopes.top()->in_function())
+        {
+            position = Position::save(this->scopes.top()->builder());
+        }
+
+        auto scope = Scope::create(generic->scope);
+        this->scopes.push(scope);
+
+        auto type = Types::UnionType::create(scope, generic->name, generics);
+        generic->children.push_back(type);
+
+        for (size_t i = 0; i < generic->generics.size(); i++)
+        {
+            auto &name = generic->generics[i]->name;
+            scope->add_name(name, generics[i]);
+        }
+
+        this->visitUnionBody(generic->context->unionBody(), type);
 
         this->scopes.pop();
 
@@ -2254,25 +2297,28 @@ public:
     {
         auto scope = this->scopes.top();
 
-        if (args[0]->is_alloca)
+        auto type = Type::get_origin(Type::behind_reference(args[0]->type));
+
+        if (auto class_type = dynamic_cast<Types::ClassType *>(type))
         {
-            auto type = Type::get_origin(Type::behind_reference(args[0]->type));
+            auto names = class_type->get_names(name, args[0], scope->builder(), scope->module());
 
-            if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(type)))
+            auto method_args = std::vector<Value *>(args.begin() + 1, args.end());
+
+            if (auto match = names->get_function(method_args))
             {
-                auto names = class_type->get_names(name, args[0], scope->builder(), scope->module());
-
-                auto method_args = std::vector<Value *>(args.begin() + 1, args.end());
-
-                if (auto match = names->get_function(method_args))
+                if (auto value = dynamic_cast<Value *>(match))
                 {
-                    if (auto value = dynamic_cast<Value *>(match))
-                    {
-                        value->calling_variable = args[0]->load_reference(scope->builder());
-                        args = method_args;
+                    value->calling_variable = args[0];
 
-                        return value;
+                    if (value->calling_variable->is_alloca)
+                    {
+                        value->calling_variable = value->calling_variable->load_reference(scope->builder());
                     }
+
+                    args = method_args;
+
+                    return value;
                 }
             }
         }
@@ -2713,6 +2759,20 @@ public:
                 else
                 {
                     auto generated = this->generateGenericClassType(generic_class, generics);
+                    array->add(generated);
+                }
+            }
+            else if (auto generic_union = dynamic_cast<Types::GenericUnionType *>(name))
+            {
+                auto generics = this->visitClassTypeNameGenerics(context);
+
+                if (auto type = generic_union->get_child(generics))
+                {
+                    array->add(type);
+                }
+                else
+                {
+                    auto generated = this->generateGenericUnionType(generic_union, generics);
                     array->add(generated);
                 }
             }

@@ -946,6 +946,7 @@ public:
     antlr4::tree::TerminalNode *Union();
     antlr4::tree::TerminalNode *VariableName();
     UnionBodyContext *unionBody();
+    ClassGenericsContext *classGenerics();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
