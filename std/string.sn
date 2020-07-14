@@ -105,6 +105,20 @@ namespace std {
             return this->ptr[i];
         }
 
+        fn replace(niddle: const i8&, by: const string&) : string {
+            let str = std::string::new();
+
+            for i in std::range<u64>::new(this->length) {
+                if this->ptr[i] == niddle {
+                    str += by;
+                } else {
+                    str += this->ptr[i];
+                }
+            }
+
+            return str;
+        }
+
         fn +=(r: const std::string&) : std::string& {
             let total = this->length + r.length;
             let ptr = std::memory::allocate<i8>(total + 1);
