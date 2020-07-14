@@ -85,6 +85,20 @@ namespace std {
             return acc;
         }
 
+        fn filter(cb: fn (T&): bool) : Vec<T> {
+            let filtered = Vec<T>::new();
+
+            for i in std::range<u64>::new(this->length) {
+                let value: T& = this->get(i);
+
+                if cb(value) {
+                    filtered.push(value);
+                }
+            }
+
+            return filtered;
+        }
+
         fn map<U>(cb: fn (T, u64, const Vec<T> &) : U) : Vec<U> {
             let mapped = Vec<U>::new(this->length);
 
