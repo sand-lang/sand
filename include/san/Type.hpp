@@ -5,6 +5,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/raw_ostream.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <limits>
@@ -146,7 +147,7 @@ public:
             return this->base->size(module) * this->ref->getArrayNumElements();
         }
 
-        return this->ref->getScalarSizeInBits() / 8;
+        return std::max(this->ref->getScalarSizeInBits() / 8, 1U);
     }
 
     static Type *get_base(Type *type, const bool &root = true)
