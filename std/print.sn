@@ -31,6 +31,14 @@ namespace std {
         print(std::to_string(n));
     }
 
+    fn print(b: bool) {
+        if b {
+            print("true");
+        } else {
+            print("false");
+        }
+    }
+
     fn print(str: const std::string&) {
         print(str.ptr);
     }
