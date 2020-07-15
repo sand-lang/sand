@@ -786,7 +786,7 @@ public:
             if (!value->type->is_boolean())
             {
                 value = value->load_alloca_and_reference(scope->builder());
-                value = value->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
             }
 
             if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
@@ -797,7 +797,7 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = value->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
             }
 
             if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
@@ -859,7 +859,7 @@ public:
         if (!value->type->is_boolean())
         {
             value = value->load_alloca_and_reference(scope->builder());
-            value = value->not_equal(scope->builder(), Values::Constant::null_value(value->type));
+            value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
         }
 
         while_body->conditional_br(scope->builder(), value, while_end);
@@ -925,9 +925,9 @@ public:
                     scope->get_function()->insert(for_cond);
                     for_cond->insert_point(scope->builder());
 
-                    auto end_value = end->call(scope->builder(), scope->module())->load_alloca_and_reference(scope->builder());
+                    auto end_value = end->call(scope->builder(), scope->module());
+                    auto condition = Value::not_equal(scope->builder(), iterator, end_value);
 
-                    auto condition = iterator->load_alloca_and_reference(scope->builder())->not_equal(scope->builder(), end_value);
                     for_body->conditional_br(scope->builder(), condition, for_end);
 
                     scope->get_function()->insert(for_body);
@@ -1893,8 +1893,8 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        auto lvalue = lexpr->load_alloca_and_reference(scope->builder());
-        auto rvalue = rexpr->cast(lvalue->type, scope->builder());
+        auto lvalue = lexpr;
+        auto rvalue = rexpr;
 
         if (opt->Mul())
         {
@@ -1950,8 +1950,8 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        auto lvalue = lexpr->load_alloca_and_reference(scope->builder());
-        auto rvalue = rexpr->cast(lvalue->type, scope->builder());
+        auto lvalue = lexpr;
+        auto rvalue = rexpr;
 
         if (opt->Xor())
         {
@@ -2007,8 +2007,8 @@ public:
         auto lexpr = this->valueFromExpression(lexpr_context);
         auto rexpr = this->valueFromExpression(rexpr_context);
 
-        auto lvalue = lexpr->load_alloca_and_reference(scope->builder());
-        auto rvalue = rexpr->cast(lvalue->type, scope->builder());
+        auto lvalue = lexpr;
+        auto rvalue = rexpr;
 
         if (opt->EqualTo())
         {
@@ -2018,15 +2018,9 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (lvalue->type->is_integer() || lvalue->type->is_pointer())
+            if (auto value = Value::equal(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateICmpEQ(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("eq", Type::i1(scope->context()), value, false);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFCmpOEQ(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("eq", Type::i1(scope->context()), value, false);
+                return value;
             }
         }
         else if (opt->NotEqualTo())
@@ -2037,7 +2031,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = lvalue->not_equal(scope->builder(), rvalue))
+            if (auto value = Value::not_equal(scope->builder(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2050,15 +2044,9 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (lvalue->type->is_integer() || lvalue->type->is_pointer())
+            if (auto value = Value::less_than(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateICmpSLT(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("lt", Type::i1(scope->context()), value, false);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFCmpOLT(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("lt", Type::i1(scope->context()), value, false);
+                return value;
             }
         }
         else if (opt->LessThanOrEqualTo())
@@ -2069,15 +2057,9 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (lvalue->type->is_integer() || lvalue->type->is_pointer())
+            if (auto value = Value::less_than_or_equal(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateICmpSLE(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("lte", Type::i1(scope->context()), value, false);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFCmpOLE(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("lte", Type::i1(scope->context()), value, false);
+                return value;
             }
         }
         else if (opt->GreaterThan())
@@ -2088,15 +2070,9 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (lvalue->type->is_integer() || lvalue->type->is_pointer())
+            if (auto value = Value::greater_than(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateICmpSGT(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("gt", Type::i1(scope->context()), value, false);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFCmpOGT(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("gt", Type::i1(scope->context()), value, false);
+                return value;
             }
         }
         else if (opt->GreaterThanOrEqualTo())
@@ -2107,15 +2083,9 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (lvalue->type->is_integer() || lvalue->type->is_pointer())
+            if (auto value = Value::greater_than_or_equal(scope->builder(), lvalue, rvalue))
             {
-                auto value = this->env.builder.CreateICmpSGE(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("gte", Type::i1(scope->context()), value, false);
-            }
-            else if (lvalue->type->is_floating_point())
-            {
-                auto value = this->env.builder.CreateFCmpOGE(lvalue->get_ref(), rvalue->get_ref());
-                return new Value("gte", Type::i1(scope->context()), value, false);
+                return value;
             }
         }
 
@@ -2141,7 +2111,7 @@ public:
             auto variable = Values::Variable::create(lexpr->name, lexpr->type, scope->builder());
             variable->store(lexpr, scope->builder(), scope->module());
 
-            lexpr = variable->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(lexpr->type));
+            lexpr = Value::not_equal(scope->builder(), variable->load(scope->builder()), Values::Constant::null_value(lexpr->type));
         }
 
         if (opt->ConditionalOr())
@@ -2174,7 +2144,7 @@ public:
             auto variable = Values::Variable::create(rexpr->name, rexpr->type, scope->builder());
             variable->store(rexpr, scope->builder(), scope->module());
 
-            rexpr = variable->load(scope->builder())->not_equal(scope->builder(), Values::Constant::null_value(rexpr->type));
+            rexpr = Value::not_equal(scope->builder(), variable, Values::Constant::null_value(rexpr->type));
         }
 
         cond_end->br(scope->builder());
@@ -2460,7 +2430,7 @@ public:
             else if (type->is_integer() || type->is_floating_point() || type->is_pointer())
             {
                 expression->load_alloca_and_reference(scope->builder());
-                expression = expression->not_equal(scope->builder(), Values::Constant::null_value(expression->type));
+                expression = Value::not_equal(scope->builder(), expression, Values::Constant::null_value(expression->type));
             }
             else
             {
@@ -2530,7 +2500,7 @@ public:
 
         if (context->Arrow())
         {
-            if (!expr->type->is_pointer())
+            if (!Type::behind_reference(expr->type)->is_pointer())
             {
                 throw NotAPointerException(this->files.top(), context->expression()->getStart());
             }

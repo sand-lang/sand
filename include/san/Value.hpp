@@ -282,21 +282,23 @@ public:
 
                 if (lbits != rbits)
                 {
-                    bool is_signed = type->is_signed;
-
-                    if (is_signed)
+                    if (dest->is_boolean())
                     {
-                        ref = builder.CreateSExtOrTrunc(ref, dest->ref);
+                        ref = builder.CreateICmpNE(ref, llvm::ConstantInt::get(ref->getType(), 0));
                     }
                     else
                     {
-                        ref = builder.CreateZExtOrTrunc(ref, dest->ref);
-                    }
-                }
+                        bool is_signed = type->is_signed;
 
-                if (dest->is_boolean())
-                {
-                    ref = builder.CreateICmpNE(ref, llvm::ConstantInt::get(ref->getType(), 0));
+                        if (is_signed)
+                        {
+                            ref = builder.CreateSExtOrTrunc(ref, dest->ref);
+                        }
+                        else
+                        {
+                            ref = builder.CreateZExtOrTrunc(ref, dest->ref);
+                        }
+                    }
                 }
             }
             else if (dest->is_floating_point())
@@ -368,7 +370,7 @@ public:
             {
                 ref = builder.CreatePtrToInt(ref, dest->ref);
             }
-            else if (dest->is_pointer() && !dest->equals(type))
+            else if (dest->is_pointer() && !type->equals(dest))
             {
                 ref = builder.CreateBitCast(ref, dest->ref);
             }
@@ -402,9 +404,6 @@ public:
         }
         else if (ltype->is_pointer() && rtype->is_integer())
         {
-            lvalue = lvalue->load_alloca_and_reference(builder);
-            rvalue = rvalue->load_alloca_and_reference(builder);
-
             auto value = lvalue->gep(rvalue, builder);
             value->is_alloca = false;
             value->type = ltype;
@@ -417,7 +416,7 @@ public:
 
     Value *add(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
     {
-        if (auto result = Value::add(builder, this->load_alloca_and_reference(builder), rvalue->load_alloca_and_reference(builder)))
+        if (auto result = Value::add(builder, this, rvalue))
         {
             this->store(result, builder, module);
             return this;
@@ -474,10 +473,9 @@ public:
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (lvalue->type->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateNSWMul(lvalue->get_ref(), rvalue->get_ref());
@@ -485,6 +483,7 @@ public:
         }
         else if (lvalue->type->is_floating_point())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateFMul(lvalue->get_ref(), rvalue->get_ref());
@@ -510,10 +509,9 @@ public:
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (lvalue->type->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateSDiv(lvalue->get_ref(), rvalue->get_ref());
@@ -521,6 +519,7 @@ public:
         }
         else if (lvalue->type->is_floating_point())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateFDiv(lvalue->get_ref(), rvalue->get_ref());
@@ -546,10 +545,9 @@ public:
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (lvalue->type->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateSRem(lvalue->get_ref(), rvalue->get_ref());
@@ -557,6 +555,7 @@ public:
         }
         else if (lvalue->type->is_floating_point())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateFRem(lvalue->get_ref(), rvalue->get_ref());
@@ -577,33 +576,14 @@ public:
         return nullptr;
     }
 
-    Value *not_equal(llvm::IRBuilder<> &builder, Value *rvalue)
-    {
-        auto type = Type::i1(builder.getContext());
-
-        if (this->type->is_integer() || this->type->is_pointer())
-        {
-            auto value = builder.CreateICmpNE(this->get_ref(), rvalue->get_ref());
-            return new Value("ne", type, value);
-        }
-        else if (this->type->is_floating_point())
-        {
-            auto value = builder.CreateFCmpUNE(this->get_ref(), rvalue->get_ref());
-            return new Value("ne", type, value);
-        }
-
-        return nullptr;
-    }
-
     static Value *boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (ltype->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateXor(lvalue->get_ref(), rvalue->get_ref());
@@ -629,10 +609,9 @@ public:
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (ltype->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateOr(lvalue->get_ref(), rvalue->get_ref());
@@ -658,10 +637,9 @@ public:
         auto ltype = Type::behind_reference(lvalue->type);
         auto rtype = Type::behind_reference(rvalue->type);
 
-        lvalue = lvalue->load_alloca_and_reference(builder);
-
         if (ltype->is_integer())
         {
+            lvalue = lvalue->load_alloca_and_reference(builder);
             rvalue = rvalue->cast(lvalue->type, builder);
 
             auto value = builder.CreateAnd(lvalue->get_ref(), rvalue->get_ref());
@@ -677,6 +655,168 @@ public:
         {
             this->store(result, builder, module);
             return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpEQ(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("eq", type, value, false);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpOEQ(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("eq", type, value, false);
+        }
+
+        return nullptr;
+    }
+
+    static Value *not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpNE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("ne", type, value);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpUNE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("ne", type, value);
+        }
+
+        return nullptr;
+    }
+
+    static Value *less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpSLT(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("lt", type, value);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpOLT(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("lt", type, value);
+        }
+
+        return nullptr;
+    }
+
+    static Value *less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpSLE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("lte", type, value);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpOLE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("lte", type, value);
+        }
+
+        return nullptr;
+    }
+
+    static Value *greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpSGT(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("gt", type, value);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpOGT(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("gt", type, value);
+        }
+
+        return nullptr;
+    }
+
+    static Value *greater_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        auto type = Type::i1(builder.getContext());
+
+        if (ltype->is_integer() || ltype->is_pointer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateICmpSGE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("gte", type, value);
+        }
+        else if (ltype->is_floating_point())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateFCmpOGE(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("gte", type, value);
         }
 
         return nullptr;
