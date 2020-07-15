@@ -148,6 +148,15 @@ public:
 
             return new Constant(this->name, dest, ref);
         }
+        else if (type->is_array())
+        {
+            if (dest->is_pointer())
+            {
+                auto zero = llvm::ConstantInt::get(Type::llvm_i64(builder.getContext()), 0);
+                ref = llvm::cast<llvm::Constant>(builder.CreateConstInBoundsGEP2_64(ref, 0, 0));
+                return new Constant(this->name, dest, ref);
+            }
+        }
 
         return this;
     }
