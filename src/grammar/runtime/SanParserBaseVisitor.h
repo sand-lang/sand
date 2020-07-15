@@ -279,6 +279,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitClassBodyElement(SanParser::ClassBodyElementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *ctx) override {
     return visitChildren(ctx);
   }

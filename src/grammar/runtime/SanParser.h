@@ -47,12 +47,13 @@ public:
     RuleUnionStatement = 36, RuleUnionBody = 37, RuleUnionProperty = 38, 
     RuleEnumStatement = 39, RuleEnumBody = 40, RuleEnumProperty = 41, RuleSpecialClassStatement = 42, 
     RuleClassStatement = 43, RuleClassGenerics = 44, RuleClassExtends = 45, 
-    RuleClassBody = 46, RuleClassProperty = 47, RuleClassMethod = 48, RuleClassInstantiationProperties = 49, 
-    RuleClassInstantiationProperty = 50, RuleType = 51, RuleFunctionType = 52, 
-    RuleClassTypeName = 53, RuleClassTypeNameGenerics = 54, RuleNamespaceStatement = 55, 
-    RuleImportStatement = 56, RuleAttributes = 57, RuleAttribute = 58, RuleAlias = 59, 
-    RuleAssemblyStatement = 60, RuleAssemblyTemplate = 61, RuleAssemblyOutput = 62, 
-    RuleAssemblyInput = 63, RuleAssemblyClobber = 64, RuleEos = 65
+    RuleClassBody = 46, RuleClassBodyElement = 47, RuleClassProperty = 48, 
+    RuleClassMethod = 49, RuleClassInstantiationProperties = 50, RuleClassInstantiationProperty = 51, 
+    RuleType = 52, RuleFunctionType = 53, RuleClassTypeName = 54, RuleClassTypeNameGenerics = 55, 
+    RuleNamespaceStatement = 56, RuleImportStatement = 57, RuleAttributes = 58, 
+    RuleAttribute = 59, RuleAlias = 60, RuleAssemblyStatement = 61, RuleAssemblyTemplate = 62, 
+    RuleAssemblyOutput = 63, RuleAssemblyInput = 64, RuleAssemblyClobber = 65, 
+    RuleEos = 66
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -112,6 +113,7 @@ public:
   class ClassGenericsContext;
   class ClassExtendsContext;
   class ClassBodyContext;
+  class ClassBodyElementContext;
   class ClassPropertyContext;
   class ClassMethodContext;
   class ClassInstantiationPropertiesContext;
@@ -1115,10 +1117,8 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OpeningBrace();
     antlr4::tree::TerminalNode *ClosingBrace();
-    std::vector<ClassPropertyContext *> classProperty();
-    ClassPropertyContext* classProperty(size_t i);
-    std::vector<ClassMethodContext *> classMethod();
-    ClassMethodContext* classMethod(size_t i);
+    std::vector<ClassBodyElementContext *> classBodyElement();
+    ClassBodyElementContext* classBodyElement(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1126,6 +1126,23 @@ public:
   };
 
   ClassBodyContext* classBody();
+
+  class  ClassBodyElementContext : public antlr4::ParserRuleContext {
+  public:
+    ClassBodyElementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ClassPropertyContext *classProperty();
+    ClassMethodContext *classMethod();
+    ClassStatementContext *classStatement();
+    UnionStatementContext *unionStatement();
+    AliasContext *alias();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassBodyElementContext* classBodyElement();
 
   class  ClassPropertyContext : public antlr4::ParserRuleContext {
   public:

@@ -47,6 +47,7 @@
 #include <san/Exceptions/NotAClassOrNamespaceException.hpp>
 #include <san/Exceptions/NotAGenericException.hpp>
 #include <san/Exceptions/NotAPointerException.hpp>
+#include <san/Exceptions/OpaqueTypeNotAllowedException.hpp>
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/ReturnOutsideOfFunctionException.hpp>
 #include <san/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
@@ -1326,7 +1327,30 @@ public:
         }
 
         this->generating_properties_stack++;
-        for (auto &class_property : context->classProperty())
+        for (auto &class_body_element_context : context->classBodyElement())
+        {
+            this->visitClassBodyElement(class_body_element_context, type, properties_types);
+
+            if (auto class_method_context = class_body_element_context->classMethod())
+            {
+                type->pending_methods.push_back(class_method_context);
+            }
+        }
+
+        struct_type->setBody(properties_types, true);
+        this->generating_properties_stack--;
+
+        if (generate_methods)
+        {
+            this->generatePendingMethods(type);
+        }
+
+        return type;
+    }
+
+    void visitClassBodyElement(SanParser::ClassBodyElementContext *context, Types::ClassType *type, std::vector<llvm::Type *> &properties_types)
+    {
+        if (auto class_property = context->classProperty())
         {
             auto property = this->visitClassProperty(class_property);
 
@@ -1341,19 +1365,21 @@ public:
                 type->static_scope->add_name(property->name, variable);
             }
         }
-
-        struct_type->setBody(properties_types, true);
-        this->generating_properties_stack--;
-
-        auto class_methods = context->classMethod();
-        type->pending_methods = class_methods;
-
-        if (generate_methods)
+        else if (auto class_statement = context->classStatement())
         {
-            this->generatePendingMethods(type);
+            auto class_type = this->visitClassStatement(class_statement);
+            type->static_scope->add_name(class_type->name, class_type);
         }
-
-        return type;
+        else if (auto union_statement = context->unionStatement())
+        {
+            auto union_type = this->visitUnionStatement(union_statement);
+            type->static_scope->add_name(union_type->name, union_type);
+        }
+        else if (auto alias_context = context->alias())
+        {
+            auto alias = this->visitAlias(alias_context);
+            type->static_scope->add_name(alias->name, alias);
+        }
     }
 
     void generatePendingMethods(Types::ClassType *type)
@@ -1413,6 +1439,14 @@ public:
                 auto class_method = pending_methods[i];
 
                 this->generateClassMethodBody(class_method, method);
+            }
+        }
+
+        for (auto &[_, name] : type->static_scope->names)
+        {
+            if (auto subtype = dynamic_cast<Type *>(name))
+            {
+                this->generatePropertyPendingMethods(subtype);
             }
         }
     }
@@ -2994,33 +3028,40 @@ public:
         return value;
     }
 
-    Type *visitType(SanParser::TypeContext *context)
+    Type *visitType(SanParser::TypeContext *context, const bool &check_opaque = true)
     {
         auto scope = this->scopes.top();
 
+        Type *type = nullptr;
+
         if (auto child = dynamic_cast<SanParser::TypeArrayContext *>(context))
         {
-            return this->visitTypeArray(child);
+            type = this->visitTypeArray(child);
         }
         else if (auto child = dynamic_cast<SanParser::TypePointerContext *>(context))
         {
-            return this->visitTypePointer(child);
+            type = this->visitTypePointer(child);
         }
         else if (auto child = dynamic_cast<SanParser::TypeReferenceContext *>(context))
         {
-            return this->visitTypeReference(child);
+            type = this->visitTypeReference(child);
         }
         else if (auto child = dynamic_cast<SanParser::TypeNameContext *>(context))
         {
-            return this->visitTypeName(child);
+            type = this->visitTypeName(child);
         }
 
-        return nullptr;
+        if (check_opaque && type->is_opaque())
+        {
+            throw OpaqueTypeNotAllowedException(this->files.top(), context->getStart());
+        }
+
+        return type;
     }
 
     Type *visitTypeArray(SanParser::TypeArrayContext *context)
     {
-        auto type = this->visitType(context->type());
+        auto type = this->visitType(context->type(), false);
         type = Type::pointer(type);
 
         return type;
@@ -3028,7 +3069,7 @@ public:
 
     Type *visitTypePointer(SanParser::TypePointerContext *context)
     {
-        auto type = this->visitType(context->type());
+        auto type = this->visitType(context->type(), false);
         type = Type::pointer(type);
 
         if (context->Const())
@@ -3041,7 +3082,7 @@ public:
 
     Type *visitTypeReference(SanParser::TypeReferenceContext *context)
     {
-        auto type = this->visitType(context->type());
+        auto type = this->visitType(context->type(), false);
         type = Type::reference(type);
 
         if (context->Const())
@@ -3118,7 +3159,7 @@ public:
 
         for (auto &type_context : context->type())
         {
-            auto type = this->visitType(type_context);
+            auto type = this->visitType(type_context, false);
             types.push_back(type);
         }
 

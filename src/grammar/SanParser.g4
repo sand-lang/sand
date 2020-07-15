@@ -215,7 +215,14 @@ classGenerics: '<' VariableName (',' VariableName)* '>';
 
 classExtends: classTypeName (',' classTypeName)*;
 
-classBody: '{' (classProperty | classMethod)* '}';
+classBody: '{' classBodyElement* '}';
+
+classBodyElement:
+	classProperty
+	| classMethod
+	| classStatement
+	| unionStatement
+	| alias;
 
 classProperty:
 	Static? VariableName ':' type ('=' expression)? InstructionsSeparator;

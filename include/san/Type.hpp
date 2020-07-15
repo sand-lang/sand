@@ -218,6 +218,16 @@ public:
         return this->ref->isStructTy();
     }
 
+    inline bool is_opaque() const
+    {
+        if (this->is_struct())
+        {
+            return llvm::cast<llvm::StructType>(this->ref)->isOpaque();
+        }
+
+        return false;
+    }
+
     static Type *voidt(llvm::LLVMContext &context)
     {
         return new Type("void", Type::llvm_void(context));

@@ -151,6 +151,8 @@ public:
 
     virtual antlrcpp::Any visitClassBody(SanParser::ClassBodyContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassBodyElement(SanParser::ClassBodyElementContext *context) = 0;
+
     virtual antlrcpp::Any visitClassProperty(SanParser::ClassPropertyContext *context) = 0;
 
     virtual antlrcpp::Any visitClassMethod(SanParser::ClassMethodContext *context) = 0;
