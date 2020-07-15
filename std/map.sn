@@ -3,12 +3,15 @@ import "./linked_list"
 namespace std {
     class KeyValuePair<K, T> {
         key: K;
-        value: T;
+        value: T*;
 
-        static fn new(key: K, value: T) : KeyValuePair<K, T> {
+        static fn new(key: K, value: const T&) : KeyValuePair<K, T> {
+            let ptr = std::memory::allocate<T>(1);
+            ptr[0] = value;
+
             return KeyValuePair<K, T> {
                 key,
-                value,
+                value = ptr,
             };
         }
     }
@@ -36,7 +39,7 @@ namespace std {
 
             while node {
                 if node->value.key == key {
-                    return node->value.value;
+                    return node->value.value[0];
                 }
 
                 node = node->next;

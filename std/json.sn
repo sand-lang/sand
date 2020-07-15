@@ -12,19 +12,20 @@ enum JsonValueType {
     Null,
 }
 
-union JsonValueT<Node> {
-    map: std::Map<std::string, Node>;
-    array: std::Vec<Node>;
-    str: std::string;
-    int: i64;
-}
-
 class JsonNode {
     type: JsonValueType;
-    value: JsonValueT<JsonNode>;
+
+    union JsonValue {
+        map: std::Map<std::string, JsonNode>;
+        array: std::Vec<JsonNode>;
+        str: std::string;
+        int: i64;
+    }
+
+    value: JsonValue;
 
     static fn new_object() : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.map = std::Map<std::string, JsonNode>::new();
 
         return JsonNode {
@@ -34,7 +35,7 @@ class JsonNode {
     }
 
     static fn new_array() : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.array = std::Vec<JsonNode>::new();
 
         return JsonNode {
@@ -44,7 +45,7 @@ class JsonNode {
     }
 
     static fn new_string(str: const std::string&) : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.str = str;
 
         return JsonNode {
@@ -58,7 +59,7 @@ class JsonNode {
     }
 
     static fn new_int(int: const i64&) : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.int = int;
 
         return JsonNode {
@@ -68,17 +69,17 @@ class JsonNode {
     }
 
     static fn new_boolean(boolean: const bool&) : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.int = boolean;
 
         return JsonNode {
             type = JsonValueType::Boolean,
             value,
-        };
+};
     }
 
     static fn new_null() : JsonNode {
-        let value: JsonValueT<JsonNode>;
+        let value: JsonValue;
         value.int = 0;
 
         return JsonNode {
@@ -213,7 +214,7 @@ class JsonNode {
 
             while node != null {
                 str += "\"" + node->value.key.replace('"', std::string::assign("\\\"")) + "\":";
-                str += node->value.value.stringify();
+                str += node->value.value->stringify();
 
                 if node->next != null {
                     str += ",";
