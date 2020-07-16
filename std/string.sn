@@ -51,6 +51,19 @@ namespace std {
 
         return str;
     }
+
+    fn starts_with(str: const i8*, with: const i8*) : bool {
+        while str[0] != 0 && with[0] != 0 {
+            if str[0] != with[0] {
+                return false;
+            }
+
+            str += 1;
+            with += 1;
+        }
+
+        return with[0] == 0;
+    }
 }
 
 namespace std {
