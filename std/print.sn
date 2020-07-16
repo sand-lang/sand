@@ -31,6 +31,18 @@ namespace std {
         print(std::to_string(n));
     }
 
+    fn print(n: i32) {
+        print(std::to_string(n));
+    }
+
+    fn print(n: i16) {
+        print(std::to_string(n));
+    }
+
+    fn print(n: i8) {
+        print(std::to_string(n));
+    }
+
     fn print(b: bool) {
         if b {
             print("true");
