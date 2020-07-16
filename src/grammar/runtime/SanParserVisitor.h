@@ -45,6 +45,8 @@ public:
 
     virtual antlrcpp::Any visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitPointerExpression(SanParser::PointerExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitSizeofExpression(SanParser::SizeofExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitUnaryNegationExpression(SanParser::UnaryNegationExpressionContext *context) = 0;

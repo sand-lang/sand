@@ -1585,6 +1585,10 @@ public:
         {
             return this->visitSuffixUnaryNegationExpression(suffix_negation_expression_context);
         }
+        else if (const auto pointer_expression_context = dynamic_cast<SanParser::PointerExpressionContext *>(context))
+        {
+            return this->visitPointerExpression(pointer_expression_context);
+        }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
@@ -2454,6 +2458,26 @@ public:
         }
 
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+    }
+
+    Value *visitPointerExpression(SanParser::PointerExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto rvalue = this->valueFromExpression(context->expression());
+        auto type = rvalue->type;
+
+        if (!rvalue->is_alloca)
+        {
+            throw InvalidValueException(this->files.top(), context->expression()->getStart());
+        }
+
+        if (type->is_reference)
+        {
+            rvalue = rvalue->load_alloca(scope->builder());
+        }
+
+        return new Value(rvalue->name + ".ptr", type->is_reference ? rvalue->type : Type::pointer(rvalue->type), rvalue->get_ref());
     }
 
     Value *visitIndex(SanParser::IndexContext *context)

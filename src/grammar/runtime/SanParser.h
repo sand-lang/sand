@@ -314,6 +314,16 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  PointerExpressionContext : public ExpressionContext {
+  public:
+    PointerExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *BitwiseAnd();
+    ExpressionContext *expression();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  SizeofExpressionContext : public ExpressionContext {
   public:
     SizeofExpressionContext(ExpressionContext *ctx);

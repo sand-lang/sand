@@ -37,6 +37,7 @@ expression:
 	| '-' expression										# UnaryNegativeExpression
 	| '+' expression										# UnaryPositiveExpression
 	| '!' expression										# UnaryNegationExpression
+	| '&' expression										# PointerExpression
 	| expression '!'										# SuffixUnaryNegationExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression

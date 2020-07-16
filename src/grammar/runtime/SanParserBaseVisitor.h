@@ -67,6 +67,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitPointerExpression(SanParser::PointerExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitSizeofExpression(SanParser::SizeofExpressionContext *ctx) override {
     return visitChildren(ctx);
   }

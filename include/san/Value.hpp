@@ -146,6 +146,17 @@ public:
         return this;
     }
 
+    Value *load_alloca(llvm::IRBuilder<> &builder)
+    {
+        if (this->is_alloca)
+        {
+            auto ref = builder.CreateLoad(this->get_ref());
+            return new Value(this->name + ".load", this->type, ref);
+        }
+
+        return this;
+    }
+
     Value *load_alloca_and_reference(llvm::IRBuilder<> &builder)
     {
         auto value = this;
