@@ -2,7 +2,7 @@ import "./map"
 import "./vec"
 import "./string"
 import "./range"
-import "./print"
+import "./io"
 
 enum JsonValueType {
     Number,

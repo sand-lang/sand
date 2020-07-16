@@ -3,11 +3,14 @@ import "./string"
 
 #[target_os = "darwin"]
 namespace std {
-    extern fn printf(i8*, ...) : i32;
+    extern fn printf(const i8*, ...) : i32;
+    extern fn scanf(const i8*, ...) : i32;
 
     fn print(str: i8*) {
         printf("%s\n", str);
     }
+
+    alias scan = scanf;
 }
 
 #[target_os = "windows"]
