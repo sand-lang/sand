@@ -143,15 +143,15 @@ namespace std {
             this->ptr = ptr;
             this->length = total;
 
-            return this[0];
+            return *this;
         }
 
         fn +=(r: const i8*) : std::string& {
-            return this[0] += std::string::assign(r);
+            return *this += std::string::assign(r);
         }
 
         fn +=(r: const i8&) : std::string& {
-            return this[0] += std::string::new(r);
+            return *this += std::string::new(r);
         }
     }
 }

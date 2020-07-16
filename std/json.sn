@@ -124,69 +124,69 @@ class JsonNode {
     // JsonNode insertion in map
     fn insert(key: const std::string&, value: const JsonNode&) : JsonNode& {
         this->value.map.insert(key, value);
-        return this[0];
+        return *this;
     }
 
     fn insert(key: const i8*, value: const JsonNode&) : JsonNode& {
         this->value.map.insert(std::string::new(key), value);
-        return this[0];
+        return *this;
     }
 
     // std::string insertion in map
     fn insert(key: const std::string&, value: const std::string&) : JsonNode& {
         this->insert(key, JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     fn insert(key: const i8*, value: const std::string&) : JsonNode& {
         this->insert(key, JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     // i8* insertion in map
     fn insert(key: const std::string&, value: const i8*) : JsonNode& {
         this->insert(key, JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     fn insert(key: const i8*, value: const i8*) : JsonNode& {
         this->insert(key, JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     // i64 insertion in map
     fn insert(key: const std::string&, value: const i64&) : JsonNode& {
         this->insert(key, JsonNode::new_int(value));
-        return this[0];
+        return *this;
     }
 
     fn insert(key: const i8*, value: const i64&) : JsonNode& {
         this->insert(key, JsonNode::new_int(value));
-        return this[0];
+        return *this;
     }
 
     // JsonNode insertion in vector
     fn insert(value: const JsonNode&) : JsonNode& {
         this->value.array.push(value);
-        return this[0];
+        return *this;
     }
 
     // std::string insertion in vector
     fn insert(value: const std::string&) : JsonNode& {
         this->insert(JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     // i8* insertion in vector
     fn insert(value: const i8*) : JsonNode& {
         this->insert(JsonNode::new_string(value));
-        return this[0];
+        return *this;
     }
 
     // i64 insertion in vector
     fn insert(value: const i64&) : JsonNode& {
         this->insert(JsonNode::new_int(value));
-        return this[0];
+        return *this;
     }
 
     fn get_object() : std::Map<std::string, JsonNode>& {
