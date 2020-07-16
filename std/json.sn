@@ -188,12 +188,12 @@ class JsonNode {
         this->insert(JsonNode::new_int(value));
         return this[0];
     }
-    
-    fn get_object(key: const std::string&) : std::Map<std::string, JsonNode>& {
+
+    fn get_object() : std::Map<std::string, JsonNode>& {
         return this->value.map;
     }
-    
-    fn get_array(key: const std::string&) : std::Vec<JsonNode>& {
+
+    fn get_array() : std::Vec<JsonNode>& {
         return this->value.array;
     }
 
