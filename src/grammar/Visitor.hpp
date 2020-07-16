@@ -2499,7 +2499,8 @@ public:
 
         if (type->is_array() || type->is_pointer())
         {
-            return expression->gep(0UL, scope->builder());
+            constexpr size_t index = 0UL;
+            return expression->gep(index, scope->builder());
         }
 
         std::vector<Value *> args = {expression};
