@@ -103,7 +103,7 @@ namespace std {
             let mapped = Vec<U>::new(this->length);
 
             for i in std::range<u64>::new(0, this->length) {
-                let ret = cb(this->get(i), i, this);
+                let ret = cb(this->get(i), i, this[0]);
                 mapped.push(ret);
             }
 
