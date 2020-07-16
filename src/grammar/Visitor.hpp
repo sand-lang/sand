@@ -1589,6 +1589,10 @@ public:
         {
             return this->visitPointerExpression(pointer_expression_context);
         }
+        else if (const auto dereference_expression_context = dynamic_cast<SanParser::DereferenceExpressionContext *>(context))
+        {
+            return this->visitDereferenceExpression(dereference_expression_context);
+        }
         else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
@@ -2464,20 +2468,47 @@ public:
     {
         auto scope = this->scopes.top();
 
-        auto rvalue = this->valueFromExpression(context->expression());
-        auto type = rvalue->type;
+        auto expression = this->valueFromExpression(context->expression());
 
-        if (!rvalue->is_alloca)
+        if (!expression->is_alloca)
         {
             throw InvalidValueException(this->files.top(), context->expression()->getStart());
         }
 
-        if (type->is_reference)
+        if (expression->type->is_reference)
         {
-            rvalue = rvalue->load_alloca(scope->builder());
+            expression = expression->load_alloca(scope->builder());
         }
 
-        return new Value(rvalue->name + ".ptr", type->is_reference ? rvalue->type : Type::pointer(rvalue->type), rvalue->get_ref());
+        auto type = expression->type;
+
+        if (!type->is_reference)
+        {
+            type = Type::pointer(expression->type);
+        }
+
+        return new Value(expression->name + ".ptr", type, expression->get_ref());
+    }
+
+    Value *visitDereferenceExpression(SanParser::DereferenceExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+        auto type = Type::behind_reference(expression->type);
+
+        if (type->is_array() || type->is_pointer())
+        {
+            return expression->gep(0UL, scope->builder());
+        }
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("*", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        throw NotAPointerException(this->files.top(), context->expression()->getStart());
     }
 
     Value *visitIndex(SanParser::IndexContext *context)
@@ -2487,7 +2518,7 @@ public:
         auto expression = this->valueFromExpression(context->expression(0));
         auto index = this->valueFromExpression(context->expression(1));
 
-        auto type = Type::get_origin(Type::behind_reference(expression->type));
+        auto type = Type::behind_reference(expression->type);
 
         if (type->is_array() || type->is_pointer())
         {

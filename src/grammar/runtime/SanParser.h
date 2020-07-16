@@ -218,6 +218,16 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  DereferenceExpressionContext : public ExpressionContext {
+  public:
+    DereferenceExpressionContext(ExpressionContext *ctx);
+
+    antlr4::tree::TerminalNode *Mul();
+    ExpressionContext *expression();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  InParenExpressionContext : public ExpressionContext {
   public:
     InParenExpressionContext(ExpressionContext *ctx);

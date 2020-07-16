@@ -31,6 +31,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitDereferenceExpression(SanParser::DereferenceExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *ctx) override {
     return visitChildren(ctx);
   }

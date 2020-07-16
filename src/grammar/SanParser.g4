@@ -38,6 +38,7 @@ expression:
 	| '+' expression										# UnaryPositiveExpression
 	| '!' expression										# UnaryNegationExpression
 	| '&' expression										# PointerExpression
+	| '*' expression										# DereferenceExpression
 	| expression '!'										# SuffixUnaryNegationExpression
 	| expression 'as' type									# TypeCast
 	| function												# FunctionExpression

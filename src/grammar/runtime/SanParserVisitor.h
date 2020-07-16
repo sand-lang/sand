@@ -27,6 +27,8 @@ public:
 
     virtual antlrcpp::Any visitSuffixUnaryNegationExpression(SanParser::SuffixUnaryNegationExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitDereferenceExpression(SanParser::DereferenceExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryOperation(SanParser::BinaryOperationContext *context) = 0;
