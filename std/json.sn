@@ -22,6 +22,7 @@ class JsonNode {
         array: std::Vec<JsonNode>;
         str: std::string;
         int: i64;
+        boolean: bool;
     }
 
     value: JsonValue;
@@ -92,12 +93,12 @@ class JsonNode {
 
     static fn new_boolean(boolean: const bool&) : JsonNode {
         let value: JsonValue;
-        value.int = boolean;
+        value.boolean = boolean;
 
         return JsonNode {
             type = JsonValueType::Boolean,
             value,
-};
+        };
     }
 
     static fn new_null() : JsonNode {
@@ -187,6 +188,26 @@ class JsonNode {
         this->insert(JsonNode::new_int(value));
         return this[0];
     }
+    
+    fn get_object(key: const std::string&) : std::Map<std::string, JsonNode>& {
+        return this->value.map;
+    }
+    
+    fn get_array(key: const std::string&) : std::Vec<JsonNode>& {
+        return this->value.array;
+    }
+
+    fn get_int() : i64& {
+        return this->value.int;
+    }
+
+    fn get_string() : std::string& {
+        return this->value.str;
+    }
+
+    fn get_boolean() : bool& {
+        return this->value.boolean;
+    }
 
     fn get(key: const std::string&) : JsonNode& {
         return this->value.map[key];
@@ -212,16 +233,28 @@ class JsonNode {
         return this->get(key);
     }
 
-    fn get_int(key: const std::string&) : i64 {
+    fn get_int(key: const std::string&) : i64& {
         return this->get(key).value.int;
     }
 
-    fn get_int(key: const i8*) : i64 {
+    fn get_int(key: const i8*) : i64& {
         return this->get(std::string::assign(key)).value.int;
     }
 
     fn get_int(key: const i64&) : i64& {
         return this->get(key).value.int;
+    }
+
+    fn get_boolean(key: const std::string&) : bool& {
+        return this->get(key).value.boolean;
+    }
+
+    fn get_boolean(key: const i8*) : bool& {
+        return this->get(std::string::assign(key)).value.boolean;
+    }
+
+    fn get_boolean(key: const i64&) : bool& {
+        return this->get(key).value.boolean;
     }
 
     fn get_string(key: const std::string&) : std::string& {
