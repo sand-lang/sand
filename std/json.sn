@@ -2,6 +2,7 @@ import "./map"
 import "./vec"
 import "./string"
 import "./range"
+import "./print"
 
 enum JsonValueType {
     Number,
@@ -10,6 +11,7 @@ enum JsonValueType {
     Object,
     Boolean,
     Null,
+    Empty,
 }
 
 class JsonNode {
@@ -34,9 +36,29 @@ class JsonNode {
         };
     }
 
+    static fn new_object(obj: const std::Map<std::string, JsonNode>&) : JsonNode {
+        let value: JsonValue;
+        value.map = obj;
+
+        return JsonNode {
+            type = JsonValueType::Object,
+            value,
+        };
+    }
+
     static fn new_array() : JsonNode {
         let value: JsonValue;
         value.array = std::Vec<JsonNode>::new();
+
+        return JsonNode {
+            type = JsonValueType::Array,
+            value,
+        };
+    }
+
+    static fn new_array(array: const std::Vec<JsonNode>&) : JsonNode {
+        let value: JsonValue;
+        value.array = array;
 
         return JsonNode {
             type = JsonValueType::Array,
@@ -84,6 +106,16 @@ class JsonNode {
 
         return JsonNode {
             type = JsonValueType::Null,
+            value,
+        };
+    }
+
+    static fn new_empty() : JsonNode {
+        let value: JsonValue;
+        value.int = 0;
+
+        return JsonNode {
+            type = JsonValueType::Empty,
             value,
         };
     }
@@ -252,5 +284,189 @@ class JsonNode {
         }
 
         return str;
+    }
+
+    static fn parse(str: const i8*, error: bool&) : JsonNode {
+        error = false;
+        let node = _parse(str, error);
+
+        if str[0] != 0 {
+            error = true;
+        }
+
+        if error {
+            std::print("JSON syntax error.");
+        }
+
+        return node;
+    }
+
+    static fn _parse(str: const i8*&, error: bool&) : JsonNode {
+        while str[0] == ' ' {
+            str += 1;
+        }
+
+        if str[0] == '{' {
+            return JsonNode::new_object(_parse_object(str, error));
+        } else if str[0] == '[' {
+            return JsonNode::new_array(_parse_array(str, error));
+        } else if str[0] == '"' {
+            return JsonNode::new_string(_parse_string(str, error));
+        } else if str[0] == '-' || (str[0] >= '0' && str[0] <= '9') {
+            return JsonNode::new_int(_parse_int(str, error));
+        } else if std::starts_with(str, "null") {
+            str += 4;
+            return JsonNode::new_null();
+        } else if std::starts_with(str, "true") {
+            str += 4;
+            return JsonNode::new_boolean(true);
+        } else if std::starts_with(str, "false") {
+            str += 5;
+            return JsonNode::new_boolean(false);
+        } else {
+            error = true;
+            return JsonNode::new_empty();
+        }
+    }
+
+    static fn _parse_object(str: const i8*&, error: bool&) : std::Map<std::string, JsonNode> {
+        str += 1;
+
+        let obj = std::Map<std::string, JsonNode>::new();
+
+        while str[0] != 0 {
+            if str[0] == '}' {
+                break;
+            }
+
+            let name = _parse_string(str, error);
+
+            if error {
+                break;
+            }
+
+            if str[0] != ':' {
+                error = true;
+                break;
+            }
+
+            str += 1;
+
+            let value = _parse(str, error);
+
+            if error {
+                break;
+            }
+
+            obj.insert(name, value);
+
+            if str[0] == ',' {
+                str += 1;
+
+                if str[0] == '}' {
+                    error = true;
+                    break;
+                }
+            }
+        }
+
+        if str[0] != 0 {
+            str += 1;
+        }
+
+        return obj;
+    }
+
+    static fn _parse_array(str: const i8*&, error: bool&) : std::Vec<JsonNode> {
+        str += 1;
+
+        let array = std::Vec<JsonNode>::new();
+
+        while str[0] != 0 {
+            if str[0] == ']' {
+                break;
+            }
+
+            let value = _parse(str, error);
+
+            if error {
+                break;
+            }
+
+            array.push(value);
+
+            if str[0] == ',' {
+                str += 1;
+
+                if str[0] == ']' {
+                    error = true;
+                    break;
+                }
+            }
+        }
+
+        if str[0] != 0 {
+            str += 1;
+        }
+
+        return array;
+    }
+
+    static fn _parse_string(str: const i8*&, error: bool&) : std::string {
+        if str[0] != '"' {
+            error = true;
+        }
+
+        let out = std::string::new();
+
+        str += 1;
+        while str[0] != '"' {
+            if str[0] == 0 {
+                error = true;
+                break;
+            }
+
+            if str[0] == '\\' {
+                if str[1] == 0 {
+                    error = true;
+                    break;
+                }
+
+                out += str[1];
+
+                str += 2;
+            } else {
+                out += str[0];
+                str += 1;
+            }
+        }
+
+        if str[0] != 0 {
+            str += 1;
+        }
+
+        return out;
+    }
+
+    static fn _parse_int(str: const i8*&, error: bool&) : i64 {
+        let out: i64 = 0;
+        let multiplier = 0;
+        let negative = str[0] == '-';
+
+        if negative {
+            str += 1;
+        }
+
+        if str[0] < '0' || str[0] > '9' {
+            error = true;
+        } else while str[0] >= '0' && str[0] <= '9' {
+            out *= multiplier * 10;
+            out += str[0] - '0';
+
+            multiplier += 1;
+            str += 1;
+        }
+
+        return out;
     }
 }
