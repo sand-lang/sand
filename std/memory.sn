@@ -21,11 +21,11 @@ namespace std {
 
     #[target_os = "windows"]
     namespace memory {
-        extern fn VirtualAlloc(void*, u64, u64, u64) : i8*;
+        extern fn VirtualAlloc(void*, u64, u64, u64) : void*;
         extern fn VirtualFree(void*, u64, u64) : bool;
 
         fn allocate<T>(count: u64) : T* {
-            return VirtualAlloc(null, count * (sizeof T), 12288, 4);
+            return VirtualAlloc(null, count * (sizeof T), 12288, 4) as T*;
         }
 
         fn deallocate(ptr: void*&) {
