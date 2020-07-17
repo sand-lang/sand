@@ -16,6 +16,7 @@ namespace std {
 #[target_os = "windows"]
 namespace std {
     extern fn WriteConsoleA(i8*, i8*, u64, u64*, void*) : bool;
+    extern fn ReadConsoleA(i8*, i8*, u64, u64*, void*) : bool;
     extern fn GetStdHandle(u64): i8*;
 
     fn print(str: i8*) {
@@ -26,6 +27,20 @@ namespace std {
         WriteConsoleA(handle, "\n", 1 as u64, count, null);
 
         std::memory::deallocate(count);
+    }
+
+    fn scan() : std::string {
+        let handle = GetStdHandle(-10);
+        let ptr = std::memory::allocate<i8>(4096);
+
+        let read: u64 = 0;
+        ReadConsoleA(handle, ptr, 4096, &read, null);
+
+        let str = string::new(ptr, read - 1);
+
+        std::memory::deallocate(ptr);
+
+        return str;
     }
 }
 
