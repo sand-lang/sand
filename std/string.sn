@@ -80,6 +80,10 @@ namespace std {
 
         static fn new(value: i8*) : string {
             let length = std::strlen(value);
+            return new(value, length);
+        }
+        
+        static fn new(value: i8*, length: const u64&) : string {
             let ptr = std::memory::allocate<i8>(length + 1);
 
             std::memory::copy(value, ptr, length);
