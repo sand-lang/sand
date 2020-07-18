@@ -312,7 +312,7 @@ class JsonNode {
             } else {
                 str += "true";
             }
-        } else if this->type == JsonValueType::Boolean {
+        } else if this->type == JsonValueType::Null {
             str += "null";
         }
 
