@@ -117,8 +117,16 @@ public:
         }
         else if (os == "linux" || os == "darwin")
         {
-            raw_args.push_back("-arch");
-            raw_args.push_back(arch.c_str());
+            if (os == "linux")
+            {
+                raw_args.push_back("-m");
+                raw_args.push_back(copy_str("elf_" + arch));
+            }
+            else if (os == "darwin")
+            {
+                raw_args.push_back("-arch");
+                raw_args.push_back(arch.c_str());
+            }
 
             for (auto &library : libraries)
             {
