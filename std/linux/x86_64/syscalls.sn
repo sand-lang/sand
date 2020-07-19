@@ -1,0 +1,91 @@
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn syscall1<T1>(num: i64, arg1: T1) : i64 {
+  let res: i64;
+
+  asm("syscall\n"
+      : "={rax}"(res),
+        "+{rdi}"(arg1)
+      : "{ax}"(num)
+      : "cc", "memory");
+
+  return res;
+}
+
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn syscall2<T1, T2>(num: i64, arg1: T1, arg2: T2) : i64 {
+  let res: i64;
+
+  asm("syscall\n"
+      : "={rax}"(res),
+        "+{rdi}"(arg1),
+        "+{rsi}"(arg2)
+      : "{ax}"(num)
+      : "cc", "memory");
+
+  return res;
+}
+
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn syscall3<T1, T2, T3>(num: i64, arg1: T1, arg2: T2, arg3: T3) : i64 {
+  let res: i64;
+
+  asm("syscall\n"
+      : "={rax}"(res),
+        "+{rdi}"(arg1),
+        "+{rsi}"(arg2),
+        "+{rdx}"(arg3)
+      : "{rax}"(num)
+      : "cc", "memory");
+
+  return res;
+}
+
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn syscall6<T1, T2, T3, T4, T5, T6>(num: i64, arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6) : i64 {
+  let res: i64;
+
+  asm("syscall\n"
+      : "={rax}"(res),
+        "+{rdi}"(arg1),
+        "+{rsi}"(arg2),
+        "+{rdx}"(arg3),
+        "+{r10}"(arg4),
+        "+{r8}"(arg5),
+        "+{r9}"(arg6)
+      : "{rax}"(num)
+      : "cc", "memory");
+
+  return res;
+}
+
+// syscall 1
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn write(fd: u32, buffer: i8*, size: u64) : i64 {
+  return syscall3<u32, i8*, u64>(1, fd, buffer, size);
+}
+
+// syscall 9
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn mmap(addr: void*, len: u64, prot: u64, flags: u64, fd: u64, off: u64) : void* {
+  return syscall6<void*, u64, u64, u64, u64, u64>(9, addr, len, prot, flags, fd, off) as void*;
+}
+
+// syscall 12
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn brk(ptr: void*) : i64 {
+  return syscall1<void*>(12, ptr);
+}
+
+// syscall 60
+#[target_os = "linux"]
+#[target_arch = "x86_64"]
+fn exit(ret: i32) : i64 {
+  return syscall1<i32>(60, ret);
+}
