@@ -1,5 +1,7 @@
 import "./range"
 
+import "./linux/syscalls"
+
 namespace std {
     #[target_os = "darwin"]
     namespace memory {
@@ -14,6 +16,40 @@ namespace std {
         fn deallocate(ptr: void*&) {
             if ptr != 0 {
                 free(ptr);
+                ptr = null;
+            }
+        }
+    }
+
+    #[target_os = "linux"]
+    namespace memory {
+        alias PROT_READ	= 0x1;
+        alias PROT_WRITE = 0x2;
+        alias PROT_EXEC  = 0x3;
+        alias PROT_NONE  = 0x0;
+
+        alias MAP_ANONYMOUS = 0x20;
+        alias MAP_SHARED = 0x01;
+        alias MAP_PRIVATE = 0x02;
+        alias MAP_FIXED = 0x10;
+
+        fn calloc(size: u64, count: u64) : void* {
+            let ptr = linux::syscalls::mmap(null, size * count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+
+            if ptr == -1 {
+                return null;
+            }
+
+            return ptr;
+        }
+
+        fn allocate<T>(count: u64) : T* {
+            return calloc(count, (sizeof T) as u64) as T*;
+        }
+
+        fn deallocate(ptr: void*&) {
+            if ptr != 0 {
+                // free(ptr);
                 ptr = null;
             }
         }
@@ -46,4 +82,8 @@ namespace std {
             return destination;
         }
     }
+}
+
+fn memcpy(source: void*, destination: void*, length: u64) : void* {
+    return std::memory::copy(source, destination, length);
 }
