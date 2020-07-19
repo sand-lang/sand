@@ -1,6 +1,8 @@
 import "./memory"
 import "./string"
 
+import "./linux/syscalls"
+
 #[target_os = "darwin"]
 namespace std {
     extern fn printf(const i8*, ...) : i32;
@@ -11,6 +13,14 @@ namespace std {
     }
 
     alias scan = scanf;
+}
+
+#[target_os = "linux"]
+namespace std {
+    fn print(str: i8*) {
+        linux::syscalls::write(1, str, std::strlen(str));
+        linux::syscalls::write(1, "\n", 1);
+    }
 }
 
 #[target_os = "windows"]
