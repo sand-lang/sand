@@ -19,8 +19,10 @@ public:
 
     UnionType *get_child(const std::vector<Type *> generics)
     {
-        for (auto &child : this->children)
+        for (auto it = this->children.rbegin(); it != this->children.rend(); it++)
         {
+            auto &child = *it;
+
             if (GenericType::are_same_generics(child->generics, generics))
             {
                 return child;

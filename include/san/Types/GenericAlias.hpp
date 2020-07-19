@@ -28,11 +28,11 @@ public:
 
     Alias *get_child(const std::vector<Type *> generics)
     {
-        for (auto &child : this->children)
+        for (auto child = this->children.rbegin(); child != this->children.rend(); child++)
         {
-            if (GenericType::are_same_generics(child.generics, generics))
+            if (GenericType::are_same_generics(child->generics, generics))
             {
-                return child.alias;
+                return child->alias;
             }
         }
 
