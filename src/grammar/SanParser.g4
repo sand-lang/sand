@@ -53,7 +53,7 @@ expression:
 
 scopedName: scopeResolver? name;
 
-name: VariableName classTypeNameGenerics?;
+name: VariableName classTypeNameGenerics*;
 
 scopedNameNoGeneric: scopeResolver? nameNoGeneric;
 

@@ -2723,9 +2723,9 @@ public:
 
         if (!names->empty())
         {
-            if (auto generics_context = context->classTypeNameGenerics())
+            for (auto &generics_context : context->classTypeNameGenerics())
             {
-                return this->visitTypeNameClassGenerics(generics_context, names);
+                names = this->visitTypeNameClassGenerics(generics_context, names);
             }
 
             return names;
@@ -2747,7 +2747,7 @@ public:
 
             if (!names->empty())
             {
-                if (auto generics_context = context->classTypeNameGenerics())
+                for (auto &generics_context : context->classTypeNameGenerics())
                 {
                     names = this->visitTypeNameClassGenerics(generics_context, names);
                 }
