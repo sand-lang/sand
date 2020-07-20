@@ -204,6 +204,7 @@ int main(int argc, char **argv)
     CLI::App app{"App description"};
 
     Options options;
+    std::string run_options;
 
     CLI::App *build = app.add_subcommand("build", "Build sources");
     build->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
@@ -253,11 +254,48 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::system((options.output_file).c_str());
+            std::system((options.output_file + run_options).c_str());
         }
     });
 
-    CLI11_PARSE(app, argc, argv);
+    std::vector<char *> args;
+    bool is_run_option = false;
+
+    for (auto i = 0; i < argc; i++)
+    {
+        if (is_run_option)
+        {
+            std::stringstream ss;
+            ss << '"';
+
+            for (auto &c : std::string(argv[i]))
+            {
+                if (c == '"' || c == '\\')
+                {
+                    ss << '\\';
+                    ss << c;
+                }
+                else
+                {
+                    ss << c;
+                }
+            }
+
+            ss << '"';
+
+            run_options += ' ' + ss.str();
+        }
+        else if (std::strcmp(argv[i], "--") == 0)
+        {
+            is_run_option = true;
+        }
+        else
+        {
+            args.push_back(argv[i]);
+        }
+    }
+
+    CLI11_PARSE(app, args.size(), &args[0]);
 
     return 0;
 }
