@@ -84,6 +84,6 @@ namespace std {
     }
 }
 
-fn memcpy(source: void*, destination: void*, length: u64) : void* {
+fn memcpy(destination: void*, source: void*, length: u64) : void* {
     return std::memory::copy(source, destination, length);
 }
