@@ -3444,6 +3444,13 @@ public:
 
     Alias *generateGenericAlias(Types::GenericAlias *generic, const std::vector<Type *> &generics)
     {
+        Position position;
+
+        if (this->scopes.top()->in_function())
+        {
+            position = Position::save(this->scopes.top()->builder());
+        }
+
         auto scope = Scope::create(generic->scope);
         this->scopes.push(scope);
 
@@ -3458,6 +3465,8 @@ public:
         this->scopes.pop();
 
         generic->children.push_back(Types::GenericAliasChild(generics, alias));
+
+        position.load(this->scopes.top()->builder());
 
         return alias;
     }
