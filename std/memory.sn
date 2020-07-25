@@ -23,18 +23,18 @@ namespace std {
 
     #[target_os = "linux"]
     namespace memory {
-        alias PROT_READ	= 0x1;
-        alias PROT_WRITE = 0x2;
-        alias PROT_EXEC  = 0x3;
-        alias PROT_NONE  = 0x0;
-
-        alias MAP_ANONYMOUS = 0x20;
-        alias MAP_SHARED = 0x01;
-        alias MAP_PRIVATE = 0x02;
-        alias MAP_FIXED = 0x10;
+        alias mmap_prots = linux::syscalls::mmap_prots;
+        alias mmap_flags = linux::syscalls::mmap_flags;
 
         fn calloc(size: u64, count: u64) : void* {
-            let ptr = linux::syscalls::mmap(null, size * count, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+            let ptr = linux::syscalls::mmap(
+                null,
+                size * count,
+                mmap_prots::PROT_READ | mmap_prots::PROT_WRITE,
+                mmap_flags::MAP_ANONYMOUS | mmap_flags::MAP_SHARED,
+                -1,
+                0
+            );
 
             if ptr == -1 {
                 return null;
