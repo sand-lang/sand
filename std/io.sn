@@ -2,6 +2,7 @@ import "./memory"
 import "./string"
 
 import "./linux/syscalls"
+import "./macos/syscalls"
 
 #[target_os = "darwin"]
 namespace std {
@@ -9,7 +10,8 @@ namespace std {
     extern fn scanf(const i8*, ...) : i32;
 
     fn print(str: i8*) {
-        printf("%s\n", str);
+        macos::syscalls::write(1, str, std::strlen(str));
+        macos::syscalls::write(1, "\n", 1);
     }
 
     alias scan = scanf;
