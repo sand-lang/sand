@@ -3088,7 +3088,25 @@ public:
     Type *visitTypeArray(SanParser::TypeArrayContext *context)
     {
         auto type = this->visitType(context->type(), false);
-        type = Type::pointer(type);
+        auto expression = this->valueFromExpression(context->expression());
+
+        if (auto constant = dynamic_cast<Values::Constant *>(expression))
+        {
+            if (constant->type->is_integer())
+            {
+                auto size = constant->get_ref()->getUniqueInteger().getSExtValue();
+                type = Type::array(type, size);
+            }
+            else
+            {
+                throw InvalidValueException(this->files.top(), context->expression()->getStart());
+            }
+        }
+        else
+        {
+            // TODO
+            type = Type::pointer(type);
+        }
 
         return type;
     }
