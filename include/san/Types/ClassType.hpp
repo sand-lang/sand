@@ -54,28 +54,9 @@ public:
     {
     }
 
-    size_t size(std::unique_ptr<llvm::Module> &module) override
+    llvm::StructType *get_ref() const override
     {
-        size_t size = 0;
-
-        auto base = Type::get_base(this);
-
-        if (base != this)
-        {
-            return base->size(module);
-        }
-
-        for (const auto &parent : this->parents)
-        {
-            size += parent->size(module);
-        }
-
-        for (const auto &property : this->properties)
-        {
-            size += property->type->size(module);
-        }
-
-        return size;
+        return llvm::cast<llvm::StructType>(this->ref);
     }
 
     NameArray *get_names(const std::string &name, Value *value, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
@@ -119,7 +100,7 @@ public:
         return new ClassType(name, ref, scope, generics);
     }
 
-    llvm::StructType *get_ref() const override
+    llvm::StructType *get_ref()
     {
         return llvm::cast<llvm::StructType>(this->ref);
     }

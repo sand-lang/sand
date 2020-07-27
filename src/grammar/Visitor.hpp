@@ -1337,7 +1337,7 @@ public:
             }
         }
 
-        struct_type->setBody(properties_types, true);
+        struct_type->setBody(properties_types, false);
         this->generating_properties_stack--;
 
         if (generate_methods)

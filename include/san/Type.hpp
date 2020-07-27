@@ -137,17 +137,12 @@ public:
 
     virtual size_t size(std::unique_ptr<llvm::Module> &module)
     {
-        if (this->is_pointer())
+        if (this->is_void())
         {
-            return module->getDataLayout().getPointerSize();
+            return 1;
         }
 
-        if (this->is_array())
-        {
-            return this->base->size(module) * this->ref->getArrayNumElements();
-        }
-
-        return std::max(this->ref->getScalarSizeInBits() / 8, 1U);
+        return module->getDataLayout().getTypeAllocSize(this->get_ref());
     }
 
     static Type *get_base(Type *type, const bool &root = true)

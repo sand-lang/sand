@@ -41,11 +41,6 @@ public:
     {
     }
 
-    size_t size(std::unique_ptr<llvm::Module> &module) override
-    {
-        return this->main_type->size(module);
-    }
-
     static UnionType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Type *> &generics = {})
     {
         auto ref = llvm::StructType::create(scope->context(), name + ".union");
@@ -84,7 +79,7 @@ public:
             }
         }
 
-        this->get_ref()->setBody({this->main_type->get_ref()}, true);
+        this->get_ref()->setBody({this->main_type->get_ref()}, false);
     }
 };
 } // namespace San::Types
