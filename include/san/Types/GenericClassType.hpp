@@ -5,6 +5,8 @@
 #include <san/Types/ClassType.hpp>
 #include <san/Types/GenericType.hpp>
 
+#include <san/Attributes.hpp>
+
 namespace San::Types
 {
 class GenericClassType : public GenericType
@@ -15,7 +17,11 @@ public:
 
     std::vector<ClassType *> children;
 
-    GenericClassType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::ClassStatementContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
+    Attributes attributes;
+
+    GenericClassType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::ClassStatementContext *context_, const Attributes &attributes_) : GenericType(name, generics), context(context_), scope(scope_), attributes(attributes_)
+    {
+    }
 
     ClassType *get_child(const std::vector<Type *> generics)
     {

@@ -281,7 +281,7 @@ public:
 
             auto function = new Values::Function(scope->module(), function_type, linkage);
 
-            if (attributes.noinline)
+            if (attributes.is("noinline"))
             {
                 function->get_ref()->addAttribute(llvm::AttributeList::FunctionIndex, llvm::Attribute::NoInline);
             }
@@ -1022,7 +1022,7 @@ public:
 
                 base->children.push_back(type);
 
-                this->visitClassBody(context->classBody(), type->parents, type);
+                this->visitClassBody(context->classBody(), type->parents, type, attributes.is("packed"));
 
                 this->scopes.pop();
 
@@ -1050,7 +1050,7 @@ public:
         if (auto generics_context = context->classGenerics())
         {
             auto generics = this->visitClassGenerics(generics_context);
-            auto type = new Types::GenericUnionType(union_scope, name, generics, context);
+            auto type = new Types::GenericUnionType(union_scope, name, generics, context, attributes);
 
             scope->add_name(name, type);
 
@@ -1063,7 +1063,7 @@ public:
 
             this->scopes.push(union_scope);
 
-            this->visitUnionBody(context->unionBody(), type);
+            this->visitUnionBody(context->unionBody(), type, attributes.is("packed"));
 
             this->scopes.pop();
 
@@ -1071,7 +1071,7 @@ public:
         }
     }
 
-    Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type)
+    Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type, const bool &is_packed = false)
     {
         auto scope = this->scopes.top();
         auto generate_methods = generating_properties_stack == 0;
@@ -1086,7 +1086,7 @@ public:
         }
         this->generating_properties_stack--;
 
-        type->set_properties(properties, scope->builder(), scope->module());
+        type->set_properties(properties, scope->builder(), scope->module(), is_packed);
 
         if (generate_methods)
         {
@@ -1194,7 +1194,7 @@ public:
         if (auto generics_context = context->classGenerics())
         {
             auto generics = this->visitClassGenerics(generics_context);
-            auto type = new Types::GenericClassType(class_scope, name, generics, context);
+            auto type = new Types::GenericClassType(class_scope, name, generics, context, attributes);
 
             scope->add_name(name, type);
 
@@ -1212,7 +1212,7 @@ public:
 
             this->scopes.push(class_scope);
 
-            this->visitClassBody(context->classBody(), type->parents, type);
+            this->visitClassBody(context->classBody(), type->parents, type, attributes.is("packed"));
 
             this->scopes.pop();
 
@@ -1246,7 +1246,7 @@ public:
             type->parents = this->visitClassExtends(extends);
         }
 
-        this->visitClassBody(generic->context->classBody(), type->parents, type);
+        this->visitClassBody(generic->context->classBody(), type->parents, type, generic->attributes.is("packed"));
 
         this->scopes.pop();
 
@@ -1276,7 +1276,7 @@ public:
             scope->add_name(name, generics[i]);
         }
 
-        this->visitUnionBody(generic->context->unionBody(), type);
+        this->visitUnionBody(generic->context->unionBody(), type, generic->attributes.is("packed"));
 
         this->scopes.pop();
 
@@ -1312,7 +1312,7 @@ public:
         return types;
     }
 
-    Types::ClassType *visitClassBody(SanParser::ClassBodyContext *context, std::vector<Types::ClassType *> parents, Types::ClassType *type)
+    Types::ClassType *visitClassBody(SanParser::ClassBodyContext *context, std::vector<Types::ClassType *> parents, Types::ClassType *type, const bool &is_packed = false)
     {
         auto scope = this->scopes.top();
 
@@ -1337,7 +1337,7 @@ public:
             }
         }
 
-        struct_type->setBody(properties_types, false);
+        struct_type->setBody(properties_types, is_packed);
         this->generating_properties_stack--;
 
         if (generate_methods)

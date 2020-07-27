@@ -65,7 +65,7 @@ public:
         return nullptr;
     }
 
-    void set_properties(const std::vector<UnionProperty *> &properties, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
+    void set_properties(const std::vector<UnionProperty *> &properties, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &is_packed = false)
     {
         this->properties = properties;
 
@@ -79,7 +79,7 @@ public:
             }
         }
 
-        this->get_ref()->setBody({this->main_type->get_ref()}, false);
+        this->get_ref()->setBody({this->main_type->get_ref()}, is_packed);
     }
 };
 } // namespace San::Types

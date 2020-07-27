@@ -5,6 +5,8 @@
 #include <san/Types/GenericType.hpp>
 #include <san/Types/UnionType.hpp>
 
+#include <san/Attributes.hpp>
+
 namespace San::Types
 {
 class GenericUnionType : public GenericType
@@ -15,7 +17,9 @@ public:
 
     std::vector<UnionType *> children;
 
-    GenericUnionType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::UnionStatementContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
+    Attributes attributes;
+
+    GenericUnionType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SanParser::UnionStatementContext *context_, const Attributes &attributes_) : GenericType(name, generics), context(context_), scope(scope_), attributes(attributes_) {}
 
     UnionType *get_child(const std::vector<Type *> generics)
     {
