@@ -167,6 +167,26 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitShiftEqualOperator(SanParser::ShiftEqualOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitArithmeticRightShiftEqualOperator(SanParser::ArithmeticRightShiftEqualOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLogicalRightShiftEqualOperator(SanParser::LogicalRightShiftEqualOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLeftShiftEqualOperator(SanParser::LeftShiftEqualOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitGreaterThanOrEqualToOperator(SanParser::GreaterThanOrEqualToOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitConditionalOperatorStatement(SanParser::ConditionalOperatorStatementContext *ctx) override {
     return visitChildren(ctx);
   }

@@ -95,6 +95,16 @@ public:
 
     virtual antlrcpp::Any visitLeftShiftOperator(SanParser::LeftShiftOperatorContext *context) = 0;
 
+    virtual antlrcpp::Any visitShiftEqualOperator(SanParser::ShiftEqualOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitArithmeticRightShiftEqualOperator(SanParser::ArithmeticRightShiftEqualOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitLogicalRightShiftEqualOperator(SanParser::LogicalRightShiftEqualOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitLeftShiftEqualOperator(SanParser::LeftShiftEqualOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitGreaterThanOrEqualToOperator(SanParser::GreaterThanOrEqualToOperatorContext *context) = 0;
+
     virtual antlrcpp::Any visitConditionalOperatorStatement(SanParser::ConditionalOperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitComparisonOperatorStatement(SanParser::ComparisonOperatorStatementContext *context) = 0;

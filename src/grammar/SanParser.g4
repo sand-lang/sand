@@ -77,13 +77,24 @@ arithmeticRightShiftOperator: '>' '>';
 logicalRightShiftOperator: '>' '>' '>';
 leftShiftOperator: '<' '<';
 
+shiftEqualOperator:
+	arithmeticRightShiftEqualOperator
+	| logicalRightShiftEqualOperator
+	| leftShiftEqualOperator;
+
+arithmeticRightShiftEqualOperator: '>' '>' '=';
+logicalRightShiftEqualOperator: '>' '>' '>' '=';
+leftShiftEqualOperator: '<' '<' '=';
+
+greaterThanOrEqualToOperator: '>' '=';
+
 conditionalOperatorStatement: ConditionalOr | ConditionalAnd;
 
 comparisonOperatorStatement:
 	EqualTo
 	| NotEqualTo
 	| LessThanOrEqualTo
-	| GreaterThanOrEqualTo
+	| greaterThanOrEqualToOperator
 	| LessThan
 	| GreaterThan;
 
@@ -96,7 +107,8 @@ equalityOperatorStatement:
 	| ModEqual
 	| XorEqual
 	| OrEqual
-	| AndEqual;
+	| AndEqual
+	| shiftEqualOperator;
 
 literal:
 	booleanLiteral
@@ -155,9 +167,10 @@ overloadableOperator:
 	| '<'
 	| '<='
 	| '>'
-	| '>='
+	| greaterThanOrEqualToOperator
 	| '[' ']'
-	| shiftOperator;
+	| shiftOperator
+	| shiftEqualOperator;
 
 function:
 	attributes Extern? functionDeclaration (

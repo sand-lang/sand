@@ -14,7 +14,7 @@ ConditionalAnd: '&&';
 EqualTo: '==';
 NotEqualTo: '!=';
 LessThanOrEqualTo: '<=';
-GreaterThanOrEqualTo: '>=';
+// GreaterThanOrEqualTo: '>=';
 LessThan: '<';
 GreaterThan: '>';
 

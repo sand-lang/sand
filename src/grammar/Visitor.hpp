@@ -379,6 +379,14 @@ public:
             {
                 this->checkShiftOperator(shift_operator_context);
             }
+            else if (auto se_context = operator_name->shiftEqualOperator())
+            {
+                this->checkShiftEqualOperator(se_context);
+            }
+            else if (auto gte_context = operator_name->greaterThanOrEqualToOperator())
+            {
+                this->ensureNoSpace(gte_context);
+            }
 
             name = operator_name->getText();
         }
@@ -2079,34 +2087,51 @@ public:
         throw UnimplementedException(this->files.top(), context->getStart());
     }
 
+    void ensureNoSpace(antlr4::ParserRuleContext *context)
+    {
+        auto token = static_cast<antlr4::tree::TerminalNode *>(context->children[0])->getSymbol();
+        auto firstIndex = token->getStartIndex();
+
+        for (size_t i = 1; i < context->children.size(); i++)
+        {
+            auto sibling = static_cast<antlr4::tree::TerminalNode *>(context->children[i])->getSymbol();
+
+            if (sibling->getStartIndex() != (firstIndex + i))
+            {
+                throw SyntaxException(this->files.top(), context->getStart(), "shift operators should not contain spaces");
+            }
+        }
+    }
+
     void checkShiftOperator(SanParser::ShiftOperatorContext *context)
     {
-        auto check = [this](antlr4::ParserRuleContext *context) {
-            auto token = static_cast<antlr4::tree::TerminalNode *>(context->children[0])->getSymbol();
-            auto firstIndex = token->getStartIndex();
-
-            for (size_t i = 1; i < context->children.size(); i++)
-            {
-                auto sibling = static_cast<antlr4::tree::TerminalNode *>(context->children[i])->getSymbol();
-
-                if (sibling->getStartIndex() != (firstIndex + i))
-                {
-                    throw SyntaxException(this->files.top(), context->getStart(), "shift operators should not contain spaces");
-                }
-            }
-        };
-
         if (auto operator_context = context->arithmeticRightShiftOperator())
         {
-            check(operator_context);
+            this->ensureNoSpace(operator_context);
         }
         else if (auto operator_context = context->logicalRightShiftOperator())
         {
-            check(operator_context);
+            this->ensureNoSpace(operator_context);
         }
         else if (auto operator_context = context->leftShiftOperator())
         {
-            check(operator_context);
+            this->ensureNoSpace(operator_context);
+        }
+    }
+
+    void checkShiftEqualOperator(SanParser::ShiftEqualOperatorContext *context)
+    {
+        if (auto operator_context = context->arithmeticRightShiftEqualOperator())
+        {
+            this->ensureNoSpace(operator_context);
+        }
+        else if (auto operator_context = context->logicalRightShiftEqualOperator())
+        {
+            this->ensureNoSpace(operator_context);
+        }
+        else if (auto operator_context = context->leftShiftEqualOperator())
+        {
+            this->ensureNoSpace(operator_context);
         }
     }
 
@@ -2123,6 +2148,26 @@ public:
             return ShiftOperator::LogicalRight;
         }
         else if (auto operator_context = context->leftShiftOperator())
+        {
+            return ShiftOperator::Left;
+        }
+
+        throw UnimplementedException(this->files.top(), context->getStart());
+    }
+
+    ShiftOperator visitShiftEqualOperator(SanParser::ShiftEqualOperatorContext *context)
+    {
+        this->checkShiftEqualOperator(context);
+
+        if (auto operator_context = context->arithmeticRightShiftEqualOperator())
+        {
+            return ShiftOperator::ArithmeticRight;
+        }
+        else if (auto operator_context = context->logicalRightShiftEqualOperator())
+        {
+            return ShiftOperator::LogicalRight;
+        }
+        else if (auto operator_context = context->leftShiftEqualOperator())
         {
             return ShiftOperator::Left;
         }
@@ -2209,8 +2254,10 @@ public:
                 return value;
             }
         }
-        else if (opt->GreaterThanOrEqualTo())
+        else if (auto gte_context = opt->greaterThanOrEqualToOperator())
         {
+            this->ensureNoSpace(gte_context);
+
             std::vector<Value *> args = {lexpr, rexpr};
             if (auto overload = this->getOperatorOverload(">=", args))
             {
@@ -2425,6 +2472,50 @@ public:
             if (auto value = lexpr->bitwise_and(scope->module(), scope->builder(), rexpr))
             {
                 return value;
+            }
+        }
+        else if (auto se_context = opt->shiftEqualOperator())
+        {
+            auto se_opt = this->visitShiftEqualOperator(se_context);
+
+            if (se_opt == ShiftOperator::ArithmeticRight)
+            {
+                std::vector<Value *> args = {lexpr, rexpr};
+                if (auto overload = this->getOperatorOverload(">>=", args))
+                {
+                    return overload->call(scope->builder(), scope->module(), args);
+                }
+
+                if (auto value = lexpr->rshift(scope->module(), scope->builder(), rexpr))
+                {
+                    return value;
+                }
+            }
+            else if (se_opt == ShiftOperator::LogicalRight)
+            {
+                std::vector<Value *> args = {lexpr, rexpr};
+                if (auto overload = this->getOperatorOverload(">>>=", args))
+                {
+                    return overload->call(scope->builder(), scope->module(), args);
+                }
+
+                if (auto value = lexpr->lrshift(scope->module(), scope->builder(), rexpr))
+                {
+                    return value;
+                }
+            }
+            else if (se_opt == ShiftOperator::Left)
+            {
+                std::vector<Value *> args = {lexpr, rexpr};
+                if (auto overload = this->getOperatorOverload("<<=", args))
+                {
+                    return overload->call(scope->builder(), scope->module(), args);
+                }
+
+                if (auto value = lexpr->lshift(scope->module(), scope->builder(), rexpr))
+                {
+                    return value;
+                }
             }
         }
 

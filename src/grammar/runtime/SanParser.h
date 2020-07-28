@@ -14,21 +14,20 @@ public:
   enum {
     Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, ConditionalOr = 7, 
     ConditionalAnd = 8, EqualTo = 9, NotEqualTo = 10, LessThanOrEqualTo = 11, 
-    GreaterThanOrEqualTo = 12, LessThan = 13, GreaterThan = 14, Xor = 15, 
-    BitwiseOr = 16, BitwiseAnd = 17, Equal = 18, AddEqual = 19, SubEqual = 20, 
-    MulEqual = 21, DivEqual = 22, ModEqual = 23, XorEqual = 24, OrEqual = 25, 
-    AndEqual = 26, OpeningParen = 27, ClosingParen = 28, OpeningBrace = 29, 
-    ClosingBrace = 30, OpeningBracket = 31, ClosingBracket = 32, Variadic = 33, 
-    InclusiveRange = 34, ExclusiveRange = 35, As = 36, SizeOf = 37, Const = 38, 
-    Class = 39, Extends = 40, Special = 41, Static = 42, Dot = 43, Arrow = 44, 
-    Union = 45, Enum = 46, Destructor = 47, Namespace = 48, ScopeResolver = 49, 
-    VariableDeclarator = 50, If = 51, Else = 52, While = 53, Break = 54, 
-    For = 55, In = 56, Function = 57, Extern = 58, Return = 59, Cast = 60, 
-    Alias = 61, Comma = 62, Colon = 63, Attribute = 64, Assembly = 65, Import = 66, 
-    True = 67, False = 68, NullLiteral = 69, InstructionsSeparator = 70, 
-    VariableName = 71, StringLiteral = 72, CharLiteral = 73, DecimalLiteral = 74, 
-    FloatingLiteral = 75, ZeroLiteral = 76, HexadecimalLiteral = 77, BinaryLiteral = 78, 
-    Comment = 79, WhiteSpace = 80, LineTerminator = 81
+    LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
+    Equal = 17, AddEqual = 18, SubEqual = 19, MulEqual = 20, DivEqual = 21, 
+    ModEqual = 22, XorEqual = 23, OrEqual = 24, AndEqual = 25, OpeningParen = 26, 
+    ClosingParen = 27, OpeningBrace = 28, ClosingBrace = 29, OpeningBracket = 30, 
+    ClosingBracket = 31, Variadic = 32, InclusiveRange = 33, ExclusiveRange = 34, 
+    As = 35, SizeOf = 36, Const = 37, Class = 38, Extends = 39, Special = 40, 
+    Static = 41, Dot = 42, Arrow = 43, Union = 44, Enum = 45, Destructor = 46, 
+    Namespace = 47, ScopeResolver = 48, VariableDeclarator = 49, If = 50, 
+    Else = 51, While = 52, Break = 53, For = 54, In = 55, Function = 56, 
+    Extern = 57, Return = 58, Cast = 59, Alias = 60, Comma = 61, Colon = 62, 
+    Attribute = 63, Assembly = 64, Import = 65, True = 66, False = 67, NullLiteral = 68, 
+    InstructionsSeparator = 69, VariableName = 70, StringLiteral = 71, CharLiteral = 72, 
+    DecimalLiteral = 73, FloatingLiteral = 74, ZeroLiteral = 75, HexadecimalLiteral = 76, 
+    BinaryLiteral = 77, Comment = 78, WhiteSpace = 79, LineTerminator = 80
   };
 
   enum {
@@ -36,25 +35,27 @@ public:
     RuleScopedName = 4, RuleName = 5, RuleScopedNameNoGeneric = 6, RuleNameNoGeneric = 7, 
     RuleScopeResolver = 8, RuleMultiplicativeOperatorStatement = 9, RuleOperatorStatement = 10, 
     RuleBitwiseOperatorStatement = 11, RuleShiftOperator = 12, RuleArithmeticRightShiftOperator = 13, 
-    RuleLogicalRightShiftOperator = 14, RuleLeftShiftOperator = 15, RuleConditionalOperatorStatement = 16, 
-    RuleComparisonOperatorStatement = 17, RuleEqualityOperatorStatement = 18, 
-    RuleLiteral = 19, RuleBooleanLiteral = 20, RuleIntegerLiteral = 21, 
-    RuleFloatingLiteral = 22, RuleStringLiteral = 23, RuleVariableDeclaration = 24, 
-    RuleFunctionCallArguments = 25, RuleFunctionCallArgument = 26, RuleOverloadableOperator = 27, 
-    RuleFunction = 28, RuleFunctionDeclaration = 29, RuleCastFunctionType = 30, 
-    RuleFunctionVariadicArgument = 31, RuleFunctionArguments = 32, RuleFunctionArgument = 33, 
-    RuleReturnStatement = 34, RuleIfStatement = 35, RuleElseStatement = 36, 
-    RuleWhileStatement = 37, RuleForStatement = 38, RuleBreakStatement = 39, 
-    RuleUnionStatement = 40, RuleUnionBody = 41, RuleUnionProperty = 42, 
-    RuleEnumStatement = 43, RuleEnumBody = 44, RuleEnumProperty = 45, RuleSpecialClassStatement = 46, 
-    RuleClassStatement = 47, RuleClassGenerics = 48, RuleClassExtends = 49, 
-    RuleClassBody = 50, RuleClassBodyElement = 51, RuleClassProperty = 52, 
-    RuleClassMethod = 53, RuleClassInstantiationProperties = 54, RuleClassInstantiationProperty = 55, 
-    RuleType = 56, RuleFunctionType = 57, RuleClassTypeName = 58, RuleClassTypeNameGenerics = 59, 
-    RuleNamespaceStatement = 60, RuleImportStatement = 61, RuleAttributes = 62, 
-    RuleAttribute = 63, RuleAlias = 64, RuleAssemblyStatement = 65, RuleAssemblyTemplate = 66, 
-    RuleAssemblyOutput = 67, RuleAssemblyInput = 68, RuleAssemblyClobber = 69, 
-    RuleEos = 70
+    RuleLogicalRightShiftOperator = 14, RuleLeftShiftOperator = 15, RuleShiftEqualOperator = 16, 
+    RuleArithmeticRightShiftEqualOperator = 17, RuleLogicalRightShiftEqualOperator = 18, 
+    RuleLeftShiftEqualOperator = 19, RuleGreaterThanOrEqualToOperator = 20, 
+    RuleConditionalOperatorStatement = 21, RuleComparisonOperatorStatement = 22, 
+    RuleEqualityOperatorStatement = 23, RuleLiteral = 24, RuleBooleanLiteral = 25, 
+    RuleIntegerLiteral = 26, RuleFloatingLiteral = 27, RuleStringLiteral = 28, 
+    RuleVariableDeclaration = 29, RuleFunctionCallArguments = 30, RuleFunctionCallArgument = 31, 
+    RuleOverloadableOperator = 32, RuleFunction = 33, RuleFunctionDeclaration = 34, 
+    RuleCastFunctionType = 35, RuleFunctionVariadicArgument = 36, RuleFunctionArguments = 37, 
+    RuleFunctionArgument = 38, RuleReturnStatement = 39, RuleIfStatement = 40, 
+    RuleElseStatement = 41, RuleWhileStatement = 42, RuleForStatement = 43, 
+    RuleBreakStatement = 44, RuleUnionStatement = 45, RuleUnionBody = 46, 
+    RuleUnionProperty = 47, RuleEnumStatement = 48, RuleEnumBody = 49, RuleEnumProperty = 50, 
+    RuleSpecialClassStatement = 51, RuleClassStatement = 52, RuleClassGenerics = 53, 
+    RuleClassExtends = 54, RuleClassBody = 55, RuleClassBodyElement = 56, 
+    RuleClassProperty = 57, RuleClassMethod = 58, RuleClassInstantiationProperties = 59, 
+    RuleClassInstantiationProperty = 60, RuleType = 61, RuleFunctionType = 62, 
+    RuleClassTypeName = 63, RuleClassTypeNameGenerics = 64, RuleNamespaceStatement = 65, 
+    RuleImportStatement = 66, RuleAttributes = 67, RuleAttribute = 68, RuleAlias = 69, 
+    RuleAssemblyStatement = 70, RuleAssemblyTemplate = 71, RuleAssemblyOutput = 72, 
+    RuleAssemblyInput = 73, RuleAssemblyClobber = 74, RuleEos = 75
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -83,6 +84,11 @@ public:
   class ArithmeticRightShiftOperatorContext;
   class LogicalRightShiftOperatorContext;
   class LeftShiftOperatorContext;
+  class ShiftEqualOperatorContext;
+  class ArithmeticRightShiftEqualOperatorContext;
+  class LogicalRightShiftEqualOperatorContext;
+  class LeftShiftEqualOperatorContext;
+  class GreaterThanOrEqualToOperatorContext;
   class ConditionalOperatorStatementContext;
   class ComparisonOperatorStatementContext;
   class EqualityOperatorStatementContext;
@@ -632,6 +638,80 @@ public:
 
   LeftShiftOperatorContext* leftShiftOperator();
 
+  class  ShiftEqualOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    ShiftEqualOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ArithmeticRightShiftEqualOperatorContext *arithmeticRightShiftEqualOperator();
+    LogicalRightShiftEqualOperatorContext *logicalRightShiftEqualOperator();
+    LeftShiftEqualOperatorContext *leftShiftEqualOperator();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ShiftEqualOperatorContext* shiftEqualOperator();
+
+  class  ArithmeticRightShiftEqualOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    ArithmeticRightShiftEqualOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> GreaterThan();
+    antlr4::tree::TerminalNode* GreaterThan(size_t i);
+    antlr4::tree::TerminalNode *Equal();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ArithmeticRightShiftEqualOperatorContext* arithmeticRightShiftEqualOperator();
+
+  class  LogicalRightShiftEqualOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    LogicalRightShiftEqualOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> GreaterThan();
+    antlr4::tree::TerminalNode* GreaterThan(size_t i);
+    antlr4::tree::TerminalNode *Equal();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  LogicalRightShiftEqualOperatorContext* logicalRightShiftEqualOperator();
+
+  class  LeftShiftEqualOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    LeftShiftEqualOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> LessThan();
+    antlr4::tree::TerminalNode* LessThan(size_t i);
+    antlr4::tree::TerminalNode *Equal();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  LeftShiftEqualOperatorContext* leftShiftEqualOperator();
+
+  class  GreaterThanOrEqualToOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    GreaterThanOrEqualToOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *GreaterThan();
+    antlr4::tree::TerminalNode *Equal();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  GreaterThanOrEqualToOperatorContext* greaterThanOrEqualToOperator();
+
   class  ConditionalOperatorStatementContext : public antlr4::ParserRuleContext {
   public:
     ConditionalOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -653,7 +733,7 @@ public:
     antlr4::tree::TerminalNode *EqualTo();
     antlr4::tree::TerminalNode *NotEqualTo();
     antlr4::tree::TerminalNode *LessThanOrEqualTo();
-    antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
+    GreaterThanOrEqualToOperatorContext *greaterThanOrEqualToOperator();
     antlr4::tree::TerminalNode *LessThan();
     antlr4::tree::TerminalNode *GreaterThan();
 
@@ -677,6 +757,7 @@ public:
     antlr4::tree::TerminalNode *XorEqual();
     antlr4::tree::TerminalNode *OrEqual();
     antlr4::tree::TerminalNode *AndEqual();
+    ShiftEqualOperatorContext *shiftEqualOperator();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -833,10 +914,11 @@ public:
     antlr4::tree::TerminalNode *LessThan();
     antlr4::tree::TerminalNode *LessThanOrEqualTo();
     antlr4::tree::TerminalNode *GreaterThan();
-    antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
+    GreaterThanOrEqualToOperatorContext *greaterThanOrEqualToOperator();
     antlr4::tree::TerminalNode *OpeningBracket();
     antlr4::tree::TerminalNode *ClosingBracket();
     ShiftOperatorContext *shiftOperator();
+    ShiftEqualOperatorContext *shiftEqualOperator();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
