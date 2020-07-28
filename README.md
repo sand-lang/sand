@@ -1,2 +1,2 @@
-# SAN programming language
-[Read the documentation](https://github.com/tatakae-game/docs/blob/master/san.md)
+# **San** programming language
+- [Official documentation](https://quantumsheep.github.io/san-documentation)
