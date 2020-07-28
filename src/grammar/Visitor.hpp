@@ -2901,8 +2901,7 @@ public:
         }
         else if (const auto literal = context->CharLiteral())
         {
-            auto str = literal->getSymbol()->getText();
-            str = str.substr(1, str.size() - 2);
+            auto str = this->stringLiteralToString(literal->getSymbol()->getText());
 
             int integer = 0;
             for (const auto &c : str)
@@ -2930,6 +2929,7 @@ public:
     {
         auto str = literal.substr(1, literal.size() - 2);
 
+        str = std::regex_replace(str, std::regex("\\\\0"), "\0");
         str = std::regex_replace(str, std::regex("\\\\a"), "\a");
         str = std::regex_replace(str, std::regex("\\\\b"), "\b");
         str = std::regex_replace(str, std::regex("\\\\f"), "\f");
