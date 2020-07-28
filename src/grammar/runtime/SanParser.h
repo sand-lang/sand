@@ -35,25 +35,26 @@ public:
     RuleInstructions = 0, RuleBody = 1, RuleStatement = 2, RuleExpression = 3, 
     RuleScopedName = 4, RuleName = 5, RuleScopedNameNoGeneric = 6, RuleNameNoGeneric = 7, 
     RuleScopeResolver = 8, RuleMultiplicativeOperatorStatement = 9, RuleOperatorStatement = 10, 
-    RuleBitwiseOperatorStatement = 11, RuleConditionalOperatorStatement = 12, 
-    RuleComparisonOperatorStatement = 13, RuleEqualityOperatorStatement = 14, 
-    RuleLiteral = 15, RuleBooleanLiteral = 16, RuleIntegerLiteral = 17, 
-    RuleFloatingLiteral = 18, RuleStringLiteral = 19, RuleVariableDeclaration = 20, 
-    RuleFunctionCallArguments = 21, RuleFunctionCallArgument = 22, RuleOverloadableOperator = 23, 
-    RuleFunction = 24, RuleFunctionDeclaration = 25, RuleCastFunctionType = 26, 
-    RuleFunctionVariadicArgument = 27, RuleFunctionArguments = 28, RuleFunctionArgument = 29, 
-    RuleReturnStatement = 30, RuleIfStatement = 31, RuleElseStatement = 32, 
-    RuleWhileStatement = 33, RuleForStatement = 34, RuleBreakStatement = 35, 
-    RuleUnionStatement = 36, RuleUnionBody = 37, RuleUnionProperty = 38, 
-    RuleEnumStatement = 39, RuleEnumBody = 40, RuleEnumProperty = 41, RuleSpecialClassStatement = 42, 
-    RuleClassStatement = 43, RuleClassGenerics = 44, RuleClassExtends = 45, 
-    RuleClassBody = 46, RuleClassBodyElement = 47, RuleClassProperty = 48, 
-    RuleClassMethod = 49, RuleClassInstantiationProperties = 50, RuleClassInstantiationProperty = 51, 
-    RuleType = 52, RuleFunctionType = 53, RuleClassTypeName = 54, RuleClassTypeNameGenerics = 55, 
-    RuleNamespaceStatement = 56, RuleImportStatement = 57, RuleAttributes = 58, 
-    RuleAttribute = 59, RuleAlias = 60, RuleAssemblyStatement = 61, RuleAssemblyTemplate = 62, 
-    RuleAssemblyOutput = 63, RuleAssemblyInput = 64, RuleAssemblyClobber = 65, 
-    RuleEos = 66
+    RuleBitwiseOperatorStatement = 11, RuleShiftOperator = 12, RuleArithmeticRightShiftOperator = 13, 
+    RuleLogicalRightShiftOperator = 14, RuleLeftShiftOperator = 15, RuleConditionalOperatorStatement = 16, 
+    RuleComparisonOperatorStatement = 17, RuleEqualityOperatorStatement = 18, 
+    RuleLiteral = 19, RuleBooleanLiteral = 20, RuleIntegerLiteral = 21, 
+    RuleFloatingLiteral = 22, RuleStringLiteral = 23, RuleVariableDeclaration = 24, 
+    RuleFunctionCallArguments = 25, RuleFunctionCallArgument = 26, RuleOverloadableOperator = 27, 
+    RuleFunction = 28, RuleFunctionDeclaration = 29, RuleCastFunctionType = 30, 
+    RuleFunctionVariadicArgument = 31, RuleFunctionArguments = 32, RuleFunctionArgument = 33, 
+    RuleReturnStatement = 34, RuleIfStatement = 35, RuleElseStatement = 36, 
+    RuleWhileStatement = 37, RuleForStatement = 38, RuleBreakStatement = 39, 
+    RuleUnionStatement = 40, RuleUnionBody = 41, RuleUnionProperty = 42, 
+    RuleEnumStatement = 43, RuleEnumBody = 44, RuleEnumProperty = 45, RuleSpecialClassStatement = 46, 
+    RuleClassStatement = 47, RuleClassGenerics = 48, RuleClassExtends = 49, 
+    RuleClassBody = 50, RuleClassBodyElement = 51, RuleClassProperty = 52, 
+    RuleClassMethod = 53, RuleClassInstantiationProperties = 54, RuleClassInstantiationProperty = 55, 
+    RuleType = 56, RuleFunctionType = 57, RuleClassTypeName = 58, RuleClassTypeNameGenerics = 59, 
+    RuleNamespaceStatement = 60, RuleImportStatement = 61, RuleAttributes = 62, 
+    RuleAttribute = 63, RuleAlias = 64, RuleAssemblyStatement = 65, RuleAssemblyTemplate = 66, 
+    RuleAssemblyOutput = 67, RuleAssemblyInput = 68, RuleAssemblyClobber = 69, 
+    RuleEos = 70
   };
 
   SanParser(antlr4::TokenStream *input);
@@ -78,6 +79,10 @@ public:
   class MultiplicativeOperatorStatementContext;
   class OperatorStatementContext;
   class BitwiseOperatorStatementContext;
+  class ShiftOperatorContext;
+  class ArithmeticRightShiftOperatorContext;
+  class LogicalRightShiftOperatorContext;
+  class LeftShiftOperatorContext;
   class ConditionalOperatorStatementContext;
   class ComparisonOperatorStatementContext;
   class EqualityOperatorStatementContext;
@@ -214,6 +219,17 @@ public:
 
     ExpressionContext *expression();
     antlr4::tree::TerminalNode *Not();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  BinaryShiftOperationContext : public ExpressionContext {
+  public:
+    BinaryShiftOperationContext(ExpressionContext *ctx);
+
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    ShiftOperatorContext *shiftOperator();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -559,6 +575,63 @@ public:
 
   BitwiseOperatorStatementContext* bitwiseOperatorStatement();
 
+  class  ShiftOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    ShiftOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ArithmeticRightShiftOperatorContext *arithmeticRightShiftOperator();
+    LogicalRightShiftOperatorContext *logicalRightShiftOperator();
+    LeftShiftOperatorContext *leftShiftOperator();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ShiftOperatorContext* shiftOperator();
+
+  class  ArithmeticRightShiftOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    ArithmeticRightShiftOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> GreaterThan();
+    antlr4::tree::TerminalNode* GreaterThan(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ArithmeticRightShiftOperatorContext* arithmeticRightShiftOperator();
+
+  class  LogicalRightShiftOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    LogicalRightShiftOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> GreaterThan();
+    antlr4::tree::TerminalNode* GreaterThan(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  LogicalRightShiftOperatorContext* logicalRightShiftOperator();
+
+  class  LeftShiftOperatorContext : public antlr4::ParserRuleContext {
+  public:
+    LeftShiftOperatorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> LessThan();
+    antlr4::tree::TerminalNode* LessThan(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  LeftShiftOperatorContext* leftShiftOperator();
+
   class  ConditionalOperatorStatementContext : public antlr4::ParserRuleContext {
   public:
     ConditionalOperatorStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -763,6 +836,7 @@ public:
     antlr4::tree::TerminalNode *GreaterThanOrEqualTo();
     antlr4::tree::TerminalNode *OpeningBracket();
     antlr4::tree::TerminalNode *ClosingBracket();
+    ShiftOperatorContext *shiftOperator();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

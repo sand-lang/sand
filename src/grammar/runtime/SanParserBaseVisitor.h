@@ -31,6 +31,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitBinaryShiftOperation(SanParser::BinaryShiftOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitDereferenceExpression(SanParser::DereferenceExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -144,6 +148,22 @@ public:
   }
 
   virtual antlrcpp::Any visitBitwiseOperatorStatement(SanParser::BitwiseOperatorStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitShiftOperator(SanParser::ShiftOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitArithmeticRightShiftOperator(SanParser::ArithmeticRightShiftOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLogicalRightShiftOperator(SanParser::LogicalRightShiftOperatorContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLeftShiftOperator(SanParser::LeftShiftOperatorContext *ctx) override {
     return visitChildren(ctx);
   }
 

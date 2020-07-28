@@ -671,6 +671,90 @@ public:
         return nullptr;
     }
 
+    static Value *rshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        if (lvalue->type->is_integer() && rvalue->type->is_integer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateAShr(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("rshift", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *rshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::rshift(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *lrshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        if (lvalue->type->is_integer() && rvalue->type->is_integer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateLShr(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("rshift", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *lrshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::lrshift(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
+    static Value *lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+    {
+        auto ltype = Type::behind_reference(lvalue->type);
+        auto rtype = Type::behind_reference(rvalue->type);
+
+        if (lvalue->type->is_integer() && rvalue->type->is_integer())
+        {
+            lvalue = lvalue->load_alloca_and_reference(builder);
+            rvalue = rvalue->cast(lvalue->type, builder);
+
+            auto value = builder.CreateShl(lvalue->get_ref(), rvalue->get_ref());
+            return new Value("rshift", lvalue->type, value);
+        }
+
+        return nullptr;
+    }
+
+    Value *lshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
+    {
+        if (auto result = Value::lshift(builder, this, rvalue))
+        {
+            this->store(result, builder, module);
+            return this;
+        }
+
+        return nullptr;
+    }
+
     static Value *equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
         auto ltype = Type::behind_reference(lvalue->type);

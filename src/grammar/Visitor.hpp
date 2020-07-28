@@ -51,6 +51,8 @@
 #include <san/Exceptions/PropertyNotFoundException.hpp>
 #include <san/Exceptions/ReturnOutsideOfFunctionException.hpp>
 #include <san/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
+#include <san/Exceptions/SyntaxException.hpp>
+#include <san/Exceptions/UnimplementedException.hpp>
 #include <san/Exceptions/UnknownNameException.hpp>
 
 #include <san/filesystem.hpp>
@@ -373,6 +375,11 @@ public:
 
         if (auto operator_name = context->overloadableOperator())
         {
+            if (auto shift_operator_context = operator_name->shiftOperator())
+            {
+                this->checkShiftOperator(shift_operator_context);
+            }
+
             name = operator_name->getText();
         }
         else if (auto type_context = context->castFunctionType())
@@ -1557,6 +1564,10 @@ public:
         {
             return this->visitBinaryBitwiseOperation(binary_bitwise_operation_context);
         }
+        else if (const auto binary_shift_operation_context = dynamic_cast<SanParser::BinaryShiftOperationContext *>(context))
+        {
+            return this->visitBinaryShiftOperation(binary_shift_operation_context);
+        }
         else if (const auto binary_comparison_operation_context = dynamic_cast<SanParser::BinaryComparisonOperationContext *>(context))
         {
             return this->visitBinaryComparisonOperation(binary_comparison_operation_context);
@@ -2002,6 +2013,121 @@ public:
         }
 
         throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
+    }
+
+    enum ShiftOperator
+    {
+        Left,
+        ArithmeticRight,
+        LogicalRight,
+    };
+
+    Value *visitBinaryShiftOperation(SanParser::BinaryShiftOperationContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        const auto opt = this->visitShiftOperator(context->shiftOperator());
+        const auto lexpr_context = context->expression(0);
+        const auto rexpr_context = context->expression(1);
+
+        auto lexpr = this->valueFromExpression(lexpr_context);
+        auto rexpr = this->valueFromExpression(rexpr_context);
+
+        auto lvalue = lexpr;
+        auto rvalue = rexpr;
+
+        if (opt == ShiftOperator::ArithmeticRight)
+        {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">>", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::rshift(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
+        }
+        else if (opt == ShiftOperator::LogicalRight)
+        {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload(">>>", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::lrshift(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
+        }
+        else if (opt == ShiftOperator::Left)
+        {
+            std::vector<Value *> args = {lexpr, rexpr};
+            if (auto overload = this->getOperatorOverload("<<", args))
+            {
+                return overload->call(scope->builder(), scope->module(), args);
+            }
+
+            if (auto value = Value::lshift(scope->builder(), lvalue, rvalue))
+            {
+                return value;
+            }
+        }
+
+        throw UnimplementedException(this->files.top(), context->getStart());
+    }
+
+    void checkShiftOperator(SanParser::ShiftOperatorContext *context)
+    {
+        auto check = [this](antlr4::ParserRuleContext *context) {
+            auto token = static_cast<antlr4::tree::TerminalNode *>(context->children[0])->getSymbol();
+            auto firstIndex = token->getStartIndex();
+
+            for (size_t i = 1; i < context->children.size(); i++)
+            {
+                auto sibling = static_cast<antlr4::tree::TerminalNode *>(context->children[i])->getSymbol();
+
+                if (sibling->getStartIndex() != (firstIndex + i))
+                {
+                    throw SyntaxException(this->files.top(), context->getStart(), "shift operators should not contain spaces");
+                }
+            }
+        };
+
+        if (auto operator_context = context->arithmeticRightShiftOperator())
+        {
+            check(operator_context);
+        }
+        else if (auto operator_context = context->logicalRightShiftOperator())
+        {
+            check(operator_context);
+        }
+        else if (auto operator_context = context->leftShiftOperator())
+        {
+            check(operator_context);
+        }
+    }
+
+    ShiftOperator visitShiftOperator(SanParser::ShiftOperatorContext *context)
+    {
+        this->checkShiftOperator(context);
+
+        if (auto operator_context = context->arithmeticRightShiftOperator())
+        {
+            return ShiftOperator::ArithmeticRight;
+        }
+        else if (auto operator_context = context->logicalRightShiftOperator())
+        {
+            return ShiftOperator::LogicalRight;
+        }
+        else if (auto operator_context = context->leftShiftOperator())
+        {
+            return ShiftOperator::Left;
+        }
+
+        throw UnimplementedException(this->files.top(), context->getStart());
     }
 
     Value *visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context)

@@ -47,6 +47,7 @@ expression:
 	| expression multiplicativeOperatorStatement expression	# BinaryMultiplicativeOperation
 	| expression operatorStatement expression				# BinaryOperation
 	| expression bitwiseOperatorStatement expression		# BinaryBitwiseOperation
+	| expression shiftOperator expression					# BinaryShiftOperation
 	| expression comparisonOperatorStatement expression		# BinaryComparisonOperation
 	| expression conditionalOperatorStatement expression	# BinaryConditionalOperation
 	| expression equalityOperatorStatement expression		# EqualityOperation;
@@ -66,6 +67,15 @@ multiplicativeOperatorStatement: Mul | Div | Mod;
 operatorStatement: Add | Sub;
 
 bitwiseOperatorStatement: Xor | BitwiseOr | BitwiseAnd;
+
+shiftOperator:
+	arithmeticRightShiftOperator
+	| logicalRightShiftOperator
+	| leftShiftOperator;
+
+arithmeticRightShiftOperator: '>' '>';
+logicalRightShiftOperator: '>' '>' '>';
+leftShiftOperator: '<' '<';
 
 conditionalOperatorStatement: ConditionalOr | ConditionalAnd;
 
@@ -146,7 +156,8 @@ overloadableOperator:
 	| '<='
 	| '>'
 	| '>='
-	| '[' ']';
+	| '[' ']'
+	| shiftOperator;
 
 function:
 	attributes Extern? functionDeclaration (

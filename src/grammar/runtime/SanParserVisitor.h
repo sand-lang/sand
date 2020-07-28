@@ -27,6 +27,8 @@ public:
 
     virtual antlrcpp::Any visitSuffixUnaryNegationExpression(SanParser::SuffixUnaryNegationExpressionContext *context) = 0;
 
+    virtual antlrcpp::Any visitBinaryShiftOperation(SanParser::BinaryShiftOperationContext *context) = 0;
+
     virtual antlrcpp::Any visitDereferenceExpression(SanParser::DereferenceExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitInParenExpression(SanParser::InParenExpressionContext *context) = 0;
@@ -84,6 +86,14 @@ public:
     virtual antlrcpp::Any visitOperatorStatement(SanParser::OperatorStatementContext *context) = 0;
 
     virtual antlrcpp::Any visitBitwiseOperatorStatement(SanParser::BitwiseOperatorStatementContext *context) = 0;
+
+    virtual antlrcpp::Any visitShiftOperator(SanParser::ShiftOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitArithmeticRightShiftOperator(SanParser::ArithmeticRightShiftOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitLogicalRightShiftOperator(SanParser::LogicalRightShiftOperatorContext *context) = 0;
+
+    virtual antlrcpp::Any visitLeftShiftOperator(SanParser::LeftShiftOperatorContext *context) = 0;
 
     virtual antlrcpp::Any visitConditionalOperatorStatement(SanParser::ConditionalOperatorStatementContext *context) = 0;
 
