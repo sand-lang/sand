@@ -63,6 +63,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitBitwiseNegationExpression(SanParser::BitwiseNegationExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitIndex(SanParser::IndexContext *ctx) override {
     return visitChildren(ctx);
   }

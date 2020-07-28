@@ -43,6 +43,8 @@ public:
 
     virtual antlrcpp::Any visitEqualityOperation(SanParser::EqualityOperationContext *context) = 0;
 
+    virtual antlrcpp::Any visitBitwiseNegationExpression(SanParser::BitwiseNegationExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitIndex(SanParser::IndexContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context) = 0;

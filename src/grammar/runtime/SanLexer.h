@@ -12,22 +12,22 @@
 class  SanLexer : public antlr4::Lexer {
 public:
   enum {
-    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, ConditionalOr = 7, 
-    ConditionalAnd = 8, EqualTo = 9, NotEqualTo = 10, LessThanOrEqualTo = 11, 
-    LessThan = 12, GreaterThan = 13, Xor = 14, BitwiseOr = 15, BitwiseAnd = 16, 
-    Equal = 17, AddEqual = 18, SubEqual = 19, MulEqual = 20, DivEqual = 21, 
-    ModEqual = 22, XorEqual = 23, OrEqual = 24, AndEqual = 25, OpeningParen = 26, 
-    ClosingParen = 27, OpeningBrace = 28, ClosingBrace = 29, OpeningBracket = 30, 
-    ClosingBracket = 31, Variadic = 32, InclusiveRange = 33, ExclusiveRange = 34, 
-    As = 35, SizeOf = 36, Const = 37, Class = 38, Extends = 39, Special = 40, 
-    Static = 41, Dot = 42, Arrow = 43, Union = 44, Enum = 45, Destructor = 46, 
-    Namespace = 47, ScopeResolver = 48, VariableDeclarator = 49, If = 50, 
-    Else = 51, While = 52, Break = 53, For = 54, In = 55, Function = 56, 
-    Extern = 57, Return = 58, Cast = 59, Alias = 60, Comma = 61, Colon = 62, 
-    Attribute = 63, Assembly = 64, Import = 65, True = 66, False = 67, NullLiteral = 68, 
-    InstructionsSeparator = 69, VariableName = 70, StringLiteral = 71, CharLiteral = 72, 
-    DecimalLiteral = 73, FloatingLiteral = 74, ZeroLiteral = 75, HexadecimalLiteral = 76, 
-    BinaryLiteral = 77, Comment = 78, WhiteSpace = 79, LineTerminator = 80
+    Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, Neg = 7, ConditionalOr = 8, 
+    ConditionalAnd = 9, EqualTo = 10, NotEqualTo = 11, LessThanOrEqualTo = 12, 
+    LessThan = 13, GreaterThan = 14, Xor = 15, BitwiseOr = 16, BitwiseAnd = 17, 
+    Equal = 18, AddEqual = 19, SubEqual = 20, MulEqual = 21, DivEqual = 22, 
+    ModEqual = 23, XorEqual = 24, OrEqual = 25, AndEqual = 26, OpeningParen = 27, 
+    ClosingParen = 28, OpeningBrace = 29, ClosingBrace = 30, OpeningBracket = 31, 
+    ClosingBracket = 32, Variadic = 33, InclusiveRange = 34, ExclusiveRange = 35, 
+    As = 36, SizeOf = 37, Const = 38, Class = 39, Extends = 40, Special = 41, 
+    Static = 42, Dot = 43, Arrow = 44, Union = 45, Enum = 46, Destructor = 47, 
+    Namespace = 48, ScopeResolver = 49, VariableDeclarator = 50, If = 51, 
+    Else = 52, While = 53, Break = 54, For = 55, In = 56, Function = 57, 
+    Extern = 58, Return = 59, Cast = 60, Alias = 61, Comma = 62, Colon = 63, 
+    Attribute = 64, Assembly = 65, Import = 66, True = 67, False = 68, NullLiteral = 69, 
+    InstructionsSeparator = 70, VariableName = 71, StringLiteral = 72, CharLiteral = 73, 
+    DecimalLiteral = 74, FloatingLiteral = 75, ZeroLiteral = 76, HexadecimalLiteral = 77, 
+    BinaryLiteral = 78, Comment = 79, WhiteSpace = 80, LineTerminator = 81
   };
 
   SanLexer(antlr4::CharStream *input);

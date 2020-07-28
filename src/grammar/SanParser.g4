@@ -37,6 +37,7 @@ expression:
 	| '-' expression										# UnaryNegativeExpression
 	| '+' expression										# UnaryPositiveExpression
 	| '!' expression										# UnaryNegationExpression
+	| '~' expression										# BitwiseNegationExpression
 	| '&' expression										# PointerExpression
 	| '*' expression										# DereferenceExpression
 	| expression '!'										# SuffixUnaryNegationExpression
@@ -154,6 +155,7 @@ overloadableOperator:
 	| '^'
 	| '|'
 	| '&'
+	| '~'
 	| '+='
 	| '-='
 	| '*='

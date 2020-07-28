@@ -1592,6 +1592,10 @@ public:
         {
             return this->visitUnaryNegativeExpression(nagative_expression_context);
         }
+        else if (const auto nagation_expression_context = dynamic_cast<SanParser::BitwiseNegationExpressionContext *>(context))
+        {
+            return this->visitBitwiseNegationExpression(nagation_expression_context);
+        }
         else if (const auto positive_expression_context = dynamic_cast<SanParser::UnaryPositiveExpressionContext *>(context))
         {
             return this->visitUnaryPositiveExpression(positive_expression_context);
@@ -2604,6 +2608,36 @@ public:
         auto one = new Values::Constant("literal_i64", expression->type, one_llvm);
         if (auto value = Value::sub(scope->builder(), one, expression))
         {
+            return value;
+        }
+
+        throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
+    }
+
+    Value *visitBitwiseNegationExpression(SanParser::BitwiseNegationExpressionContext *context)
+    {
+        auto scope = this->scopes.top();
+
+        auto expression = this->valueFromExpression(context->expression());
+
+        std::vector<Value *> args = {expression};
+        if (auto overload = this->getOperatorOverload("~", args))
+        {
+            return overload->call(scope->builder(), scope->module(), args);
+        }
+
+        auto one_llvm = llvm::ConstantInt::get(expression->type->get_ref(), -1);
+
+        if (auto constant = dynamic_cast<Values::Constant *>(expression))
+        {
+            auto value = llvm::ConstantExpr::getXor(constant->get_ref(), one_llvm);
+            return new Values::Constant(constant->name, constant->type, value);
+        }
+
+        auto one = new Values::Constant("literal_negative_one", expression->type, one_llvm);
+        if (auto value = Value::boolean_xor(scope->builder(), expression, one))
+        {
+            value->get_ref()->setName("neg");
             return value;
         }
 
