@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime/SanParserBaseVisitor.h"
+#include "runtime/XenonParserBaseVisitor.h"
 
 #include "ParserErrorListener.hpp"
 
@@ -8,58 +8,58 @@
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Transforms/Utils/Evaluator.h>
 
-#include <san/Debugger.hpp>
-#include <san/Environment.hpp>
-#include <san/Helpers.hpp>
+#include <Xenon/Debugger.hpp>
+#include <Xenon/Environment.hpp>
+#include <Xenon/Helpers.hpp>
 
-#include <san/Alias.hpp>
-#include <san/AssemblyOperand.hpp>
-#include <san/Attributes.hpp>
-#include <san/NameArray.hpp>
-#include <san/Namespace.hpp>
-#include <san/Scope.hpp>
-#include <san/ScopeStack.hpp>
-#include <san/StatementStatus.hpp>
-#include <san/Types/ClassType.hpp>
-#include <san/Types/EnumType.hpp>
-#include <san/Types/GenericAlias.hpp>
-#include <san/Types/GenericClassType.hpp>
-#include <san/Types/GenericFunctionType.hpp>
-#include <san/Types/GenericUnionType.hpp>
-#include <san/Types/UnionType.hpp>
-#include <san/Values/Function.hpp>
-#include <san/Values/GlobalConstant.hpp>
-#include <san/Values/GlobalVariable.hpp>
-#include <san/Values/Variable.hpp>
+#include <Xenon/Alias.hpp>
+#include <Xenon/AssemblyOperand.hpp>
+#include <Xenon/Attributes.hpp>
+#include <Xenon/NameArray.hpp>
+#include <Xenon/Namespace.hpp>
+#include <Xenon/Scope.hpp>
+#include <Xenon/ScopeStack.hpp>
+#include <Xenon/StatementStatus.hpp>
+#include <Xenon/Types/ClassType.hpp>
+#include <Xenon/Types/EnumType.hpp>
+#include <Xenon/Types/GenericAlias.hpp>
+#include <Xenon/Types/GenericClassType.hpp>
+#include <Xenon/Types/GenericFunctionType.hpp>
+#include <Xenon/Types/GenericUnionType.hpp>
+#include <Xenon/Types/UnionType.hpp>
+#include <Xenon/Values/Function.hpp>
+#include <Xenon/Values/GlobalConstant.hpp>
+#include <Xenon/Values/GlobalVariable.hpp>
+#include <Xenon/Values/Variable.hpp>
 
-#include <san/Exceptions/ExpressionHasNotClassTypeException.hpp>
-#include <san/Exceptions/ImportException.hpp>
-#include <san/Exceptions/IndexException.hpp>
-#include <san/Exceptions/InvalidInputConstraintException.hpp>
-#include <san/Exceptions/InvalidLeftValueException.hpp>
-#include <san/Exceptions/InvalidRangeException.hpp>
-#include <san/Exceptions/InvalidRightValueException.hpp>
-#include <san/Exceptions/InvalidTypeException.hpp>
-#include <san/Exceptions/InvalidValueException.hpp>
-#include <san/Exceptions/MultipleInstancesException.hpp>
-#include <san/Exceptions/NoFunctionMatchException.hpp>
-#include <san/Exceptions/NotAClassException.hpp>
-#include <san/Exceptions/NotAClassOrNamespaceException.hpp>
-#include <san/Exceptions/NotAGenericException.hpp>
-#include <san/Exceptions/NotAPointerException.hpp>
-#include <san/Exceptions/OpaqueTypeNotAllowedException.hpp>
-#include <san/Exceptions/PropertyNotFoundException.hpp>
-#include <san/Exceptions/ReturnOutsideOfFunctionException.hpp>
-#include <san/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
-#include <san/Exceptions/SyntaxException.hpp>
-#include <san/Exceptions/UnimplementedException.hpp>
-#include <san/Exceptions/UnknownNameException.hpp>
+#include <Xenon/Exceptions/ExpressionHasNotClassTypeException.hpp>
+#include <Xenon/Exceptions/ImportException.hpp>
+#include <Xenon/Exceptions/IndexException.hpp>
+#include <Xenon/Exceptions/InvalidInputConstraintException.hpp>
+#include <Xenon/Exceptions/InvalidLeftValueException.hpp>
+#include <Xenon/Exceptions/InvalidRangeException.hpp>
+#include <Xenon/Exceptions/InvalidRightValueException.hpp>
+#include <Xenon/Exceptions/InvalidTypeException.hpp>
+#include <Xenon/Exceptions/InvalidValueException.hpp>
+#include <Xenon/Exceptions/MultipleInstancesException.hpp>
+#include <Xenon/Exceptions/NoFunctionMatchException.hpp>
+#include <Xenon/Exceptions/NotAClassException.hpp>
+#include <Xenon/Exceptions/NotAClassOrNamespaceException.hpp>
+#include <Xenon/Exceptions/NotAGenericException.hpp>
+#include <Xenon/Exceptions/NotAPointerException.hpp>
+#include <Xenon/Exceptions/OpaqueTypeNotAllowedException.hpp>
+#include <Xenon/Exceptions/PropertyNotFoundException.hpp>
+#include <Xenon/Exceptions/ReturnOutsideOfFunctionException.hpp>
+#include <Xenon/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
+#include <Xenon/Exceptions/SyntaxException.hpp>
+#include <Xenon/Exceptions/UnimplementedException.hpp>
+#include <Xenon/Exceptions/UnknownNameException.hpp>
 
-#include <san/filesystem.hpp>
+#include <Xenon/filesystem.hpp>
 
 #include <regex>
 
-namespace San
+namespace Xenon
 {
 class Visitor
 {
@@ -101,7 +101,7 @@ public:
                 for (const auto &include_path : include_paths)
                 {
                     auto separator = (include_path[include_path.size() - 1] != '/' ? "/" : "");
-                    auto fullpath = fs::absolute(include_path + separator + path + ".sn");
+                    auto fullpath = fs::absolute(include_path + separator + path + ".x");
 
                     if (fs::exists(fullpath))
                     {
@@ -114,9 +114,9 @@ public:
 
         auto fullpath = fs::absolute(path);
 
-        if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath.u8string(), ".sn"))
+        if (!fs::exists(fullpath) && !Helpers::ends_with(fullpath.u8string(), ".x"))
         {
-            fullpath += ".sn";
+            fullpath += ".x";
         }
 
         if (!fs::exists(fullpath))
@@ -139,27 +139,27 @@ public:
         files.push(fullpath);
 
         auto input = new ANTLRInputStream(stream);
-        auto lexer = new SanLexer(input);
+        auto lexer = new XenonLexer(input);
         auto tokens = new CommonTokenStream(lexer);
-        auto parser = new SanParser(tokens);
+        auto parser = new XenonParser(tokens);
         // parser->removeErrorListeners();
 
         // auto error_listener = new ParserErrorListener(this->env.debugger);
         // parser->addErrorListener(error_listener);
 
-        SanParser::InstructionsContext *context = parser->instructions();
+        XenonParser::InstructionsContext *context = parser->instructions();
 
         this->visitInstructions(context);
 
         files.pop();
     }
 
-    void visitInstructions(SanParser::InstructionsContext *context)
+    void visitInstructions(XenonParser::InstructionsContext *context)
     {
         this->visitStatements(context->statement());
     }
 
-    StatementStatus visitStatements(const std::vector<SanParser::StatementContext *> &statements)
+    StatementStatus visitStatements(const std::vector<XenonParser::StatementContext *> &statements)
     {
         for (const auto &statement : statements)
         {
@@ -185,7 +185,7 @@ public:
         return StatementStatus::None;
     }
 
-    Name *visitStatement(SanParser::StatementContext *context)
+    Name *visitStatement(XenonParser::StatementContext *context)
     {
         if (auto function = context->function())
         {
@@ -258,7 +258,7 @@ public:
     /**
      * Return value can be a pointer of Function or GenericFunctionType
      */
-    Name *visitFunction(SanParser::FunctionContext *context, const bool add_to_scope = true, const bool generate_body = true, Types::ClassType *this_type = nullptr)
+    Name *visitFunction(XenonParser::FunctionContext *context, const bool add_to_scope = true, const bool generate_body = true, Types::ClassType *this_type = nullptr)
     {
         auto scope = this->scopes.top();
 
@@ -348,7 +348,7 @@ public:
         return nullptr;
     }
 
-    Values::Function *generateFunctionBody(SanParser::FunctionContext *context, Values::Function *base)
+    Values::Function *generateFunctionBody(XenonParser::FunctionContext *context, Values::Function *base)
     {
         this->scopes.create(base);
 
@@ -365,7 +365,7 @@ public:
     /**
      * Return value can be a pointer of FunctionType or GenericFunctionType
      */
-    Name *visitFunctionDeclaration(SanParser::FunctionDeclarationContext *context, Types::ClassType *parent, const bool &bypass_generics = false)
+    Name *visitFunctionDeclaration(XenonParser::FunctionDeclarationContext *context, Types::ClassType *parent, const bool &bypass_generics = false)
     {
         auto scope = this->scopes.top();
 
@@ -445,12 +445,12 @@ public:
         return Types::FunctionType::create(scope->builder(), scope->module(), name, return_type, args, is_variadic, parent != nullptr);
     }
 
-    Type *visitCastFunctionType(SanParser::CastFunctionTypeContext *context)
+    Type *visitCastFunctionType(XenonParser::CastFunctionTypeContext *context)
     {
         return this->visitType(context->type());
     }
 
-    std::vector<Types::FunctionArgument> visitFunctionArguments(SanParser::FunctionArgumentsContext *context)
+    std::vector<Types::FunctionArgument> visitFunctionArguments(XenonParser::FunctionArgumentsContext *context)
     {
         std::vector<Types::FunctionArgument> arguments;
 
@@ -466,7 +466,7 @@ public:
         return arguments;
     }
 
-    Types::FunctionArgument visitFunctionArgument(SanParser::FunctionArgumentContext *context)
+    Types::FunctionArgument visitFunctionArgument(XenonParser::FunctionArgumentContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -511,7 +511,7 @@ public:
         return function;
     }
 
-    Namespace *visitNamespaceStatement(SanParser::NamespaceStatementContext *context)
+    Namespace *visitNamespaceStatement(XenonParser::NamespaceStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -552,7 +552,7 @@ public:
         return nsp;
     }
 
-    Block *visitBody(SanParser::BodyContext *context, Values::Function *function = nullptr)
+    Block *visitBody(XenonParser::BodyContext *context, Values::Function *function = nullptr)
     {
         auto scope = this->scopes.create();
 
@@ -667,7 +667,7 @@ public:
         return block;
     }
 
-    Values::Variable *visitVariableDeclaration(SanParser::VariableDeclarationContext *context)
+    Values::Variable *visitVariableDeclaration(XenonParser::VariableDeclarationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -751,7 +751,7 @@ public:
         return nullptr;
     }
 
-    void visitReturnStatement(SanParser::ReturnStatementContext *context)
+    void visitReturnStatement(XenonParser::ReturnStatementContext *context)
     {
         auto scope = this->scopes.top();
         auto function = scope->get_function();
@@ -781,7 +781,7 @@ public:
         function->return_block->br(scope->builder());
     }
 
-    void visitIfStatement(SanParser::IfStatementContext *context)
+    void visitIfStatement(XenonParser::IfStatementContext *context)
     {
         auto scope = this->scopes.create();
 
@@ -849,12 +849,12 @@ public:
         }
     }
 
-    StatementStatus visitElseStatement(SanParser::ElseStatementContext *context)
+    StatementStatus visitElseStatement(XenonParser::ElseStatementContext *context)
     {
         return this->visitStatements({context->statement()});
     }
 
-    void visitWhileStatement(SanParser::WhileStatementContext *context)
+    void visitWhileStatement(XenonParser::WhileStatementContext *context)
     {
         auto scope = this->scopes.create();
 
@@ -899,7 +899,7 @@ public:
         this->scopes.pop();
     }
 
-    void visitForStatement(SanParser::ForStatementContext *context)
+    void visitForStatement(XenonParser::ForStatementContext *context)
     {
         auto scope = this->scopes.create();
 
@@ -981,7 +981,7 @@ public:
         throw InvalidRangeException(this->files.top(), context->expression()->getStart());
     }
 
-    void visitImportStatement(SanParser::ImportStatementContext *context)
+    void visitImportStatement(XenonParser::ImportStatementContext *context)
     {
         auto str = this->stringLiteralToString(context->StringLiteral()->getText());
 
@@ -995,7 +995,7 @@ public:
         }
     }
 
-    Types::ClassType *visitSpecialClassStatement(SanParser::SpecialClassStatementContext *context)
+    Types::ClassType *visitSpecialClassStatement(XenonParser::SpecialClassStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1050,7 +1050,7 @@ public:
         throw NotAGenericException(this->files.top(), scoped_name_context->getStart());
     }
 
-    Name *visitUnionStatement(SanParser::UnionStatementContext *context)
+    Name *visitUnionStatement(XenonParser::UnionStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1086,7 +1086,7 @@ public:
         }
     }
 
-    Types::UnionType *visitUnionBody(SanParser::UnionBodyContext *context, Types::UnionType *type, const bool &is_packed = false)
+    Types::UnionType *visitUnionBody(XenonParser::UnionBodyContext *context, Types::UnionType *type, const bool &is_packed = false)
     {
         auto scope = this->scopes.top();
         auto generate_methods = generating_properties_stack == 0;
@@ -1111,7 +1111,7 @@ public:
         return type;
     }
 
-    Types::UnionProperty *visitUnionProperty(SanParser::UnionPropertyContext *context)
+    Types::UnionProperty *visitUnionProperty(XenonParser::UnionPropertyContext *context)
     {
         auto name = context->VariableName()->getText();
         auto type = this->visitType(context->type());
@@ -1119,7 +1119,7 @@ public:
         return new Types::UnionProperty(name, type);
     }
 
-    Types::EnumType *visitEnumStatement(SanParser::EnumStatementContext *context)
+    Types::EnumType *visitEnumStatement(XenonParser::EnumStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1143,7 +1143,7 @@ public:
         return type;
     }
 
-    Types::EnumType *visitEnumBody(SanParser::EnumBodyContext *context, Types::EnumType *type)
+    Types::EnumType *visitEnumBody(XenonParser::EnumBodyContext *context, Types::EnumType *type)
     {
         auto scope = this->scopes.top();
         auto builder = scope->builder();
@@ -1173,7 +1173,7 @@ public:
         return type;
     }
 
-    Types::EnumValue visitEnumProperty(SanParser::EnumPropertyContext *context, Types::EnumType *type)
+    Types::EnumValue visitEnumProperty(XenonParser::EnumPropertyContext *context, Types::EnumType *type)
     {
         auto scope = this->scopes.top();
         auto name = context->VariableName()->getText();
@@ -1193,7 +1193,7 @@ public:
         return Types::EnumValue(name, nullptr);
     }
 
-    Name *visitClassStatement(SanParser::ClassStatementContext *context)
+    Name *visitClassStatement(XenonParser::ClassStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1300,7 +1300,7 @@ public:
         return type;
     }
 
-    std::vector<Types::Generic *> visitClassGenerics(SanParser::ClassGenericsContext *context)
+    std::vector<Types::Generic *> visitClassGenerics(XenonParser::ClassGenericsContext *context)
     {
         std::vector<Types::Generic *> generics;
 
@@ -1313,7 +1313,7 @@ public:
         return generics;
     }
 
-    std::vector<Types::ClassType *> visitClassExtends(SanParser::ClassExtendsContext *context)
+    std::vector<Types::ClassType *> visitClassExtends(XenonParser::ClassExtendsContext *context)
     {
         auto scope = this->scopes.top();
         std::vector<Types::ClassType *> types;
@@ -1327,7 +1327,7 @@ public:
         return types;
     }
 
-    Types::ClassType *visitClassBody(SanParser::ClassBodyContext *context, std::vector<Types::ClassType *> parents, Types::ClassType *type, const bool &is_packed = false)
+    Types::ClassType *visitClassBody(XenonParser::ClassBodyContext *context, std::vector<Types::ClassType *> parents, Types::ClassType *type, const bool &is_packed = false)
     {
         auto scope = this->scopes.top();
 
@@ -1363,7 +1363,7 @@ public:
         return type;
     }
 
-    void visitClassBodyElement(SanParser::ClassBodyElementContext *context, Types::ClassType *type, std::vector<llvm::Type *> &properties_types)
+    void visitClassBodyElement(XenonParser::ClassBodyElementContext *context, Types::ClassType *type, std::vector<llvm::Type *> &properties_types)
     {
         if (auto class_property = context->classProperty())
         {
@@ -1498,7 +1498,7 @@ public:
         }
     }
 
-    Types::ClassProperty *visitClassProperty(SanParser::ClassPropertyContext *context)
+    Types::ClassProperty *visitClassProperty(XenonParser::ClassPropertyContext *context)
     {
         auto name = context->VariableName()->getText();
         auto type = this->visitType(context->type());
@@ -1525,7 +1525,7 @@ public:
     /**
      * Return value can be a pointer of Function or GenericFunctionType
      */
-    Name *generateClassMethodDeclaration(SanParser::ClassMethodContext *context, Types::ClassType *parent, const bool &is_static)
+    Name *generateClassMethodDeclaration(XenonParser::ClassMethodContext *context, Types::ClassType *parent, const bool &is_static)
     {
         if (is_static)
         {
@@ -1537,106 +1537,106 @@ public:
         }
     }
 
-    Values::Function *generateClassMethodBody(SanParser::ClassMethodContext *context, Values::Function *base)
+    Values::Function *generateClassMethodBody(XenonParser::ClassMethodContext *context, Values::Function *base)
     {
         return this->generateFunctionBody(context->function(), base);
     }
 
-    Name *visitExpression(SanParser::ExpressionContext *context)
+    Name *visitExpression(XenonParser::ExpressionContext *context)
     {
-        if (const auto in_paren_expression_context = dynamic_cast<SanParser::InParenExpressionContext *>(context))
+        if (const auto in_paren_expression_context = dynamic_cast<XenonParser::InParenExpressionContext *>(context))
         {
             return this->visitInParenExpression(in_paren_expression_context);
         }
-        else if (const auto sizeof_expression_context = dynamic_cast<SanParser::SizeofExpressionContext *>(context))
+        else if (const auto sizeof_expression_context = dynamic_cast<XenonParser::SizeofExpressionContext *>(context))
         {
             return this->visitSizeofExpression(sizeof_expression_context);
         }
-        else if (const auto class_instantiation_expression_context = dynamic_cast<SanParser::ClassInstantiationExpressionContext *>(context))
+        else if (const auto class_instantiation_expression_context = dynamic_cast<XenonParser::ClassInstantiationExpressionContext *>(context))
         {
             return this->visitClassInstantiationExpression(class_instantiation_expression_context);
         }
-        else if (const auto function_call_expression_context = dynamic_cast<SanParser::FunctionCallExpressionContext *>(context))
+        else if (const auto function_call_expression_context = dynamic_cast<XenonParser::FunctionCallExpressionContext *>(context))
         {
             return this->visitFunctionCallExpression(function_call_expression_context);
         }
-        else if (const auto binary_operation_context = dynamic_cast<SanParser::BinaryOperationContext *>(context))
+        else if (const auto binary_operation_context = dynamic_cast<XenonParser::BinaryOperationContext *>(context))
         {
             return this->visitBinaryOperation(binary_operation_context);
         }
-        else if (const auto binary_multiplicative_operation_context = dynamic_cast<SanParser::BinaryMultiplicativeOperationContext *>(context))
+        else if (const auto binary_multiplicative_operation_context = dynamic_cast<XenonParser::BinaryMultiplicativeOperationContext *>(context))
         {
             return this->visitBinaryMultiplicativeOperation(binary_multiplicative_operation_context);
         }
-        else if (const auto binary_bitwise_operation_context = dynamic_cast<SanParser::BinaryBitwiseOperationContext *>(context))
+        else if (const auto binary_bitwise_operation_context = dynamic_cast<XenonParser::BinaryBitwiseOperationContext *>(context))
         {
             return this->visitBinaryBitwiseOperation(binary_bitwise_operation_context);
         }
-        else if (const auto binary_shift_operation_context = dynamic_cast<SanParser::BinaryShiftOperationContext *>(context))
+        else if (const auto binary_shift_operation_context = dynamic_cast<XenonParser::BinaryShiftOperationContext *>(context))
         {
             return this->visitBinaryShiftOperation(binary_shift_operation_context);
         }
-        else if (const auto binary_comparison_operation_context = dynamic_cast<SanParser::BinaryComparisonOperationContext *>(context))
+        else if (const auto binary_comparison_operation_context = dynamic_cast<XenonParser::BinaryComparisonOperationContext *>(context))
         {
             return this->visitBinaryComparisonOperation(binary_comparison_operation_context);
         }
-        else if (const auto binary_conditional_operation_context = dynamic_cast<SanParser::BinaryConditionalOperationContext *>(context))
+        else if (const auto binary_conditional_operation_context = dynamic_cast<XenonParser::BinaryConditionalOperationContext *>(context))
         {
             return this->visitBinaryConditionalOperation(binary_conditional_operation_context);
         }
-        else if (const auto equality_operation_context = dynamic_cast<SanParser::EqualityOperationContext *>(context))
+        else if (const auto equality_operation_context = dynamic_cast<XenonParser::EqualityOperationContext *>(context))
         {
             return this->visitEqualityOperation(equality_operation_context);
         }
-        else if (const auto nagative_expression_context = dynamic_cast<SanParser::UnaryNegativeExpressionContext *>(context))
+        else if (const auto nagative_expression_context = dynamic_cast<XenonParser::UnaryNegativeExpressionContext *>(context))
         {
             return this->visitUnaryNegativeExpression(nagative_expression_context);
         }
-        else if (const auto nagation_expression_context = dynamic_cast<SanParser::BitwiseNegationExpressionContext *>(context))
+        else if (const auto nagation_expression_context = dynamic_cast<XenonParser::BitwiseNegationExpressionContext *>(context))
         {
             return this->visitBitwiseNegationExpression(nagation_expression_context);
         }
-        else if (const auto positive_expression_context = dynamic_cast<SanParser::UnaryPositiveExpressionContext *>(context))
+        else if (const auto positive_expression_context = dynamic_cast<XenonParser::UnaryPositiveExpressionContext *>(context))
         {
             return this->visitUnaryPositiveExpression(positive_expression_context);
         }
-        else if (const auto negation_expression_context = dynamic_cast<SanParser::UnaryNegationExpressionContext *>(context))
+        else if (const auto negation_expression_context = dynamic_cast<XenonParser::UnaryNegationExpressionContext *>(context))
         {
             return this->visitUnaryNegationExpression(negation_expression_context);
         }
-        else if (const auto suffix_negation_expression_context = dynamic_cast<SanParser::SuffixUnaryNegationExpressionContext *>(context))
+        else if (const auto suffix_negation_expression_context = dynamic_cast<XenonParser::SuffixUnaryNegationExpressionContext *>(context))
         {
             return this->visitSuffixUnaryNegationExpression(suffix_negation_expression_context);
         }
-        else if (const auto pointer_expression_context = dynamic_cast<SanParser::PointerExpressionContext *>(context))
+        else if (const auto pointer_expression_context = dynamic_cast<XenonParser::PointerExpressionContext *>(context))
         {
             return this->visitPointerExpression(pointer_expression_context);
         }
-        else if (const auto dereference_expression_context = dynamic_cast<SanParser::DereferenceExpressionContext *>(context))
+        else if (const auto dereference_expression_context = dynamic_cast<XenonParser::DereferenceExpressionContext *>(context))
         {
             return this->visitDereferenceExpression(dereference_expression_context);
         }
-        else if (const auto index_context = dynamic_cast<SanParser::IndexContext *>(context))
+        else if (const auto index_context = dynamic_cast<XenonParser::IndexContext *>(context))
         {
             return this->visitIndex(index_context);
         }
-        else if (const auto type_cast_context = dynamic_cast<SanParser::TypeCastContext *>(context))
+        else if (const auto type_cast_context = dynamic_cast<XenonParser::TypeCastContext *>(context))
         {
             return this->visitTypeCast(type_cast_context);
         }
-        else if (const auto property_expression_context = dynamic_cast<SanParser::PropertyExpressionContext *>(context))
+        else if (const auto property_expression_context = dynamic_cast<XenonParser::PropertyExpressionContext *>(context))
         {
             return this->visitPropertyExpression(property_expression_context);
         }
-        else if (const auto function_expression_context = dynamic_cast<SanParser::FunctionExpressionContext *>(context))
+        else if (const auto function_expression_context = dynamic_cast<XenonParser::FunctionExpressionContext *>(context))
         {
             return this->visitFunction(function_expression_context->function());
         }
-        else if (const auto name_expression_context = dynamic_cast<SanParser::NameExpressionContext *>(context))
+        else if (const auto name_expression_context = dynamic_cast<XenonParser::NameExpressionContext *>(context))
         {
             return this->visitNameExpression(name_expression_context);
         }
-        else if (const auto literal_declaration_context = dynamic_cast<SanParser::LiteralDeclarationContext *>(context))
+        else if (const auto literal_declaration_context = dynamic_cast<XenonParser::LiteralDeclarationContext *>(context))
         {
             return this->visitLiteralDeclaration(literal_declaration_context);
         }
@@ -1644,12 +1644,12 @@ public:
         return nullptr;
     }
 
-    Name *visitInParenExpression(SanParser::InParenExpressionContext *context)
+    Name *visitInParenExpression(XenonParser::InParenExpressionContext *context)
     {
         return this->visitExpression(context->expression());
     }
 
-    Values::Constant *visitSizeofExpression(SanParser::SizeofExpressionContext *context)
+    Values::Constant *visitSizeofExpression(XenonParser::SizeofExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1701,7 +1701,7 @@ public:
         return new Values::Constant("sizeof", i64, value);
     }
 
-    Value *visitClassInstantiationExpression(SanParser::ClassInstantiationExpressionContext *context)
+    Value *visitClassInstantiationExpression(XenonParser::ClassInstantiationExpressionContext *context)
     {
         auto scope = this->scopes.top();
         auto type = this->visitClassTypeName(context->classTypeName());
@@ -1743,7 +1743,7 @@ public:
         return var;
     }
 
-    std::vector<std::string> visitClassInstantiationProperties(SanParser::ClassInstantiationPropertiesContext *context, Values::Variable *var)
+    std::vector<std::string> visitClassInstantiationProperties(XenonParser::ClassInstantiationPropertiesContext *context, Values::Variable *var)
     {
         auto scope = this->scopes.top();
         auto type = static_cast<Types::ClassType *>(var->type);
@@ -1761,7 +1761,7 @@ public:
         return assigned_properties;
     }
 
-    void visitClassInstantiationProperty(SanParser::ClassInstantiationPropertyContext *context, Values::Variable *var)
+    void visitClassInstantiationProperty(XenonParser::ClassInstantiationPropertyContext *context, Values::Variable *var)
     {
         auto scope = this->scopes.top();
         auto type = static_cast<Types::ClassType *>(var->type);
@@ -1799,7 +1799,7 @@ public:
         ptr->store(value, scope->builder(), scope->module(), true);
     }
 
-    Value *visitFunctionCallExpression(SanParser::FunctionCallExpressionContext *context)
+    Value *visitFunctionCallExpression(XenonParser::FunctionCallExpressionContext *context)
     {
         auto scope = this->scopes.top();
         auto lvalue = this->visitExpression(context->expression());
@@ -1844,7 +1844,7 @@ public:
         throw NoFunctionMatchException(this->files.top(), context->expression()->getStart(), args);
     }
 
-    std::vector<Value *> visitFunctionCallArguments(SanParser::FunctionCallArgumentsContext *context)
+    std::vector<Value *> visitFunctionCallArguments(XenonParser::FunctionCallArgumentsContext *context)
     {
         std::vector<Value *> args;
 
@@ -1864,12 +1864,12 @@ public:
         return args;
     }
 
-    Value *visitFunctionCallArgument(SanParser::FunctionCallArgumentContext *context)
+    Value *visitFunctionCallArgument(XenonParser::FunctionCallArgumentContext *context)
     {
         return this->valueFromExpression(context->expression());
     }
 
-    Value *visitBinaryOperation(SanParser::BinaryOperationContext *context)
+    Value *visitBinaryOperation(XenonParser::BinaryOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1913,7 +1913,7 @@ public:
         throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
-    Value *visitBinaryMultiplicativeOperation(SanParser::BinaryMultiplicativeOperationContext *context)
+    Value *visitBinaryMultiplicativeOperation(XenonParser::BinaryMultiplicativeOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -1970,7 +1970,7 @@ public:
         throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
-    Value *visitBinaryBitwiseOperation(SanParser::BinaryBitwiseOperationContext *context)
+    Value *visitBinaryBitwiseOperation(XenonParser::BinaryBitwiseOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2034,7 +2034,7 @@ public:
         LogicalRight,
     };
 
-    Value *visitBinaryShiftOperation(SanParser::BinaryShiftOperationContext *context)
+    Value *visitBinaryShiftOperation(XenonParser::BinaryShiftOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2107,7 +2107,7 @@ public:
         }
     }
 
-    void checkShiftOperator(SanParser::ShiftOperatorContext *context)
+    void checkShiftOperator(XenonParser::ShiftOperatorContext *context)
     {
         if (auto operator_context = context->arithmeticRightShiftOperator())
         {
@@ -2123,7 +2123,7 @@ public:
         }
     }
 
-    void checkShiftEqualOperator(SanParser::ShiftEqualOperatorContext *context)
+    void checkShiftEqualOperator(XenonParser::ShiftEqualOperatorContext *context)
     {
         if (auto operator_context = context->arithmeticRightShiftEqualOperator())
         {
@@ -2139,7 +2139,7 @@ public:
         }
     }
 
-    ShiftOperator visitShiftOperator(SanParser::ShiftOperatorContext *context)
+    ShiftOperator visitShiftOperator(XenonParser::ShiftOperatorContext *context)
     {
         this->checkShiftOperator(context);
 
@@ -2159,7 +2159,7 @@ public:
         throw UnimplementedException(this->files.top(), context->getStart());
     }
 
-    ShiftOperator visitShiftEqualOperator(SanParser::ShiftEqualOperatorContext *context)
+    ShiftOperator visitShiftEqualOperator(XenonParser::ShiftEqualOperatorContext *context)
     {
         this->checkShiftEqualOperator(context);
 
@@ -2179,7 +2179,7 @@ public:
         throw UnimplementedException(this->files.top(), context->getStart());
     }
 
-    Value *visitBinaryComparisonOperation(SanParser::BinaryComparisonOperationContext *context)
+    Value *visitBinaryComparisonOperation(XenonParser::BinaryComparisonOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2277,7 +2277,7 @@ public:
         throw InvalidRightValueException(this->files.top(), rexpr_context->getStart());
     }
 
-    Value *visitBinaryConditionalOperation(SanParser::BinaryConditionalOperationContext *context)
+    Value *visitBinaryConditionalOperation(XenonParser::BinaryConditionalOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2344,7 +2344,7 @@ public:
         return new Value("phi", Type::i1(scope->context()), phi, false);
     }
 
-    Value *visitEqualityOperation(SanParser::EqualityOperationContext *context)
+    Value *visitEqualityOperation(XenonParser::EqualityOperationContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2585,7 +2585,7 @@ public:
         return nullptr;
     }
 
-    Value *visitUnaryNegativeExpression(SanParser::UnaryNegativeExpressionContext *context)
+    Value *visitUnaryNegativeExpression(XenonParser::UnaryNegativeExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2614,7 +2614,7 @@ public:
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
     }
 
-    Value *visitBitwiseNegationExpression(SanParser::BitwiseNegationExpressionContext *context)
+    Value *visitBitwiseNegationExpression(XenonParser::BitwiseNegationExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2644,7 +2644,7 @@ public:
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
     }
 
-    Value *visitUnaryPositiveExpression(SanParser::UnaryPositiveExpressionContext *context)
+    Value *visitUnaryPositiveExpression(XenonParser::UnaryPositiveExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2666,7 +2666,7 @@ public:
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
     }
 
-    Value *visitUnaryNegationExpression(SanParser::UnaryNegationExpressionContext *context)
+    Value *visitUnaryNegationExpression(XenonParser::UnaryNegationExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2700,7 +2700,7 @@ public:
         return Value::boolean_xor(scope->builder(), expression, Values::Constant::boolean_value(true, scope->context()));
     }
 
-    Value *visitSuffixUnaryNegationExpression(SanParser::SuffixUnaryNegationExpressionContext *context)
+    Value *visitSuffixUnaryNegationExpression(XenonParser::SuffixUnaryNegationExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2715,7 +2715,7 @@ public:
         throw InvalidRightValueException(this->files.top(), context->expression()->getStart());
     }
 
-    Value *visitPointerExpression(SanParser::PointerExpressionContext *context)
+    Value *visitPointerExpression(XenonParser::PointerExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2741,7 +2741,7 @@ public:
         return new Value(expression->name + ".ptr", type, expression->get_ref());
     }
 
-    Value *visitDereferenceExpression(SanParser::DereferenceExpressionContext *context)
+    Value *visitDereferenceExpression(XenonParser::DereferenceExpressionContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2763,7 +2763,7 @@ public:
         throw NotAPointerException(this->files.top(), context->expression()->getStart());
     }
 
-    Value *visitIndex(SanParser::IndexContext *context)
+    Value *visitIndex(XenonParser::IndexContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2786,7 +2786,7 @@ public:
         throw IndexException(this->files.top(), context->expression(1)->getStart(), index->type, expression->type);
     }
 
-    Value *visitTypeCast(SanParser::TypeCastContext *context)
+    Value *visitTypeCast(XenonParser::TypeCastContext *context)
     {
         auto scope = this->scopes.top();
         auto expr = this->valueFromExpression(context->expression());
@@ -2800,7 +2800,7 @@ public:
         return expr->cast(type, scope->builder(), true);
     }
 
-    Name *visitPropertyExpression(SanParser::PropertyExpressionContext *context)
+    Name *visitPropertyExpression(XenonParser::PropertyExpressionContext *context)
     {
         auto scope = this->scopes.top();
         auto expr = this->valueFromExpression(context->expression());
@@ -2835,12 +2835,12 @@ public:
         throw NotAClassException(this->files.top(), context->expression()->getStart());
     }
 
-    NameArray *visitNameExpression(SanParser::NameExpressionContext *context)
+    NameArray *visitNameExpression(XenonParser::NameExpressionContext *context)
     {
         return this->visitScopedName(context->scopedName());
     }
 
-    Value *valueFromExpression(SanParser::ExpressionContext *context)
+    Value *valueFromExpression(XenonParser::ExpressionContext *context)
     {
         auto expression = this->visitExpression(context);
         return this->valueFromName(expression, context);
@@ -2895,7 +2895,7 @@ public:
         throw InvalidTypeException(this->files.top(), context->getStart());
     }
 
-    NameArray *visitScopedName(SanParser::ScopedNameContext *context)
+    NameArray *visitScopedName(XenonParser::ScopedNameContext *context)
     {
         if (auto scope_resolver_context = context->scopeResolver())
         {
@@ -2907,7 +2907,7 @@ public:
         return this->visitName(context->name(), scope);
     }
 
-    NameArray *visitScopedNameNoGeneric(SanParser::ScopedNameNoGenericContext *context)
+    NameArray *visitScopedNameNoGeneric(XenonParser::ScopedNameNoGenericContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -2919,7 +2919,7 @@ public:
         return this->visitNameNoGeneric(context->nameNoGeneric(), scope);
     }
 
-    std::shared_ptr<Scope> visitScopeResolver(SanParser::ScopeResolverContext *context)
+    std::shared_ptr<Scope> visitScopeResolver(XenonParser::ScopeResolverContext *context)
     {
         return this->visitScopeResolver(context, this->scopes.top());
     }
@@ -2947,7 +2947,7 @@ public:
         return nullptr;
     }
 
-    std::shared_ptr<Scope> visitScopeResolver(SanParser::ScopeResolverContext *context, std::shared_ptr<Scope> scope)
+    std::shared_ptr<Scope> visitScopeResolver(XenonParser::ScopeResolverContext *context, std::shared_ptr<Scope> scope)
     {
         auto names = this->visitName(context->name(), scope);
         auto name = names->last();
@@ -2967,7 +2967,7 @@ public:
         throw NotAClassOrNamespaceException(this->files.top(), context->name()->getStart());
     }
 
-    NameArray *visitName(SanParser::NameContext *context, std::shared_ptr<Scope> &scope)
+    NameArray *visitName(XenonParser::NameContext *context, std::shared_ptr<Scope> &scope)
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);
@@ -2985,7 +2985,7 @@ public:
         throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
     }
 
-    NameArray *visitName(SanParser::NameContext *context, Value *value)
+    NameArray *visitName(XenonParser::NameContext *context, Value *value)
     {
         auto scope = this->scopes.top();
 
@@ -3033,7 +3033,7 @@ public:
         throw ExpressionHasNotClassTypeException(this->files.top(), context->getStart());
     }
 
-    NameArray *visitNameNoGeneric(SanParser::NameNoGenericContext *context, std::shared_ptr<Scope> &scope)
+    NameArray *visitNameNoGeneric(XenonParser::NameNoGenericContext *context, std::shared_ptr<Scope> &scope)
     {
         auto name = context->VariableName()->getText();
         auto names = scope->get_names(name);
@@ -3046,7 +3046,7 @@ public:
         throw UnknownNameException(this->files.top(), context->VariableName()->getSymbol());
     }
 
-    NameArray *visitTypeNameClassGenerics(SanParser::ClassTypeNameGenericsContext *context, NameArray *names)
+    NameArray *visitTypeNameClassGenerics(XenonParser::ClassTypeNameGenericsContext *context, NameArray *names)
     {
         auto array = new NameArray();
 
@@ -3125,12 +3125,12 @@ public:
         return array;
     }
 
-    Values::Constant *visitLiteralDeclaration(SanParser::LiteralDeclarationContext *context)
+    Values::Constant *visitLiteralDeclaration(XenonParser::LiteralDeclarationContext *context)
     {
         return this->visitLiteral(context->literal());
     }
 
-    Values::Constant *visitLiteral(SanParser::LiteralContext *context)
+    Values::Constant *visitLiteral(XenonParser::LiteralContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3195,7 +3195,7 @@ public:
         return str;
     }
 
-    std::string stringLiteralToString(SanParser::StringLiteralContext *context)
+    std::string stringLiteralToString(XenonParser::StringLiteralContext *context)
     {
         std::string str = "";
 
@@ -3207,7 +3207,7 @@ public:
         return str;
     }
 
-    Values::Constant *visitBooleanLiteral(SanParser::BooleanLiteralContext *context)
+    Values::Constant *visitBooleanLiteral(XenonParser::BooleanLiteralContext *context)
     {
         auto scope = this->scopes.top();
         auto is_true = (context->True() != nullptr);
@@ -3215,7 +3215,7 @@ public:
         return Values::Constant::boolean_value(is_true, scope->context());
     }
 
-    Values::Constant *visitIntegerLiteral(SanParser::IntegerLiteralContext *context)
+    Values::Constant *visitIntegerLiteral(XenonParser::IntegerLiteralContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3271,7 +3271,7 @@ public:
         return nullptr;
     }
 
-    Values::Constant *visitFloatingLiteral(SanParser::FloatingLiteralContext *context)
+    Values::Constant *visitFloatingLiteral(XenonParser::FloatingLiteralContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3291,7 +3291,7 @@ public:
         return new Values::Constant("literal_f64", type, value);
     }
 
-    Values::GlobalConstant *visitStringLiteral(SanParser::StringLiteralContext *context)
+    Values::GlobalConstant *visitStringLiteral(XenonParser::StringLiteralContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3305,25 +3305,25 @@ public:
         return value;
     }
 
-    Type *visitType(SanParser::TypeContext *context, const bool &check_opaque = true)
+    Type *visitType(XenonParser::TypeContext *context, const bool &check_opaque = true)
     {
         auto scope = this->scopes.top();
 
         Type *type = nullptr;
 
-        if (auto child = dynamic_cast<SanParser::TypeArrayContext *>(context))
+        if (auto child = dynamic_cast<XenonParser::TypeArrayContext *>(context))
         {
             type = this->visitTypeArray(child);
         }
-        else if (auto child = dynamic_cast<SanParser::TypePointerContext *>(context))
+        else if (auto child = dynamic_cast<XenonParser::TypePointerContext *>(context))
         {
             type = this->visitTypePointer(child);
         }
-        else if (auto child = dynamic_cast<SanParser::TypeReferenceContext *>(context))
+        else if (auto child = dynamic_cast<XenonParser::TypeReferenceContext *>(context))
         {
             type = this->visitTypeReference(child);
         }
-        else if (auto child = dynamic_cast<SanParser::TypeNameContext *>(context))
+        else if (auto child = dynamic_cast<XenonParser::TypeNameContext *>(context))
         {
             type = this->visitTypeName(child);
         }
@@ -3336,7 +3336,7 @@ public:
         return type;
     }
 
-    Type *visitTypeArray(SanParser::TypeArrayContext *context)
+    Type *visitTypeArray(XenonParser::TypeArrayContext *context)
     {
         auto type = this->visitType(context->type(), false);
         auto expression = this->valueFromExpression(context->expression());
@@ -3362,7 +3362,7 @@ public:
         return type;
     }
 
-    Type *visitTypePointer(SanParser::TypePointerContext *context)
+    Type *visitTypePointer(XenonParser::TypePointerContext *context)
     {
         auto type = this->visitType(context->type(), false);
         type = Type::pointer(type);
@@ -3375,7 +3375,7 @@ public:
         return type;
     }
 
-    Type *visitTypeReference(SanParser::TypeReferenceContext *context)
+    Type *visitTypeReference(XenonParser::TypeReferenceContext *context)
     {
         auto type = this->visitType(context->type(), false);
         type = Type::reference(type);
@@ -3388,7 +3388,7 @@ public:
         return type;
     }
 
-    Type *visitTypeName(SanParser::TypeNameContext *context)
+    Type *visitTypeName(XenonParser::TypeNameContext *context)
     {
         Type *type = nullptr;
 
@@ -3410,7 +3410,7 @@ public:
         return type;
     }
 
-    Type *visitFunctionType(SanParser::FunctionTypeContext *context)
+    Type *visitFunctionType(XenonParser::FunctionTypeContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3433,7 +3433,7 @@ public:
         return Type::pointer(type);
     }
 
-    Types::ClassType *visitClassTypeName(SanParser::ClassTypeNameContext *context)
+    Types::ClassType *visitClassTypeName(XenonParser::ClassTypeNameContext *context)
     {
         auto name = this->visitScopedName(context->scopedName());
         auto type = this->typeFromName(name, context);
@@ -3446,7 +3446,7 @@ public:
         throw NotAClassException(this->files.top(), context->getStart());
     }
 
-    std::vector<Type *> visitClassTypeNameGenerics(SanParser::ClassTypeNameGenericsContext *context)
+    std::vector<Type *> visitClassTypeNameGenerics(XenonParser::ClassTypeNameGenericsContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3461,7 +3461,7 @@ public:
         return types;
     }
 
-    Attributes visitAttributes(SanParser::AttributesContext *context)
+    Attributes visitAttributes(XenonParser::AttributesContext *context)
     {
         Attributes attributes(this->env);
 
@@ -3474,7 +3474,7 @@ public:
         return attributes;
     }
 
-    std::pair<std::string, std::string> visitAttribute(SanParser::AttributeContext *context)
+    std::pair<std::string, std::string> visitAttribute(XenonParser::AttributeContext *context)
     {
         auto key = context->VariableName()->getText();
 
@@ -3487,7 +3487,7 @@ public:
         return std::make_pair(key, "true");
     }
 
-    void visitAssemblyStatement(SanParser::AssemblyStatementContext *context)
+    void visitAssemblyStatement(XenonParser::AssemblyStatementContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3589,7 +3589,7 @@ public:
         }
     }
 
-    std::vector<AssemblyOperand> visitAssemblyOutputs(const std::vector<SanParser::AssemblyOutputContext *> &context)
+    std::vector<AssemblyOperand> visitAssemblyOutputs(const std::vector<XenonParser::AssemblyOutputContext *> &context)
     {
         std::vector<AssemblyOperand> operands;
 
@@ -3602,7 +3602,7 @@ public:
         return operands;
     }
 
-    AssemblyOperand visitAssemblyOutput(SanParser::AssemblyOutputContext *context)
+    AssemblyOperand visitAssemblyOutput(XenonParser::AssemblyOutputContext *context)
     {
         auto name = this->stringLiteralToString(context->StringLiteral()->getText());
         auto value = this->valueFromExpression(context->expression());
@@ -3622,7 +3622,7 @@ public:
         return operand;
     }
 
-    std::vector<AssemblyOperand> visitAssemblyInputs(const std::vector<SanParser::AssemblyInputContext *> &context)
+    std::vector<AssemblyOperand> visitAssemblyInputs(const std::vector<XenonParser::AssemblyInputContext *> &context)
     {
         std::vector<AssemblyOperand> operands;
 
@@ -3635,7 +3635,7 @@ public:
         return operands;
     }
 
-    AssemblyOperand visitAssemblyInput(SanParser::AssemblyInputContext *context)
+    AssemblyOperand visitAssemblyInput(XenonParser::AssemblyInputContext *context)
     {
         auto name = this->stringLiteralToString(context->StringLiteral()->getText());
         auto value = this->valueFromExpression(context->expression());
@@ -3666,7 +3666,7 @@ public:
         return operand;
     }
 
-    std::string visitAssemblyClobbers(const std::vector<SanParser::AssemblyClobberContext *> &context)
+    std::string visitAssemblyClobbers(const std::vector<XenonParser::AssemblyClobberContext *> &context)
     {
         std::string clobbers = "";
 
@@ -3683,12 +3683,12 @@ public:
         return clobbers;
     }
 
-    std::string visitAssemblyClobber(SanParser::AssemblyClobberContext *context)
+    std::string visitAssemblyClobber(XenonParser::AssemblyClobberContext *context)
     {
         return "~{" + this->stringLiteralToString(context->StringLiteral()->getText()) + "}";
     }
 
-    Name *visitAlias(SanParser::AliasContext *context)
+    Name *visitAlias(XenonParser::AliasContext *context)
     {
         auto scope = this->scopes.top();
 
@@ -3740,7 +3740,7 @@ public:
         return alias;
     }
 
-    Alias *generateAlias(SanParser::AliasContext *context)
+    Alias *generateAlias(XenonParser::AliasContext *context)
     {
         auto name = context->VariableName()->getText();
         NameArray *names = nullptr;
@@ -3763,4 +3763,4 @@ public:
         return new Alias(name, names);
     }
 };
-} // namespace San
+} // namespace Xenon

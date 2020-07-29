@@ -1,8 +1,8 @@
-#include <san/NameArray.hpp>
+#include <Xenon/NameArray.hpp>
 
-#include <san/Types/GenericClassType.hpp>
+#include <Xenon/Types/GenericClassType.hpp>
 
-using namespace San;
+using namespace Xenon;
 
 NameArray *NameArray::get_generic_classes()
 {

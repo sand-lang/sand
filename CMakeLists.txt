@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 cmake_policy(VERSION 3.2)
 
-project(san
+project(xen
     VERSION "1.0.1"
-    DESCRIPTION "SAN compiler"
+    DESCRIPTION "Xenon compiler"
 )
 
 set(CMAKE_CXX_STANDARD 17)

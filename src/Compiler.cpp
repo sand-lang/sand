@@ -1,4 +1,4 @@
-#include <san/Compiler.hpp>
+#include <Xenon/Compiler.hpp>
 
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/PassManager.h>
@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-std::vector<std::string> San::Compiler::generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level)
+std::vector<std::string> Xenon::Compiler::generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();

@@ -30,7 +30,7 @@ jobs:
         run: cmake --build . --config $BUILD_TYPE --parallel 10
 
       - name: Compress files
-        run: tar -czf san-macos-binaries.tar.gz std bin/san examples internal
+        run: tar -czf xenon-macos-binaries.tar.gz std bin/xen examples internal
 
       - name: Upload the artifact
         uses: actions/upload-release-asset@v1
@@ -38,8 +38,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: san-macos-binaries.tar.gz
-          asset_name: san-${{ github.event.release.tag_name }}-macos-binaries.tar.gz
+          asset_path: xenon-macos-binaries.tar.gz
+          asset_name: xenon-${{ github.event.release.tag_name }}-macos-binaries.tar.gz
           asset_content_type: application/tar+gzip
 
   build-and-release-ubuntu:
@@ -80,7 +80,7 @@ jobs:
         run: cmake --build . --config $BUILD_TYPE --parallel 10
 
       - name: Compress files
-        run: tar -czf san-ubuntu-binaries.tar.gz std bin/san examples internal
+        run: tar -czf xenon-ubuntu-binaries.tar.gz std bin/xen examples internal
 
       - name: Upload the artifact
         uses: actions/upload-release-asset@v1
@@ -88,8 +88,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: san-ubuntu-binaries.tar.gz
-          asset_name: san-${{ github.event.release.tag_name }}-ubuntu-binaries.tar.gz
+          asset_path: xenon-ubuntu-binaries.tar.gz
+          asset_name: xenon-${{ github.event.release.tag_name }}-ubuntu-binaries.tar.gz
           asset_content_type: application/tar+gzip
 
   build-windows:
@@ -115,18 +115,18 @@ jobs:
       - name: Configure CMake
         shell: powershell
         working-directory: ${{runner.workspace}}/build
-        run: cmake $env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug
+        run: cmake $env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
         shell: powershell
-        run: cmake --build . --config Debug
+        run: cmake --build . --config Release
 
-      - name: Move bin/Debug/san.exe to bin/san.exe
-        run: mv -Force "$env:GITHUB_WORKSPACE/bin/Debug/san.exe" "$env:GITHUB_WORKSPACE/bin/san.exe"
+      - name: Move bin/Release/xen.exe to bin/xen.exe
+        run: mv -Force "$env:GITHUB_WORKSPACE/bin/Release/xen.exe" "$env:GITHUB_WORKSPACE/bin/xen.exe"
 
       - name: Compress files
-        run: 7z a -y san-windows-binaries.zip std bin/san.exe examples internal
+        run: 7z a -y xenon-windows-binaries.zip std bin/xen.exe examples internal
 
       - name: Upload the artifact
         uses: actions/upload-release-asset@v1
@@ -134,6 +134,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: san-windows-binaries.zip
-          asset_name: san-${{ github.event.release.tag_name }}-windows-binaries.zip
+          asset_path: xenon-windows-binaries.zip
+          asset_name: xenon-${{ github.event.release.tag_name }}-windows-binaries.zip
           asset_content_type: application/zip
