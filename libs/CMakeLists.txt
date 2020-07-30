@@ -25,15 +25,15 @@ set(LLD_BUILT_STANDALONE Off)
 cmake_policy(SET CMP0057 NEW)
 set(PACKAGE_VERSION ${LLVM_PACKAGE_VERSION})
 
-include_directories(
-  "${CMAKE_CURRENT_SOURCE_DIR}/lld/include"
-  "${CMAKE_CURRENT_SOURCE_DIR}/lld"
+# include_directories(
+#   "${CMAKE_CURRENT_SOURCE_DIR}/lld/include"
+#   "${CMAKE_CURRENT_SOURCE_DIR}/lld"
 
-  "${CMAKE_BINARY_DIR}/libs/lld/include"
-  "${CMAKE_BINARY_DIR}/libs/lld"
-)
+#   "${CMAKE_BINARY_DIR}/libs/lld/include"
+#   "${CMAKE_BINARY_DIR}/libs/lld"
+# )
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lld")
+# add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lld")
 
 set(DEPENDENCIES_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src/whereami.c"
@@ -45,8 +45,8 @@ set(DEPENDENCIES_HEADERS
   "${CMAKE_CURRENT_SOURCE_DIR}/antlr4/runtime/Cpp/runtime/src"
   "${CMAKE_CURRENT_SOURCE_DIR}/CLI11/include"
 
-  "${CMAKE_CURRENT_SOURCE_DIR}/lld/include"
-  "${CMAKE_BINARY_DIR}/libs/lld"
+  # "${CMAKE_CURRENT_SOURCE_DIR}/lld/include"
+  # "${CMAKE_BINARY_DIR}/libs/lld"
 
   "${CMAKE_CURRENT_SOURCE_DIR}/whereami/src"
 

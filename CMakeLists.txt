@@ -56,12 +56,7 @@ list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
 find_program(LLVM_TABLEGEN_EXE "llvm-tblgen" ${LLVM_TOOLS_BINARY_DIR} NO_DEFAULT_PATH)
 
-list(GET LLVM_CONFIG_OUTPUT 0 OBJ_ROOT)
-list(GET LLVM_CONFIG_OUTPUT 1 MAIN_INCLUDE_DIR)
-list(GET LLVM_CONFIG_OUTPUT 2 LLVM_CMAKE_PATH)
-list(GET LLVM_CONFIG_OUTPUT 3 MAIN_SRC_DIR)
-
-include_directories("${LLVM_BINARY_DIR}/include" ${LLVM_INCLUDE_DIRS})
+include_directories("${LLVM_BINARY_DIR}/include" ${LLVM_INCLUDE_DIRS} "${LLVM_INCLUDE_DIRS}/lld")
 add_definitions(${LLVM_DEFINITIONS})
 link_directories(${LLVM_LIBRARY_DIRS})
 
@@ -69,9 +64,7 @@ include(AddLLVM)
 include(TableGen)
 include(HandleLLVMOptions)
 
-set(LLVM_CMAKE_PATH "${LLVM_DIR}")
-message("LLVM_CONFIG_OUTPUT: ${LLVM_CONFIG_OUTPUT}")
-message("MAIN_INCLUDE_DIR: ${MAIN_INCLUDE_DIR}")
+set(LLVM_CMAKE_PATH "${LLVM_DIR}")s
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
@@ -167,6 +160,9 @@ target_link_libraries(${PROJECT_NAME}
     ${NATIVE_LIBRARIES}
     antlr4_static
     ${llvm_libs}
+    lldReaderWriter
+    lldMachO
+    lldYAML
     lldCore
     lldCommon
     lldCOFF
