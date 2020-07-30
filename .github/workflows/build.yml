@@ -55,6 +55,12 @@ jobs:
       - name: Install uuid package
         run: sudo apt-get install uuid-dev
 
+      - name: Check LLVM directory
+        run: |
+          ls /usr/lib/llvm-10
+          ls /usr/lib/llvm-10/lib
+          ls /usr/lib/llvm-10/include
+
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
 

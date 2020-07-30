@@ -56,9 +56,12 @@ list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
 find_program(LLVM_TABLEGEN_EXE "llvm-tblgen" ${LLVM_TOOLS_BINARY_DIR} NO_DEFAULT_PATH)
 
-include_directories("${LLVM_BINARY_DIR}/include" ${LLVM_INCLUDE_DIRS} "${LLVM_INCLUDE_DIRS}/lld")
+include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 link_directories(${LLVM_LIBRARY_DIRS})
+
+message("LLVM_BINARY_DIR: ${LLVM_BINARY_DIR}")
+message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
 
 include(AddLLVM)
 include(TableGen)
