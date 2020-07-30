@@ -64,7 +64,7 @@ include(AddLLVM)
 include(TableGen)
 include(HandleLLVMOptions)
 
-set(LLVM_CMAKE_PATH "${LLVM_DIR}")s
+set(LLVM_CMAKE_PATH "${LLVM_DIR}")
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
