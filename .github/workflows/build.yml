@@ -17,8 +17,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Install LLVM
-        run: brew install llvm
+      - name: Export LLVM_DIR
+        run: export LLVM_DIR=$(brew --prefix llvm)/lib/cmake
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{runner.workspace}}/build
