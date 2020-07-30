@@ -80,7 +80,7 @@ std::vector<std::string> Xenon::Compiler::generate_objects(const std::string &os
     pass.add(llvm::createGVNPass());
     pass.add(llvm::createCFGSimplificationPass());
 
-    auto file_type = llvm::CGFT_ObjectFile;
+    auto file_type = llvm::CodeGenFileType::CGFT_ObjectFile;
 
     if (target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type))
     {
