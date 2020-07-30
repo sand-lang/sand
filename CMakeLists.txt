@@ -69,6 +69,8 @@ include(AddLLVM)
 include(TableGen)
 include(HandleLLVMOptions)
 
+set(LLVM_CMAKE_PATH "${LLVM_DIR}")
+message("LLVM_CONFIG_OUTPUT: ${LLVM_CONFIG_OUTPUT}")
 message("MAIN_INCLUDE_DIR: ${MAIN_INCLUDE_DIR}")
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
