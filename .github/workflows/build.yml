@@ -18,16 +18,16 @@ jobs:
           submodules: true
 
       - name: Create Build Environment
-        run: |
-          export LLVM_DIR=$(brew --prefix llvm)/lib/cmake
-          cmake -E make_directory ${{runner.workspace}}/build
+        run: cmake -E make_directory ${{runner.workspace}}/build
         env:
           LLVM_DIR: $(brew --prefix llvm)/lib/cmake
 
       - name: Configure CMake
         shell: bash
         working-directory: ${{runner.workspace}}/build
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: |
+          export LLVM_DIR=$(brew --prefix llvm)/lib/cmake
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-          path: '.'
+          path: "."
 
       - uses: ilammy/msvc-dev-cmd@v1
 
