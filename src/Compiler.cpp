@@ -7,6 +7,7 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/CodeGen.h>
 
 #include <llvm/Target/TargetMachine.h>
 
@@ -79,7 +80,7 @@ std::vector<std::string> Xenon::Compiler::generate_objects(const std::string &os
     pass.add(llvm::createGVNPass());
     pass.add(llvm::createCFGSimplificationPass());
 
-    llvm::CodeGenFileType file_type = llvm::CGFT_ObjectFile;
+    auto file_type = llvm::CGFT_ObjectFile;
 
     if (target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type))
     {
