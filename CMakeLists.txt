@@ -49,6 +49,28 @@ foreach (target IN ITEMS ${TARGETS_TO_BUILD})
 endforeach(target)
 
 list(JOIN TARGETS_TO_BUILD ";" LLVM_TARGETS_TO_BUILD)
+
+find_package(LLVM REQUIRED CONFIG)
+
+list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+
+find_program(LLVM_TABLEGEN_EXE "llvm-tblgen" ${LLVM_TOOLS_BINARY_DIR} NO_DEFAULT_PATH)
+
+list(GET LLVM_CONFIG_OUTPUT 0 OBJ_ROOT)
+list(GET LLVM_CONFIG_OUTPUT 1 MAIN_INCLUDE_DIR)
+list(GET LLVM_CONFIG_OUTPUT 2 LLVM_CMAKE_PATH)
+list(GET LLVM_CONFIG_OUTPUT 3 MAIN_SRC_DIR)
+
+include_directories("${LLVM_BINARY_DIR}/include" ${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+link_directories(${LLVM_LIBRARY_DIRS})
+
+include(AddLLVM)
+include(TableGen)
+include(HandleLLVMOptions)
+
+set(LLVM_CMAKE_PATH "${LLVM_DIR}")
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -136,6 +158,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 message("CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+
+message("LINK_DIRECTORIES: ${LINK_DIRECTORIES}")
 
 target_link_libraries(${PROJECT_NAME} 
     ${NATIVE_LIBRARIES}
