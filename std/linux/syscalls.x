@@ -1,3 +1,4 @@
+#[target_os = "linux"]
 namespace linux {
   namespace syscalls {
     import "./i386/syscalls"
