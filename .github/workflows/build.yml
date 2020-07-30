@@ -47,7 +47,7 @@ jobs:
           submodules: true
 
       - name: Install LLVM
-        run: sudo apt-get install llvm-dev
+        run: sudo apt-get install libllvm10 llvm-10-dev
 
       - name: Install C++ packages
         run: sudo apt-get install libc++-dev libc++abi-dev
