@@ -506,7 +506,14 @@ public:
 
         if (left->is_integer())
         {
-            if (!right->is_integer())
+            if (right->is_floating_point())
+            {
+                auto lbits = left->get_ref()->getIntegerBitWidth() / 8;
+                auto rbits = right->is_float() ? 4 : 8;
+
+                return 10 + (lbits - rbits);
+            }
+            else if (!right->is_integer())
             {
                 return NOT_COMPATIBLE;
             }
