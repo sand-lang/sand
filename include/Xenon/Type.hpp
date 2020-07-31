@@ -504,6 +504,10 @@ public:
             return Type::compatibility(left->base, right->base);
         }
 
+        auto abs_sum = [](const unsigned int &l, const unsigned int &r) -> unsigned int {
+            return (l > r) ? (l - r) : (r - l);
+        };
+
         if (left->is_integer())
         {
             if (right->is_floating_point())
@@ -511,7 +515,7 @@ public:
                 auto lbits = left->get_ref()->getIntegerBitWidth() / 8;
                 auto rbits = right->is_float() ? 4 : 8;
 
-                return 10 + (lbits - rbits);
+                return 10 + abs_sum(lbits, rbits);
             }
             else if (!right->is_integer())
             {
@@ -528,14 +532,7 @@ public:
             auto lbits = left->get_ref()->getIntegerBitWidth() / 8;
             auto rbits = right->get_ref()->getIntegerBitWidth() / 8;
 
-            if (lbits > rbits)
-            {
-                return score + (lbits - rbits);
-            }
-            else
-            {
-                return score + (rbits - lbits);
-            }
+            return score + abs_sum(rbits, lbits);
         }
 
         if (left->is_floating_point())
@@ -545,7 +542,7 @@ public:
                 auto lbits = left->is_float() ? 4 : 8;
                 auto rbits = right->get_ref()->getIntegerBitWidth() / 8;
 
-                return 10 + (lbits - rbits);
+                return 10 + abs_sum(lbits, rbits);
             }
             else if (!right->is_floating_point())
             {
@@ -555,7 +552,7 @@ public:
             auto lbits = left->is_float() ? 4 : 8;
             auto rbits = right->is_float() ? 4 : 8;
 
-            return (lbits - rbits);
+            return abs_sum(lbits, rbits);
         }
 
         if (left->is_constant)
