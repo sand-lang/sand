@@ -50,7 +50,7 @@ endforeach(target)
 
 list(JOIN TARGETS_TO_BUILD ";" LLVM_TARGETS_TO_BUILD)
 
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM 10 REQUIRED CONFIG)
 
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
