@@ -1,8 +1,8 @@
-#include <Xenon/NameArray.hpp>
+#include <Sand/NameArray.hpp>
 
-#include <Xenon/Types/GenericClassType.hpp>
+#include <Sand/Types/GenericClassType.hpp>
 
-using namespace Xenon;
+using namespace Sand;
 
 NameArray *NameArray::get_generic_classes()
 {

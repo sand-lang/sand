@@ -3,14 +3,14 @@
 #include <Lexer.h>
 #include <Parser.h>
 
-#include <Xenon/Compiler.hpp>
-#include <Xenon/Debugger.hpp>
-#include <Xenon/Linker.hpp>
+#include <Sand/Compiler.hpp>
+#include <Sand/Debugger.hpp>
+#include <Sand/Linker.hpp>
 
-#include <Xenon/Exceptions/CompilationException.hpp>
+#include <Sand/Exceptions/CompilationException.hpp>
 
-#include "grammar/runtime/XenonLexer.h"
-#include "grammar/runtime/XenonParser.h"
+#include "grammar/runtime/SandLexer.h"
+#include "grammar/runtime/SandParser.h"
 
 #include "grammar/Visitor.hpp"
 
@@ -110,7 +110,7 @@ struct Options
     bool verbose = false;
 };
 
-void print_bytecode(std::unique_ptr<llvm::Module> &module, Xenon::Debugger &debug)
+void print_bytecode(std::unique_ptr<llvm::Module> &module, Sand::Debugger &debug)
 {
     std::string bytecode = "";
     llvm::raw_string_ostream out_stream(bytecode);
@@ -120,7 +120,7 @@ void print_bytecode(std::unique_ptr<llvm::Module> &module, Xenon::Debugger &debu
     debug.out << out_stream.str() << std::endl;
 }
 
-bool compile(const Options &options, Xenon::Debugger &debug)
+bool compile(const Options &options, Sand::Debugger &debug)
 {
     if (!is_os_available(options.os))
     {
@@ -134,7 +134,7 @@ bool compile(const Options &options, Xenon::Debugger &debug)
         return false;
     }
 
-    Xenon::Visitor visitor(options.os, options.arch, options.include_paths);
+    Sand::Visitor visitor(options.os, options.arch, options.include_paths);
 
     debug.start_timer("bytecode");
 
@@ -142,7 +142,7 @@ bool compile(const Options &options, Xenon::Debugger &debug)
     {
         visitor.from_file(options.entry_file);
     }
-    catch (Xenon::CompilationException &e)
+    catch (Sand::CompilationException &e)
     {
         debug.err << e.what() << std::endl;
         return false;
@@ -173,7 +173,7 @@ bool compile(const Options &options, Xenon::Debugger &debug)
 
     debug.start_timer("objects");
 
-    Xenon::Compiler compiler(visitor.env.module);
+    Sand::Compiler compiler(visitor.env.module);
     auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level);
 
     auto elapsed_objects = debug.end_timer("objects");
@@ -183,7 +183,7 @@ bool compile(const Options &options, Xenon::Debugger &debug)
 
     debug.start_timer("linking");
 
-    Xenon::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.verbose);
+    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.verbose);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -204,7 +204,7 @@ bool compile(const Options &options, Xenon::Debugger &debug)
 
 int main(int argc, char **argv)
 {
-    Xenon::Debugger debug;
+    Sand::Debugger debug;
 
     CLI::App app{"App description"};
 

@@ -1,10 +1,10 @@
-#include <Xenon/Value.hpp>
+#include <Sand/Value.hpp>
 
-#include <Xenon/Values/Variable.hpp>
+#include <Sand/Values/Variable.hpp>
 
-#include <Xenon/Types/FunctionType.hpp>
+#include <Sand/Types/FunctionType.hpp>
 
-using namespace Xenon;
+using namespace Sand;
 
 Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, std::vector<Value *> args)
 {

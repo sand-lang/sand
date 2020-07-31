@@ -1,11 +1,11 @@
-#include <grammar/runtime/XenonLexer.h>
-#include <grammar/runtime/XenonParser.h>
+#include <grammar/runtime/SandLexer.h>
+#include <grammar/runtime/SandParser.h>
 
-#include <Xenon/Debugger.hpp>
+#include <Sand/Debugger.hpp>
 
 using namespace antlr4;
 
-namespace Xenon
+namespace Sand
 {
 struct SyntaxError
 {
@@ -16,12 +16,12 @@ struct SyntaxError
 class ParserErrorListener : public ANTLRErrorListener
 {
 private:
-    Xenon::Debugger &debug;
+    Sand::Debugger &debug;
 
 public:
     size_t errors_count = 0;
 
-    ParserErrorListener(Xenon::Debugger &debug_) : debug(debug_) {}
+    ParserErrorListener(Sand::Debugger &debug_) : debug(debug_) {}
 
     void syntaxError(
         Recognizer *recognizer,
@@ -68,4 +68,4 @@ public:
     {
     }
 };
-} // namespace Xenon
+} // namespace Sand
