@@ -538,6 +538,26 @@ public:
             }
         }
 
+        if (left->is_floating_point())
+        {
+            if (right->is_integer())
+            {
+                auto lbits = left->is_float() ? 4 : 8;
+                auto rbits = right->get_ref()->getIntegerBitWidth() / 8;
+
+                return 10 + (lbits - rbits);
+            }
+            else if (!right->is_floating_point())
+            {
+                return NOT_COMPATIBLE;
+            }
+
+            auto lbits = left->is_float() ? 4 : 8;
+            auto rbits = right->is_float() ? 4 : 8;
+
+            return (lbits - rbits);
+        }
+
         if (left->is_constant)
         {
             return Type::compatibility(left->origin, right);
