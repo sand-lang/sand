@@ -52,6 +52,9 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 10
 
+      - name: Install LLD
+        run: sudo apt-get install liblld-10-dev
+
       - name: Install C++ packages
         run: sudo apt-get install libc++-dev libc++abi-dev
 
