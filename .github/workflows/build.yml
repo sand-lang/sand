@@ -56,7 +56,7 @@ jobs:
         run: sudo apt-get install liblld-10-dev
 
       - name: Install C++ packages
-        run: sudo apt-get install libc++-dev libc++abi-dev
+        run: sudo apt-get install libc++-dev libc++abi-dev libedit-dev
 
       - name: Install uuid package
         run: sudo apt-get install uuid-dev
