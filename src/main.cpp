@@ -22,12 +22,17 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define CURRENT_OS "windows"
+#define OUTPUT_FILENAME "out.exe"
 #elif __APPLE__
 #define CURRENT_OS "darwin"
 #elif __linux__
 #define CURRENT_OS "linux"
 #else
 #define CURRENT_OS "unknown"
+#endif
+
+#ifndef OUTPUT_FILENAME
+#define OUTPUT_FILENAME "out"
 #endif
 
 #if __x86_64 || __x86_64__ || _M_X64 || _M_AMD64
@@ -89,7 +94,7 @@ std::string get_available_archs(const std::string &os)
 struct Options
 {
     std::string entry_file;
-    std::string output_file = "out";
+    std::string output_file = OUTPUT_FILENAME;
     std::vector<std::string> include_paths;
 
     std::string os = CURRENT_OS;
