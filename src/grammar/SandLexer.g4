@@ -12,6 +12,8 @@ Neg: '~';
 ConditionalOr: '||';
 ConditionalAnd: '&&';
 
+TernaryOperator: '?';
+
 EqualTo: '==';
 NotEqualTo: '!=';
 LessThanOrEqualTo: '<=';

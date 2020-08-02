@@ -27,9 +27,9 @@ public:
 
     virtual antlrcpp::Any visitSuffixUnaryNegationExpression(SandParser::SuffixUnaryNegationExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitBinaryShiftOperation(SandParser::BinaryShiftOperationContext *context) = 0;
+    virtual antlrcpp::Any visitTernaryExpression(SandParser::TernaryExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitDereferenceExpression(SandParser::DereferenceExpressionContext *context) = 0;
+    virtual antlrcpp::Any visitBinaryShiftOperation(SandParser::BinaryShiftOperationContext *context) = 0;
 
     virtual antlrcpp::Any visitInParenExpression(SandParser::InParenExpressionContext *context) = 0;
 
@@ -41,37 +41,39 @@ public:
 
     virtual antlrcpp::Any visitNameExpression(SandParser::NameExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitEqualityOperation(SandParser::EqualityOperationContext *context) = 0;
-
     virtual antlrcpp::Any visitBitwiseNegationExpression(SandParser::BitwiseNegationExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitIndex(SandParser::IndexContext *context) = 0;
 
-    virtual antlrcpp::Any visitLiteralDeclaration(SandParser::LiteralDeclarationContext *context) = 0;
-
     virtual antlrcpp::Any visitFunctionCallExpression(SandParser::FunctionCallExpressionContext *context) = 0;
-
-    virtual antlrcpp::Any visitPointerExpression(SandParser::PointerExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitSizeofExpression(SandParser::SizeofExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitUnaryNegationExpression(SandParser::UnaryNegationExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitUnaryNegativeExpression(SandParser::UnaryNegativeExpressionContext *context) = 0;
-
     virtual antlrcpp::Any visitFunctionExpression(SandParser::FunctionExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SandParser::BinaryMultiplicativeOperationContext *context) = 0;
-
     virtual antlrcpp::Any visitPropertyExpression(SandParser::PropertyExpressionContext *context) = 0;
-
-    virtual antlrcpp::Any visitBinaryConditionalOperation(SandParser::BinaryConditionalOperationContext *context) = 0;
-
-    virtual antlrcpp::Any visitTypeCast(SandParser::TypeCastContext *context) = 0;
 
     virtual antlrcpp::Any visitClassInstantiationExpression(SandParser::ClassInstantiationExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitBinaryComparisonOperation(SandParser::BinaryComparisonOperationContext *context) = 0;
+
+    virtual antlrcpp::Any visitDereferenceExpression(SandParser::DereferenceExpressionContext *context) = 0;
+
+    virtual antlrcpp::Any visitEqualityOperation(SandParser::EqualityOperationContext *context) = 0;
+
+    virtual antlrcpp::Any visitLiteralDeclaration(SandParser::LiteralDeclarationContext *context) = 0;
+
+    virtual antlrcpp::Any visitPointerExpression(SandParser::PointerExpressionContext *context) = 0;
+
+    virtual antlrcpp::Any visitUnaryNegativeExpression(SandParser::UnaryNegativeExpressionContext *context) = 0;
+
+    virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SandParser::BinaryMultiplicativeOperationContext *context) = 0;
+
+    virtual antlrcpp::Any visitBinaryConditionalOperation(SandParser::BinaryConditionalOperationContext *context) = 0;
+
+    virtual antlrcpp::Any visitTypeCast(SandParser::TypeCastContext *context) = 0;
 
     virtual antlrcpp::Any visitScopedName(SandParser::ScopedNameContext *context) = 0;
 

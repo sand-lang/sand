@@ -31,11 +31,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitBinaryShiftOperation(SandParser::BinaryShiftOperationContext *ctx) override {
+  virtual antlrcpp::Any visitTernaryExpression(SandParser::TernaryExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitDereferenceExpression(SandParser::DereferenceExpressionContext *ctx) override {
+  virtual antlrcpp::Any visitBinaryShiftOperation(SandParser::BinaryShiftOperationContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -59,10 +59,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitEqualityOperation(SandParser::EqualityOperationContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitBitwiseNegationExpression(SandParser::BitwiseNegationExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -71,15 +67,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitLiteralDeclaration(SandParser::LiteralDeclarationContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitFunctionCallExpression(SandParser::FunctionCallExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitPointerExpression(SandParser::PointerExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -91,27 +79,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitUnaryNegativeExpression(SandParser::UnaryNegativeExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitFunctionExpression(SandParser::FunctionExpressionContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SandParser::BinaryMultiplicativeOperationContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitPropertyExpression(SandParser::PropertyExpressionContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitBinaryConditionalOperation(SandParser::BinaryConditionalOperationContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitTypeCast(SandParser::TypeCastContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -120,6 +92,38 @@ public:
   }
 
   virtual antlrcpp::Any visitBinaryComparisonOperation(SandParser::BinaryComparisonOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitDereferenceExpression(SandParser::DereferenceExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitEqualityOperation(SandParser::EqualityOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLiteralDeclaration(SandParser::LiteralDeclarationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitPointerExpression(SandParser::PointerExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitUnaryNegativeExpression(SandParser::UnaryNegativeExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitBinaryMultiplicativeOperation(SandParser::BinaryMultiplicativeOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitBinaryConditionalOperation(SandParser::BinaryConditionalOperationContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitTypeCast(SandParser::TypeCastContext *ctx) override {
     return visitChildren(ctx);
   }
 

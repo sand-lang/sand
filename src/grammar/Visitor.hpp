@@ -52,6 +52,7 @@
 #include <Sand/Exceptions/ReturnOutsideOfFunctionException.hpp>
 #include <Sand/Exceptions/ReturnValueDoesNotMatchReturnTypeException.hpp>
 #include <Sand/Exceptions/SyntaxException.hpp>
+#include <Sand/Exceptions/TypesNotCompatibleException.hpp>
 #include <Sand/Exceptions/UnimplementedException.hpp>
 #include <Sand/Exceptions/UnknownNameException.hpp>
 
@@ -800,11 +801,10 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = value->load_alloca_and_reference(scope->builder());
-                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
+                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
             }
 
-            if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
+            if_then->conditional_br(scope->builder(), value, if_next);
         }
         else if (auto variable_declaration = context->variableDeclaration())
         {
@@ -812,10 +812,10 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
+                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
             }
 
-            if_then->conditional_br(scope->builder(), value->load_alloca_and_reference(scope->builder()), if_next);
+            if_then->conditional_br(scope->builder(), value, if_next);
         }
 
         scope->get_function()->insert(if_then);
@@ -871,10 +871,10 @@ public:
         while_cond->insert_point(scope->builder());
 
         auto value = this->valueFromExpression(context->expression());
+
         if (!value->type->is_boolean())
         {
-            value = value->load_alloca_and_reference(scope->builder());
-            value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(value->type));
+            value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
         }
 
         while_body->conditional_br(scope->builder(), value, while_end);
@@ -1583,6 +1583,10 @@ public:
         else if (const auto binary_conditional_operation_context = dynamic_cast<SandParser::BinaryConditionalOperationContext *>(context))
         {
             return this->visitBinaryConditionalOperation(binary_conditional_operation_context);
+        }
+        else if (const auto ternary_context = dynamic_cast<SandParser::TernaryExpressionContext *>(context))
+        {
+            return this->visitTernaryExpression(ternary_context);
         }
         else if (const auto equality_operation_context = dynamic_cast<SandParser::EqualityOperationContext *>(context))
         {
@@ -2296,7 +2300,7 @@ public:
             auto variable = Values::Variable::create(lexpr->name, lexpr->type, scope->builder());
             variable->store(lexpr, scope->builder(), scope->module());
 
-            lexpr = Value::not_equal(scope->builder(), variable->load(scope->builder()), Values::Constant::null_value(lexpr->type));
+            lexpr = Value::not_equal(scope->builder(), variable->load(scope->builder()), Values::Constant::null_value(Type::behind_reference(lexpr->type)));
         }
 
         if (opt->ConditionalOr())
@@ -2329,7 +2333,7 @@ public:
             auto variable = Values::Variable::create(rexpr->name, rexpr->type, scope->builder());
             variable->store(rexpr, scope->builder(), scope->module());
 
-            rexpr = Value::not_equal(scope->builder(), variable, Values::Constant::null_value(rexpr->type));
+            rexpr = Value::not_equal(scope->builder(), variable, Values::Constant::null_value(Type::behind_reference(rexpr->type)));
         }
 
         cond_end->br(scope->builder());
@@ -2342,6 +2346,59 @@ public:
         phi->addIncoming(rexpr->get_ref(), reinterpret_cast<llvm::Instruction *>(rexpr->get_ref())->getParent());
 
         return new Value("phi", Type::i1(scope->context()), phi, false);
+    }
+
+    Value *visitTernaryExpression(SandParser::TernaryExpressionContext *context)
+    {
+        auto scope = this->scopes.create();
+
+        auto if_then = Block::create(scope->builder(), "if.then");
+        auto if_end = Block::create(scope->builder(), "if.end");
+        auto if_else = Block::create(scope->builder(), "if.else");
+
+        auto condition = this->valueFromExpression(context->expression(0));
+        auto null_value = Values::Constant::null_value(Type::behind_reference(condition->type));
+
+        if (!condition->type->is_boolean())
+        {
+            condition = Value::not_equal(scope->builder(), condition, null_value);
+        }
+
+        if_then->conditional_br(scope->builder(), condition, if_else);
+
+        scope->get_function()->insert(if_then);
+        if_then->insert_point(scope->builder());
+
+        auto true_value = this->valueFromExpression(context->expression(1))->load_alloca(scope->builder());
+
+        if_end->br(scope->builder());
+
+        scope = this->scopes.top();
+
+        scope->get_function()->insert(if_else);
+        if_else->insert_point(scope->builder());
+
+        auto false_value = this->valueFromExpression(context->expression(2))->load_alloca(scope->builder());
+
+        if (Type::compatibility(false_value->type, true_value->type) == Type::NOT_COMPATIBLE)
+        {
+            throw TypesNotCompatibleException(this->files.top(), context->getStart(), false_value->type, true_value->type);
+        }
+
+        false_value = false_value->cast(true_value->type, scope->builder());
+
+        if_end->br(scope->builder());
+
+        scope->get_function()->insert(if_end);
+        if_end->insert_point(scope->builder());
+
+        this->scopes.pop();
+
+        auto phi = scope->builder().CreatePHI(true_value->type->get_ref(), 2);
+        phi->addIncoming(true_value->get_ref(), if_then->get_ref());
+        phi->addIncoming(false_value->get_ref(), if_else->get_ref());
+
+        return new Value("phi", true_value->type, phi, false);
     }
 
     Value *visitEqualityOperation(SandParser::EqualityOperationContext *context)
@@ -2688,8 +2745,7 @@ public:
             }
             else if (type->is_integer() || type->is_floating_point() || type->is_pointer())
             {
-                expression->load_alloca_and_reference(scope->builder());
-                expression = Value::not_equal(scope->builder(), expression, Values::Constant::null_value(expression->type));
+                expression = Value::not_equal(scope->builder(), expression, Values::Constant::null_value(Type::behind_reference(expression->type)));
             }
             else
             {

@@ -13,21 +13,21 @@ class  SandLexer : public antlr4::Lexer {
 public:
   enum {
     Add = 1, Sub = 2, Mul = 3, Div = 4, Mod = 5, Not = 6, Neg = 7, ConditionalOr = 8, 
-    ConditionalAnd = 9, EqualTo = 10, NotEqualTo = 11, LessThanOrEqualTo = 12, 
-    LessThan = 13, GreaterThan = 14, Xor = 15, BitwiseOr = 16, BitwiseAnd = 17, 
-    Equal = 18, AddEqual = 19, SubEqual = 20, MulEqual = 21, DivEqual = 22, 
-    ModEqual = 23, XorEqual = 24, OrEqual = 25, AndEqual = 26, OpeningParen = 27, 
-    ClosingParen = 28, OpeningBrace = 29, ClosingBrace = 30, OpeningBracket = 31, 
-    ClosingBracket = 32, Variadic = 33, InclusiveRange = 34, ExclusiveRange = 35, 
-    As = 36, SizeOf = 37, Const = 38, Class = 39, Extends = 40, Special = 41, 
-    Static = 42, Dot = 43, Arrow = 44, Union = 45, Enum = 46, Destructor = 47, 
-    Namespace = 48, ScopeResolver = 49, VariableDeclarator = 50, If = 51, 
-    Else = 52, While = 53, Break = 54, For = 55, In = 56, Function = 57, 
-    Extern = 58, Return = 59, Cast = 60, Alias = 61, Comma = 62, Colon = 63, 
-    Attribute = 64, Assembly = 65, Import = 66, True = 67, False = 68, NullLiteral = 69, 
-    InstructionsSeparator = 70, VariableName = 71, StringLiteral = 72, CharLiteral = 73, 
-    DecimalLiteral = 74, FloatingLiteral = 75, ZeroLiteral = 76, HexadecimalLiteral = 77, 
-    BinaryLiteral = 78, Comment = 79, WhiteSpace = 80, LineTerminator = 81
+    ConditionalAnd = 9, TernaryOperator = 10, EqualTo = 11, NotEqualTo = 12, 
+    LessThanOrEqualTo = 13, LessThan = 14, GreaterThan = 15, Xor = 16, BitwiseOr = 17, 
+    BitwiseAnd = 18, Equal = 19, AddEqual = 20, SubEqual = 21, MulEqual = 22, 
+    DivEqual = 23, ModEqual = 24, XorEqual = 25, OrEqual = 26, AndEqual = 27, 
+    OpeningParen = 28, ClosingParen = 29, OpeningBrace = 30, ClosingBrace = 31, 
+    OpeningBracket = 32, ClosingBracket = 33, Variadic = 34, InclusiveRange = 35, 
+    ExclusiveRange = 36, As = 37, SizeOf = 38, Const = 39, Class = 40, Extends = 41, 
+    Special = 42, Static = 43, Dot = 44, Arrow = 45, Union = 46, Enum = 47, 
+    Destructor = 48, Namespace = 49, ScopeResolver = 50, VariableDeclarator = 51, 
+    If = 52, Else = 53, While = 54, Break = 55, For = 56, In = 57, Function = 58, 
+    Extern = 59, Return = 60, Cast = 61, Alias = 62, Comma = 63, Colon = 64, 
+    Attribute = 65, Assembly = 66, Import = 67, True = 68, False = 69, NullLiteral = 70, 
+    InstructionsSeparator = 71, VariableName = 72, StringLiteral = 73, CharLiteral = 74, 
+    DecimalLiteral = 75, FloatingLiteral = 76, ZeroLiteral = 77, HexadecimalLiteral = 78, 
+    BinaryLiteral = 79, Comment = 80, WhiteSpace = 81, LineTerminator = 82
   };
 
   SandLexer(antlr4::CharStream *input);

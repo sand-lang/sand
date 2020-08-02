@@ -48,6 +48,7 @@ public:
 
     void conditional_br(llvm::IRBuilder<> &builder, Value *value, Block *false_block)
     {
+        value = value->load_alloca_and_reference(builder);
         builder.CreateCondBr(value->get_ref(), this->get_ref(), false_block->get_ref());
     }
 };
