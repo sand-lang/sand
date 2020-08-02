@@ -28,31 +28,31 @@ statement:
 	| alias InstructionsSeparator;
 
 expression:
-	'(' expression ')'											# InParenExpression
-	| 'sizeof' (expression | type)								# SizeofExpression
-	| classTypeName '{' classInstantiationProperties? '}'		# ClassInstantiationExpression
-	| expression (Dot | Arrow) name								# PropertyExpression
-	| expression '(' functionCallArguments? ')'					# FunctionCallExpression
-	| expression '[' expression ']'								# Index
-	| '-' expression											# UnaryNegativeExpression
-	| '+' expression											# UnaryPositiveExpression
-	| '!' expression											# UnaryNegationExpression
-	| '~' expression											# BitwiseNegationExpression
-	| '&' expression											# PointerExpression
-	| '*' expression											# DereferenceExpression
-	| expression '!'											# SuffixUnaryNegationExpression
-	| expression 'as' type										# TypeCast
-	| function													# FunctionExpression
-	| scopedName												# NameExpression
-	| literal													# LiteralDeclaration
-	| expression multiplicativeOperatorStatement expression		# BinaryMultiplicativeOperation
-	| expression operatorStatement expression					# BinaryOperation
-	| expression bitwiseOperatorStatement expression			# BinaryBitwiseOperation
-	| expression shiftOperator expression						# BinaryShiftOperation
-	| expression comparisonOperatorStatement expression			# BinaryComparisonOperation
-	| expression conditionalOperatorStatement expression		# BinaryConditionalOperation
-	| <assoc = right> expression '?' expression ':' expression	# TernaryExpression
-	| expression equalityOperatorStatement expression			# EqualityOperation;
+	'(' expression ')'													# InParenExpression
+	| 'sizeof' (expression | type)										# SizeofExpression
+	| classTypeName '{' classInstantiationProperties? '}'				# ClassInstantiationExpression
+	| expression (Dot | Arrow) name										# PropertyExpression
+	| expression '(' functionCallArguments? ')'							# FunctionCallExpression
+	| expression '[' expression ']'										# Index
+	| '-' expression													# UnaryNegativeExpression
+	| '+' expression													# UnaryPositiveExpression
+	| '!' expression													# UnaryNegationExpression
+	| '~' expression													# BitwiseNegationExpression
+	| '&' expression													# PointerExpression
+	| '*' expression													# DereferenceExpression
+	| expression '!'													# SuffixUnaryNegationExpression
+	| expression 'as' type												# TypeCast
+	| function															# FunctionExpression
+	| scopedName														# NameExpression
+	| literal															# LiteralDeclaration
+	| expression multiplicativeOperatorStatement expression				# BinaryMultiplicativeOperation
+	| expression operatorStatement expression							# BinaryOperation
+	| expression bitwiseOperatorStatement expression					# BinaryBitwiseOperation
+	| expression shiftOperator expression								# BinaryShiftOperation
+	| expression comparisonOperatorStatement expression					# BinaryComparisonOperation
+	| expression conditionalOperatorStatement expression				# BinaryConditionalOperation
+	| <assoc = right> expression '?' expression ':' expression			# TernaryExpression
+	| <assoc = right> expression equalityOperatorStatement expression	# EqualityOperation;
 
 scopedName: scopeResolver? name;
 
