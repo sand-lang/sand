@@ -2654,15 +2654,38 @@ public:
             return overload->call(scope->builder(), scope->module(), args);
         }
 
-        auto one_llvm = llvm::ConstantInt::get(expression->type->get_ref(), 0);
+        llvm::Constant *one_llvm = nullptr;
+
+        if (expression->type->is_integer())
+        {
+            one_llvm = llvm::ConstantInt::get(expression->type->get_ref(), 0);
+        }
+        else if (expression->type->is_floating_point())
+        {
+            one_llvm = llvm::ConstantFP::get(expression->type->get_ref(), 0.0);
+        }
+        else
+        {
+            throw InvalidRightValueException(this->files.top(), context->getStart());
+        }
 
         if (auto constant = dynamic_cast<Values::Constant *>(expression))
         {
-            auto value = llvm::ConstantExpr::getSub(one_llvm, constant->get_ref());
-            return new Values::Constant("literal_i64", constant->type, value);
+            llvm::Constant *value = nullptr;
+
+            if (expression->type->is_integer())
+            {
+                value = llvm::ConstantExpr::getSub(one_llvm, constant->get_ref());
+            }
+            else if (expression->type->is_floating_point())
+            {
+                value = llvm::ConstantExpr::getFSub(one_llvm, constant->get_ref());
+            }
+
+            return new Values::Constant("negative", constant->type, value);
         }
 
-        auto one = new Values::Constant("literal_i64", expression->type, one_llvm);
+        auto one = new Values::Constant("literal_" + expression->type->name, expression->type, one_llvm);
         if (auto value = Value::sub(scope->builder(), one, expression))
         {
             return value;
