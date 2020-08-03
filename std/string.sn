@@ -52,6 +52,34 @@ namespace std {
         return str;
     }
 
+    fn to_string(n: f64, afterpoint: i32) : i8* {
+        let int = n as i64;
+        let floating = n - int;
+
+        let int_str = to_string(int);
+        let floating_str = to_string((floating * afterpoint) as i64);
+
+        let int_str_len = strlen(int_str);
+        let floating_str_len = strlen(floating_str);
+        
+        let alloca = std::memory::allocate<i8>( + strlen(floating_str) + 2);
+        std::memory::copy(int_str, alloca, int_str_len);
+
+        alloca[int_str_len] = '.';
+
+        std::memory::copy(floating_str, alloca + (int_str_len + 1), floating_str_len);
+
+        return alloca;
+    }
+
+    fn to_string(n: f64) : i8* {
+        return to_string(n, 1000000000000000);
+    }
+
+    fn to_string(n: f32) : i8* {
+        return to_string(n, 10000000);
+    }
+
     fn starts_with(str: const i8*, with: const i8*) : bool {
         while str[0] != 0 && with[0] != 0 {
             if str[0] != with[0] {
