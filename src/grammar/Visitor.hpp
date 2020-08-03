@@ -2369,7 +2369,7 @@ public:
         scope->get_function()->insert(if_then);
         if_then->insert_point(scope->builder());
 
-        auto true_value = this->valueFromExpression(context->expression(1))->load_alloca(scope->builder());
+        auto true_value = this->valueFromExpression(context->expression(1))->load_alloca_and_reference(scope->builder());
 
         if_end->br(scope->builder());
 
@@ -2378,7 +2378,7 @@ public:
         scope->get_function()->insert(if_else);
         if_else->insert_point(scope->builder());
 
-        auto false_value = this->valueFromExpression(context->expression(2))->load_alloca(scope->builder());
+        auto false_value = this->valueFromExpression(context->expression(2))->load_alloca_and_reference(scope->builder());
 
         if (Type::compatibility(false_value->type, true_value->type) == Type::NOT_COMPATIBLE)
         {
