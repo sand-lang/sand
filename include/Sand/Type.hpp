@@ -489,7 +489,7 @@ public:
             return compatibility(left, right->base);
         }
 
-        if (left->is_pointer())
+        if (left->is_pointer() || left->is_array())
         {
             if (!right->is_pointer() && !right->is_array())
             {
