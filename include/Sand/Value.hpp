@@ -130,7 +130,7 @@ public:
     Value *load_array(llvm::IRBuilder<> &builder)
     {
         auto ref = builder.CreateConstInBoundsGEP2_64(this->get_ref(), 0, 0, "");
-        return new Value(this->name + ".load", this->type, ref);
+        return new Value(this->name + ".load", Type::array_to_pointer(this->type, false), ref);
     }
 
     Value *load_reference(llvm::IRBuilder<> &builder)

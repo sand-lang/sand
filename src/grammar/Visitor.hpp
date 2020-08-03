@@ -688,7 +688,7 @@ public:
 
             if (type == nullptr)
             {
-                type = rvalue->type;
+                type = Type::array_to_pointer(rvalue->type);
 
                 if (type->is_function() && !type->is_pointer())
                 {

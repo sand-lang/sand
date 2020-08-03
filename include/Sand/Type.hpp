@@ -102,6 +102,30 @@ public:
         return new Type(base->name + "[" + std::to_string(size) + "]", llvm::ArrayType::get(ref, size), base);
     }
 
+    static Type *array_to_pointer(Type *type, const bool &recursive = true)
+    {
+        if (type->is_array())
+        {
+            auto base = type->base;
+
+            if (recursive)
+            {
+                base = array_to_pointer(type->base);
+            }
+
+            auto ptr_type = pointer(base);
+
+            if (type->is_constant)
+            {
+                ptr_type = constant(ptr_type);
+            }
+
+            return ptr_type;
+        }
+
+        return type;
+    }
+
     static Type *constant(Type *origin)
     {
         auto type = Type::copy(origin);
