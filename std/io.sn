@@ -81,6 +81,14 @@ namespace std {
         }
     }
 
+    fn print(n: f32) {
+        print(std::to_string(n));
+    }
+
+    fn print(n: f64) {
+        print(std::to_string(n));
+    }
+
     fn print(str: const std::string&) {
         print(str.ptr);
     }
