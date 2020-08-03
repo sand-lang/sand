@@ -129,9 +129,9 @@ fragment CharChar: ~ ['\r\n] | Escape;
 DecimalLiteral: NONZERODIGIT (DIGITSEPARATOR? DIGIT)*;
 
 FloatingLiteral:
-	(DecimalLiteral | ZeroLiteral)? '.' (
-		DIGIT (DIGITSEPARATOR? DIGIT)*
-	)?;
+	(DecimalLiteral | ZeroLiteral)? '.' DIGIT (
+		DIGITSEPARATOR? DIGIT
+	)*;
 
 ZeroLiteral: '0';
 

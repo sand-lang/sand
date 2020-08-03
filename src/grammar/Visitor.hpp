@@ -2886,6 +2886,23 @@ public:
 
         if (context->Arrow())
         {
+            std::vector<Value *> args = {expr};
+            if (auto overload = this->getOperatorOverload("->", args))
+            {
+                expr = overload->call(scope->builder(), scope->module(), args);
+            }
+        }
+        else
+        {
+            std::vector<Value *> args = {expr};
+            if (auto overload = this->getOperatorOverload(".", args))
+            {
+                expr = overload->call(scope->builder(), scope->module(), args);
+            }
+        }
+
+        if (context->Arrow())
+        {
             if (!Type::behind_reference(expr->type)->is_pointer())
             {
                 throw NotAPointerException(this->files.top(), context->expression()->getStart());

@@ -940,6 +940,8 @@ public:
     GreaterThanOrEqualToOperatorContext *greaterThanOrEqualToOperator();
     antlr4::tree::TerminalNode *OpeningBracket();
     antlr4::tree::TerminalNode *ClosingBracket();
+    antlr4::tree::TerminalNode *Arrow();
+    antlr4::tree::TerminalNode *Dot();
     ShiftOperatorContext *shiftOperator();
     ShiftEqualOperatorContext *shiftEqualOperator();
 

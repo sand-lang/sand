@@ -172,6 +172,8 @@ overloadableOperator:
 	| '>'
 	| greaterThanOrEqualToOperator
 	| '[' ']'
+	| '->'
+	| '.'
 	| shiftOperator
 	| shiftEqualOperator;
 
