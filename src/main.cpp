@@ -8,6 +8,7 @@
 #include <Sand/Linker.hpp>
 
 #include <Sand/Exceptions/CompilationException.hpp>
+#include <Sand/Exceptions/TargetLookupFailedException.hpp>
 
 #include "grammar/runtime/SandLexer.h"
 #include "grammar/runtime/SandParser.h"
@@ -17,28 +18,29 @@
 #include <CLI/CLI.hpp>
 
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/TargetSelect.h>
 
 #include <map>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define CURRENT_OS "windows"
-#define OUTPUT_FILENAME "out.exe"
+    #define CURRENT_OS      "windows"
+    #define OUTPUT_FILENAME "out.exe"
 #elif __APPLE__
-#define CURRENT_OS "darwin"
+    #define CURRENT_OS "darwin"
 #elif __linux__
-#define CURRENT_OS "linux"
+    #define CURRENT_OS "linux"
 #else
-#define CURRENT_OS "unknown"
+    #define CURRENT_OS "unknown"
 #endif
 
 #ifndef OUTPUT_FILENAME
-#define OUTPUT_FILENAME "out"
+    #define OUTPUT_FILENAME "out"
 #endif
 
 #if __x86_64 || __x86_64__ || _M_X64 || _M_AMD64
-#define CURRENT_ARCH "x86_64"
+    #define CURRENT_ARCH "x86_64"
 #elif i386 || __i386 || __i386__ || __i386 || __IA32__ || _M_I86 || _M_IX86 || __X86__ || _X86_ || __THW_INTEL__ || __I86__ || __INTEL__ || __386
-#define CURRENT_ARCH "i386"
+    #define CURRENT_ARCH "i386"
 #endif
 
 std::map<std::string_view, std::vector<std::string_view>> available_architectures = {
@@ -99,6 +101,8 @@ struct Options
 
     std::string os = CURRENT_OS;
     std::string arch = CURRENT_ARCH;
+    std::string cpu = "generic";
+    std::string features = "";
 
     std::vector<std::string> libraries;
     std::string args;
@@ -134,7 +138,13 @@ bool compile(const Options &options, Sand::Debugger &debug)
         return false;
     }
 
-    Sand::Visitor visitor(options.os, options.arch, options.include_paths);
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
+
+    Sand::Visitor visitor(options.os, options.arch, options.cpu, options.features, options.include_paths);
 
     debug.start_timer("bytecode");
 
@@ -143,6 +153,11 @@ bool compile(const Options &options, Sand::Debugger &debug)
         visitor.from_file(options.entry_file);
     }
     catch (Sand::CompilationException &e)
+    {
+        debug.err << e.what() << std::endl;
+        return false;
+    }
+    catch (Sand::TargetLookupFailedException &e)
     {
         debug.err << e.what() << std::endl;
         return false;
@@ -173,8 +188,8 @@ bool compile(const Options &options, Sand::Debugger &debug)
 
     debug.start_timer("objects");
 
-    Sand::Compiler compiler(visitor.env.module);
-    auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level);
+    Sand::Compiler compiler(visitor.env.module, visitor.env.target_machine);
+    auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level, options.verbose);
 
     auto elapsed_objects = debug.end_timer("objects");
 
@@ -219,6 +234,8 @@ int main(int argc, char **argv)
 
     build->add_option("--arch", options.arch, "Target architecture", true);
     build->add_option("--os", options.os, "Target operating system", true);
+    build->add_option("--cpu", options.os, "Target CPU", true);
+    build->add_option("--features", options.os, "CPU features", true);
 
     build->add_option("-l", options.libraries, "Libraries to link with");
     build->add_option("--args", options.args, "Custom linker arguments");
@@ -244,6 +261,8 @@ int main(int argc, char **argv)
 
     run->add_option("--arch", options.arch, "Target architecture", true);
     run->add_option("--os", options.os, "Target operating system", true);
+    run->add_option("--cpu", options.os, "Target CPU", true);
+    run->add_option("--features", options.os, "CPU features", true);
 
     run->add_option("-l", options.libraries, "Libraries to link with");
     run->add_option("--args", options.args, "Custom linker arguments");

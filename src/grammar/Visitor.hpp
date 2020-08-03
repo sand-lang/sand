@@ -76,7 +76,9 @@ public:
 
     Visitor(const std::string &target_os,
             const std::string &target_arch,
-            const std::vector<std::string> &include_paths_ = {}) : env("output", target_os, target_arch),
+            const std::string &target_cpu,
+            const std::string &target_features,
+            const std::vector<std::string> &include_paths_ = {}) : env("output", target_os, target_arch, target_cpu, target_features),
                                                                    include_paths(include_paths_),
                                                                    scopes(this->env)
     {

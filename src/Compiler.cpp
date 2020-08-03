@@ -16,33 +16,13 @@
 
 #include <iostream>
 
-std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level)
+std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os, const std::string &arch, const llvm::PassBuilder::OptimizationLevel &optimization_level, const bool &verbose)
 {
-    llvm::InitializeAllTargetInfos();
-    llvm::InitializeAllTargets();
-    llvm::InitializeAllTargetMCs();
-    llvm::InitializeAllAsmParsers();
-    llvm::InitializeAllAsmPrinters();
-
-    std::string error;
-    std::string target_triple = this->module->getTargetTriple();
-    const llvm::Target *target = llvm::TargetRegistry::lookupTarget(target_triple, error);
-
-    if (!target)
+    if (verbose)
     {
-        std::cerr << error << std::endl;
-        return {};
+        std::cout << "Data layout: " << this->module->getDataLayoutStr() << std::endl;
+        std::cout << "Target triple: " << this->module->getTargetTriple() << std::endl;
     }
-
-    std::string cpu = "generic";
-    std::string features = "";
-
-    llvm::TargetOptions target_options;
-    llvm::Optional<llvm::Reloc::Model> rm = llvm::Optional<llvm::Reloc::Model>();
-    llvm::TargetMachine *target_machine = target->createTargetMachine(target_triple, cpu, features, target_options, rm);
-
-    this->module->setDataLayout(target_machine->createDataLayout());
-    this->module->setTargetTriple(target_triple);
 
     std::string output_path = std::tmpnam(nullptr);
     std::error_code error_code;
@@ -81,7 +61,7 @@ std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os,
 
     llvm::CodeGenFileType file_type = llvm::CGFT_ObjectFile;
 
-    if (target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type))
+    if (this->target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type))
     {
         llvm::errs() << "TargetMachine can't emit a file of this type";
         return {};
