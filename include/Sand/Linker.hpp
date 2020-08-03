@@ -18,7 +18,7 @@
 #include <vector>
 
 #ifdef __APPLE__
-#include <sys/sysctl.h>
+    #include <sys/sysctl.h>
 
 static std::string get_sdk_version()
 {
@@ -64,6 +64,7 @@ public:
                      const std::vector<std::string> &libraries,
                      const std::string &args,
                      const std::string &output_file,
+                     const bool &disable_internal,
                      const bool &verbose)
     {
         std::vector<const char *> raw_args = {"lld"};
@@ -99,16 +100,22 @@ public:
             auto ntdll_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_ntdll.a");
             auto kernel32_lib = internal + (DIRECTORY_SEPARATOR "libwinapi_kernel32.a");
 
-            raw_args.push_back(copy_str(ntdll_def));
-            raw_args.push_back(copy_str(kernel32_def));
+            if (!disable_internal)
+            {
+                raw_args.push_back(copy_str(ntdll_def));
+                raw_args.push_back(copy_str(kernel32_def));
+            }
 
             for (auto &arg : vectorized_args)
             {
                 raw_args.push_back(arg.c_str());
             }
 
-            raw_args.push_back(copy_str(ntdll_lib));
-            raw_args.push_back(copy_str(kernel32_lib));
+            if (!disable_internal)
+            {
+                raw_args.push_back(copy_str(ntdll_lib));
+                raw_args.push_back(copy_str(kernel32_lib));
+            }
 
             for (auto &object : objects)
             {
@@ -136,7 +143,10 @@ public:
 
             if (os == "darwin")
             {
-                raw_args.push_back("-lSystem");
+                if (!disable_internal)
+                {
+                    raw_args.push_back("-lSystem");
+                }
 
 #ifdef __APPLE__
                 auto sdk_version = get_sdk_version();
