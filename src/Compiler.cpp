@@ -37,10 +37,10 @@ std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os,
     if (optimization_level != llvm::PassBuilder::OptimizationLevel::O0)
     {
         llvm::PassBuilder builder;
-        llvm::LoopAnalysisManager loop_analisys_manager(true);
-        llvm::FunctionAnalysisManager function_analisys_manager(true);
-        llvm::CGSCCAnalysisManager CGSCC_analisys_manager(true);
-        llvm::ModuleAnalysisManager module_analisys_manager(true);
+        llvm::LoopAnalysisManager loop_analisys_manager(verbose);
+        llvm::FunctionAnalysisManager function_analisys_manager(verbose);
+        llvm::CGSCCAnalysisManager CGSCC_analisys_manager(verbose);
+        llvm::ModuleAnalysisManager module_analisys_manager(verbose);
 
         builder.registerModuleAnalyses(module_analisys_manager);
         builder.registerCGSCCAnalyses(CGSCC_analisys_manager);
@@ -48,7 +48,7 @@ std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os,
         builder.registerLoopAnalyses(loop_analisys_manager);
         builder.crossRegisterProxies(loop_analisys_manager, function_analisys_manager, CGSCC_analisys_manager, module_analisys_manager);
 
-        llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(optimization_level, true);
+        llvm::ModulePassManager module_pass_manager = builder.buildPerModuleDefaultPipeline(optimization_level, verbose);
         module_pass_manager.run(*module, module_analisys_manager);
     }
 
