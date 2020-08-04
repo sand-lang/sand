@@ -104,6 +104,8 @@ struct Options
     std::string cpu = "generic";
     std::string features = "";
 
+    bool disable_internal = false;
+
     std::vector<std::string> libraries;
     std::string args;
 
@@ -198,7 +200,7 @@ bool compile(const Options &options, Sand::Debugger &debug)
 
     debug.start_timer("linking");
 
-    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.verbose);
+    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.disable_internal, options.verbose);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -234,8 +236,9 @@ int main(int argc, char **argv)
 
     build->add_option("--arch", options.arch, "Target architecture", true);
     build->add_option("--os", options.os, "Target operating system", true);
-    build->add_option("--cpu", options.os, "Target CPU", true);
-    build->add_option("--features", options.os, "CPU features", true);
+    build->add_option("--cpu", options.cpu, "Target CPU", true);
+    build->add_option("--features", options.features, "CPU features", true);
+    build->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     build->add_option("-l", options.libraries, "Libraries to link with");
     build->add_option("--args", options.args, "Custom linker arguments");
@@ -261,8 +264,9 @@ int main(int argc, char **argv)
 
     run->add_option("--arch", options.arch, "Target architecture", true);
     run->add_option("--os", options.os, "Target operating system", true);
-    run->add_option("--cpu", options.os, "Target CPU", true);
-    run->add_option("--features", options.os, "CPU features", true);
+    run->add_option("--cpu", options.cpu, "Target CPU", true);
+    run->add_option("--features", options.features, "CPU features", true);
+    run->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     run->add_option("-l", options.libraries, "Libraries to link with");
     run->add_option("--args", options.args, "Custom linker arguments");
