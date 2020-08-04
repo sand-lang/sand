@@ -208,6 +208,7 @@ public:
 
         if (mode == "coff")
         {
+            std::cout << "running coff linker" << std::endl;
             return lld::coff::link(raw_args, false, llvm::outs(), llvm::errs());
         }
         else if (mode == "macho")

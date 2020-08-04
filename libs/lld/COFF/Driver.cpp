@@ -64,8 +64,11 @@ LinkerDriver *driver;
 
 bool link(ArrayRef<const char *> args, bool canExitEarly, raw_ostream &stdoutOS,
           raw_ostream &stderrOS) {
+  std::cout << "0" << std::endl;
   lld::stdoutOS = &stdoutOS;
   lld::stderrOS = &stderrOS;
+
+  std::cout << "1" << std::endl;
 
   errorHandler().logName = args::getFilenameWithoutExe(args[0]);
   errorHandler().errorLimitExceededMsg =
@@ -74,12 +77,17 @@ bool link(ArrayRef<const char *> args, bool canExitEarly, raw_ostream &stdoutOS,
   errorHandler().exitEarly = canExitEarly;
   stderrOS.enable_colors(stderrOS.has_colors());
 
+  std::cout << "2" << std::endl;
   config = make<Configuration>();
+  std::cout << "3" << std::endl;
   symtab = make<SymbolTable>();
+  std::cout << "4" << std::endl;
   driver = make<LinkerDriver>();
+  std::cout << "5" << std::endl;
 
   driver->link(args);
 
+  std::cout << "end" << std::endl;
   // Call exit() if we can to avoid calling destructors.
   if (canExitEarly)
     exitLld(errorCount() ? 1 : 0);
@@ -1100,6 +1108,7 @@ Optional<std::string> getReproduceFile(const opt::InputArgList &args) {
 }
 
 void LinkerDriver::link(ArrayRef<const char *> argsArr) {
+  std::cout << "6" << std::endl;
   // Needed for LTO.
   InitializeAllTargetInfos();
   InitializeAllTargets();
@@ -1107,6 +1116,7 @@ void LinkerDriver::link(ArrayRef<const char *> argsArr) {
   InitializeAllAsmParsers();
   InitializeAllAsmPrinters();
 
+  std::cout << "7" << std::endl;
   // If the first command line argument is "/lib", link.exe acts like lib.exe.
   // We call our own implementation of lib.exe that understands bitcode files.
   if (argsArr.size() > 1 && StringRef(argsArr[1]).equals_lower("/lib")) {
@@ -1115,10 +1125,12 @@ void LinkerDriver::link(ArrayRef<const char *> argsArr) {
     return;
   }
 
+  std::cout << "8" << std::endl;
   // Parse command line options.
   ArgParser parser;
   opt::InputArgList args = parser.parse(argsArr);
 
+  std::cout << "9" << std::endl;
   // Parse and evaluate -mllvm options.
   std::vector<const char *> v;
   v.push_back("lld-link (LLVM option parsing)");
@@ -1126,8 +1138,10 @@ void LinkerDriver::link(ArrayRef<const char *> argsArr) {
     v.push_back(arg->getValue());
   cl::ParseCommandLineOptions(v.size(), v.data());
 
+  std::cout << "10" << std::endl;
   // Handle /errorlimit early, because error() depends on it.
   if (auto *arg = args.getLastArg(OPT_errorlimit)) {
+    std::cout << "10bis" << std::endl;
     int n = 20;
     StringRef s = arg->getValue();
     if (s.getAsInteger(10, n))
@@ -1135,12 +1149,14 @@ void LinkerDriver::link(ArrayRef<const char *> argsArr) {
     errorHandler().errorLimit = n;
   }
 
+  std::cout << "11" << std::endl;
   // Handle /help
   if (args.hasArg(OPT_help)) {
     printHelp(argsArr[0]);
     return;
   }
 
+  std::cout << "12" << std::endl;
   lld::threadsEnabled = args.hasFlag(OPT_threads, OPT_threads_no, true);
 
   if (args.hasArg(OPT_show_timing))
