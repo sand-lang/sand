@@ -24,13 +24,17 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #define CURRENT_OS      "windows"
+    #define CURRENT_MODE    "coff"
     #define OUTPUT_FILENAME "out.exe"
 #elif __APPLE__
-    #define CURRENT_OS "darwin"
+    #define CURRENT_OS   "darwin"
+    #define CURRENT_MODE "macho"
 #elif __linux__
-    #define CURRENT_OS "linux"
+    #define CURRENT_OS   "linux"
+    #define CURRENT_MODE "elf"
 #else
-    #define CURRENT_OS "unknown"
+    #define CURRENT_OS   "unknown"
+    #define CURRENT_MODE "unknown"
 #endif
 
 #ifndef OUTPUT_FILENAME
@@ -102,6 +106,8 @@ struct Options
     std::string os = CURRENT_OS;
     std::string arch = CURRENT_ARCH;
     std::string cpu = "generic";
+    std::string mode = CURRENT_MODE;
+
     std::string features = "";
 
     bool disable_internal = false;
@@ -200,7 +206,7 @@ bool compile(const Options &options, Sand::Debugger &debug)
 
     debug.start_timer("linking");
 
-    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.disable_internal, options.verbose);
+    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.mode, options.disable_internal, options.verbose);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -238,6 +244,7 @@ int main(int argc, char **argv)
     build->add_option("--os", options.os, "Target operating system", true);
     build->add_option("--cpu", options.cpu, "Target CPU", true);
     build->add_option("--features", options.features, "CPU features", true);
+    build->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
     build->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     build->add_option("-l", options.libraries, "Libraries to link with");
@@ -266,6 +273,8 @@ int main(int argc, char **argv)
     run->add_option("--os", options.os, "Target operating system", true);
     run->add_option("--cpu", options.cpu, "Target CPU", true);
     run->add_option("--features", options.features, "CPU features", true);
+    run->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
+
     run->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     run->add_option("-l", options.libraries, "Libraries to link with");

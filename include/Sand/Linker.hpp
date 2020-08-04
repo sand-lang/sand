@@ -64,6 +64,7 @@ public:
                      const std::vector<std::string> &libraries,
                      const std::string &args,
                      const std::string &output_file,
+                     const std::string &mode,
                      const bool &disable_internal,
                      const bool &verbose)
     {
@@ -72,9 +73,9 @@ public:
         std::istringstream iss(args);
         std::vector<std::string> vectorized_args(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
 
-        if (os == "windows")
+        if (mode == "coff")
         {
-            std::cout << "windows!" << std::endl;
+            std::cout << "coff!" << std::endl;
 
             // for (auto &library : libraries)
             // {
@@ -122,14 +123,14 @@ public:
                 raw_args.push_back(object.c_str());
             }
         }
-        else if (os == "linux" || os == "darwin")
+        else if (mode == "elf" || mode == "macho")
         {
-            if (os == "linux")
+            if (mode == "elf")
             {
                 raw_args.push_back("-m");
                 raw_args.push_back(copy_str("elf_" + arch));
             }
-            else if (os == "darwin")
+            else if (mode == "macho")
             {
                 raw_args.push_back("-arch");
                 raw_args.push_back(arch.c_str());
@@ -141,7 +142,7 @@ public:
                 raw_args.push_back(copy_str(option));
             }
 
-            if (os == "darwin")
+            if (mode == "macho")
             {
                 if (!disable_internal)
                 {
@@ -172,9 +173,23 @@ public:
                 raw_args.push_back(object.c_str());
             }
         }
+        else if (mode == "mingw")
+        {
+            raw_args.push_back(copy_str("/out:" + output_file));
+
+            for (auto &arg : vectorized_args)
+            {
+                raw_args.push_back(arg.c_str());
+            }
+
+            for (auto &object : objects)
+            {
+                raw_args.push_back(object.c_str());
+            }
+        }
         else
         {
-            std::cerr << "Unknown platform" << std::endl;
+            std::cerr << "Unknown mode" << std::endl;
             return false;
         }
 
@@ -191,17 +206,21 @@ public:
             std::cout << "Linking with LLD: " << passed_args << std::endl;
         }
 
-        if (os == "windows")
+        if (mode == "coff")
         {
             return lld::coff::link(raw_args, false, llvm::outs(), llvm::errs());
         }
-        else if (os == "darwin")
+        else if (mode == "macho")
         {
             return lld::mach_o::link(raw_args, false, llvm::outs(), llvm::errs());
         }
-        else if (os == "linux")
+        else if (mode == "elf")
         {
             return lld::elf::link(raw_args, false, llvm::outs(), llvm::errs());
+        }
+        else if (mode == "mingw")
+        {
+            return lld::mingw::link(raw_args, false, llvm::outs(), llvm::errs());
         }
 
         return false;
