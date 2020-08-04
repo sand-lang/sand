@@ -5,12 +5,16 @@
 #include <llvm/Passes/PassBuilder.h>
 
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/PrettyStackTrace.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/TimeProfiler.h>
+#include <llvm/Support/ToolOutputFile.h>
 
 #include <llvm/Target/TargetMachine.h>
 
 #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/ObjCARC.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 
@@ -53,13 +57,19 @@ std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os,
     }
 
     llvm::legacy::PassManager pass;
+    pass.add(llvm::createTargetTransformInfoWrapperPass(this->target_machine->getTargetIRAnalysis()));
 
-    pass.add(llvm::createInstructionCombiningPass());
-    pass.add(llvm::createReassociatePass());
-    pass.add(llvm::createGVNPass());
-    pass.add(llvm::createCFGSimplificationPass());
+    llvm::Triple target_triple(this->module->getTargetTriple());
+    auto tlii = std::make_unique<llvm::TargetLibraryInfoImpl>(target_triple);
+
+    pass.add(new llvm::TargetLibraryInfoWrapperPass(*tlii));
 
     llvm::CodeGenFileType file_type = llvm::CGFT_ObjectFile;
+
+    if (optimization_level != llvm::PassBuilder::OptimizationLevel::O0)
+    {
+        pass.add(llvm::createObjCARCContractPass());
+    }
 
     if (this->target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type))
     {
