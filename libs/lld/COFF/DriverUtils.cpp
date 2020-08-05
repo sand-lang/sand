@@ -116,17 +116,18 @@ void parseSubsystem(StringRef arg, WindowsSubsystem *sys, uint32_t *major,
   std::tie(sysStr, ver) = arg.split(',');
   std::string sysStrLower = sysStr.lower();
   *sys = StringSwitch<WindowsSubsystem>(sysStrLower)
-    .Case("boot_application", IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION)
-    .Case("console", IMAGE_SUBSYSTEM_WINDOWS_CUI)
-    .Case("default", IMAGE_SUBSYSTEM_UNKNOWN)
-    .Case("efi_application", IMAGE_SUBSYSTEM_EFI_APPLICATION)
-    .Case("efi_boot_service_driver", IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER)
-    .Case("efi_rom", IMAGE_SUBSYSTEM_EFI_ROM)
-    .Case("efi_runtime_driver", IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER)
-    .Case("native", IMAGE_SUBSYSTEM_NATIVE)
-    .Case("posix", IMAGE_SUBSYSTEM_POSIX_CUI)
-    .Case("windows", IMAGE_SUBSYSTEM_WINDOWS_GUI)
-    .Default(IMAGE_SUBSYSTEM_UNKNOWN);
+             .Case("boot_application", IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION)
+             .Case("console", IMAGE_SUBSYSTEM_WINDOWS_CUI)
+             .Case("default", IMAGE_SUBSYSTEM_UNKNOWN)
+             .Case("efi_application", IMAGE_SUBSYSTEM_EFI_APPLICATION)
+             .Case("efi_boot_service_driver",
+                   IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER)
+             .Case("efi_rom", IMAGE_SUBSYSTEM_EFI_ROM)
+             .Case("efi_runtime_driver", IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER)
+             .Case("native", IMAGE_SUBSYSTEM_NATIVE)
+             .Case("posix", IMAGE_SUBSYSTEM_POSIX_CUI)
+             .Case("windows", IMAGE_SUBSYSTEM_WINDOWS_GUI)
+             .Default(IMAGE_SUBSYSTEM_UNKNOWN);
   if (*sys == IMAGE_SUBSYSTEM_UNKNOWN && sysStrLower != "default")
     fatal("unknown subsystem: " + sysStr);
   if (!ver.empty())
@@ -329,9 +330,7 @@ public:
     }
   }
 
-  TemporaryFile(TemporaryFile &&obj) {
-    std::swap(path, obj.path);
-  }
+  TemporaryFile(TemporaryFile &&obj) { std::swap(path, obj.path); }
 
   ~TemporaryFile() {
     if (path.empty())
@@ -354,7 +353,7 @@ public:
 
   std::string path;
 };
-}
+} // namespace
 
 static std::string createDefaultXml() {
   std::string ret;
@@ -806,23 +805,29 @@ opt::InputArgList ArgParser::parse(ArrayRef<const char *> argv) {
   unsigned missingIndex;
   unsigned missingCount;
 
+  std::cout << "parse1" << std::endl;
+
   // We need to get the quoting style for response files before parsing all
   // options so we parse here before and ignore all the options but
   // --rsp-quoting and /lldignoreenv.
   // (This means --rsp-quoting can't be added through %LINK%.)
   opt::InputArgList args = table.ParseArgs(argv, missingIndex, missingCount);
 
-
+  std::cout << "parse2" << std::endl;
   // Expand response files (arguments in the form of @<filename>) and insert
   // flags from %LINK% and %_LINK_%, and then parse the argument again.
   SmallVector<const char *, 256> expandedArgv(argv.data(),
                                               argv.data() + argv.size());
+  std::cout << "parse3" << std::endl;
   if (!args.hasArg(OPT_lldignoreenv))
     addLINK(expandedArgv);
+  std::cout << "parse4" << std::endl;
   cl::ExpandResponseFiles(saver, getQuotingStyle(args), expandedArgv);
+  std::cout << "parse5" << std::endl;
   args = table.ParseArgs(makeArrayRef(expandedArgv).drop_front(), missingIndex,
                          missingCount);
 
+  std::cout << "parse6" << std::endl;
   // Print the real command line if response files are expanded.
   if (args.hasArg(OPT_verbose) && argv.size() != expandedArgv.size()) {
     std::string msg = "Command line:";
@@ -831,19 +836,25 @@ opt::InputArgList ArgParser::parse(ArrayRef<const char *> argv) {
     message(msg);
   }
 
+  std::cout << "parse7" << std::endl;
   // Save the command line after response file expansion so we can write it to
   // the PDB if necessary.
   config->argv = {expandedArgv.begin(), expandedArgv.end()};
 
+  std::cout << "parse8" << std::endl;
   // Handle /WX early since it converts missing argument warnings to errors.
   errorHandler().fatalWarnings = args.hasFlag(OPT_WX, OPT_WX_no, false);
 
+  std::cout << "parse9" << std::endl;
   if (missingCount)
     fatal(Twine(args.getArgString(missingIndex)) + ": missing argument");
 
+  std::cout << "parse10" << std::endl;
   handleColorDiagnostics(args);
 
   for (auto *arg : args.filtered(OPT_UNKNOWN)) {
+
+    std::cout << "parse11" << std::endl;
     std::string nearest;
     if (table.findNearest(arg->getAsString(args), nearest) > 1)
       warn("ignoring unknown argument '" + arg->getAsString(args) + "'");
@@ -852,9 +863,11 @@ opt::InputArgList ArgParser::parse(ArrayRef<const char *> argv) {
            "', did you mean '" + nearest + "'");
   }
 
+  std::cout << "parse12" << std::endl;
   if (args.hasArg(OPT_lib))
     warn("ignoring /lib since it's not the first argument");
 
+  std::cout << "parse13" << std::endl;
   return args;
 }
 
