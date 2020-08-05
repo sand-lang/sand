@@ -48,6 +48,7 @@
 #include <algorithm>
 #include <future>
 #include <memory>
+#include <iostream>
 
 using namespace llvm;
 using namespace llvm::object;
