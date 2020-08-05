@@ -33,6 +33,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/WindowsManifest/WindowsManifestMerger.h"
 #include <memory>
+#include <iostream>
 
 using namespace llvm::COFF;
 using namespace llvm;
