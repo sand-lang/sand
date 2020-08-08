@@ -161,12 +161,20 @@ OptTable::OptTable(ArrayRef<Info> OptionInfos, bool IgnoreCase)
 OptTable::~OptTable() = default;
 
 const Option OptTable::getOption(OptSpecifier Opt) const {
-  std::cout << "option" << std::endl;
+  std::cout << "option 1 - " << Opt.getID() << std::endl;
   unsigned id = Opt.getID();
-  if (id == 0)
+  std::cout << "option 2" << std::endl;
+  if (id == 0) {
+    std::cout << "option 3" << std::endl;
     return Option(nullptr, nullptr);
+  }
   assert((unsigned)(id - 1) < getNumOptions() && "Invalid ID.");
-  return Option(&getInfo(id), this);
+
+  std::cout << "option 4" << std::endl;
+  auto info = getInfo(id);
+
+  std::cout << "option 5" << std::endl;
+  return Option(&info, this);
 }
 
 static bool isInput(const StringSet<> &Prefixes, StringRef Arg) {
@@ -345,7 +353,9 @@ Arg *OptTable::ParseOneArg(const ArgList &Args, unsigned &Index,
   if (isInput(PrefixesUnion, Str)) {
 
     std::cout << "argparse 11" << std::endl;
-    return new Arg(getOption(TheInputOptionID), Str, Index++, Str);
+    auto option = getOption(TheInputOptionID);
+    std::cout << "argparse 11bis" << std::endl;
+    return new Arg(option, Str, Index++, Str);
   }
 
   std::cout << "argparse 12" << std::endl;

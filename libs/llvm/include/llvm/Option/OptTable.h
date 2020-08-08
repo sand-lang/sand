@@ -74,8 +74,11 @@ private:
 
 private:
   const Info &getInfo(OptSpecifier Opt) const {
+    std::cout << "info 1" << std::endl;
     unsigned id = Opt.getID();
+    std::cout << "info 2" << std::endl;
     assert(id > 0 && id - 1 < getNumOptions() && "Invalid Option ID.");
+    std::cout << "info 3" << std::endl;
     return OptionInfos[id - 1];
   }
 
