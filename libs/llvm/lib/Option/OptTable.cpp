@@ -472,8 +472,10 @@ InputArgList OptTable::ParseArgs(ArrayRef<const char *> ArgArr,
     Arg *A = ParseOneArg(Args, Index, FlagsToInclude, FlagsToExclude);
     assert(Index > Prev && "Parser failed to consume argument.");
 
+    std::cout << "argparse 33" << std::endl;
     // Check for missing argument error.
     if (!A) {
+      std::cout << "argparse 34" << std::endl;
       assert(Index >= End && "Unexpected parser error.");
       assert(Index - Prev - 1 && "No missing arguments!");
       MissingArgIndex = Prev;
@@ -481,9 +483,11 @@ InputArgList OptTable::ParseArgs(ArrayRef<const char *> ArgArr,
       break;
     }
 
+    std::cout << "argparse 35" << std::endl;
     Args.append(A);
   }
 
+  std::cout << "argparse 36" << std::endl;
   return Args;
 }
 

@@ -14,9 +14,9 @@
 #include "llvm/ADT/StringSet.h"
 #include "llvm/Option/OptSpecifier.h"
 #include <cassert>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 namespace llvm {
 
@@ -77,10 +77,13 @@ private:
   const Info &getInfo(OptSpecifier Opt) const {
     std::cout << "info 1" << std::endl;
     unsigned id = Opt.getID();
-    std::cout << "info 2" << std::endl;
+    std::cout << "info 2 - " << id << std::endl;
     assert(id > 0 && id - 1 < getNumOptions() && "Invalid Option ID.");
-    std::cout << "info 3" << std::endl;
-    return OptionInfos[id - 1];
+    std::cout << "info 3 - " << getNumOptions() << std::endl;
+    auto &info = OptionInfos[id - 1];
+
+    std::cout << "info 4" << std::endl;
+    return info;
   }
 
 protected:
@@ -99,14 +102,10 @@ public:
   const Option getOption(OptSpecifier Opt) const;
 
   /// Lookup the name of the given option.
-  const char *getOptionName(OptSpecifier id) const {
-    return getInfo(id).Name;
-  }
+  const char *getOptionName(OptSpecifier id) const { return getInfo(id).Name; }
 
   /// Get the kind of the given option.
-  unsigned getOptionKind(OptSpecifier id) const {
-    return getInfo(id).Kind;
-  }
+  unsigned getOptionKind(OptSpecifier id) const { return getInfo(id).Kind; }
 
   /// Get the group id for the given option.
   unsigned getOptionGroupID(OptSpecifier id) const {
