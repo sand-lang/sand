@@ -171,7 +171,7 @@ const Option OptTable::getOption(OptSpecifier Opt) const {
   assert((unsigned)(id - 1) < getNumOptions() && "Invalid ID.");
 
   std::cout << "option 4" << std::endl;
-  auto info = getInfo(id);
+  auto &info = getInfo(id);
 
   std::cout << "option 5" << std::endl;
   return Option(&info, this);
