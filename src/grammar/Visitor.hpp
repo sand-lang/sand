@@ -1146,7 +1146,7 @@ public:
     Types::EnumType *visitEnumBody(SandParser::EnumBodyContext *context, Types::EnumType *type)
     {
         auto scope = this->scopes.top();
-        auto builder = scope->builder();
+        auto &builder = scope->builder();
 
         for (auto &enum_property : context->enumProperty())
         {
@@ -3670,7 +3670,7 @@ public:
 
         if (return_type->isStructTy())
         {
-            auto builder = scope->builder();
+            auto &builder = scope->builder();
             auto ref = ret->get_ref();
 
             for (size_t i = 0; i < output_values.size(); i++)
