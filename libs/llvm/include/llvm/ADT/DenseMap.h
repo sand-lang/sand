@@ -741,10 +741,15 @@ public:
   }
 
   DenseMap& operator=(DenseMap &&other) {
+  std::cout << "dense 1" << std::endl;
     this->destroyAll();
+  std::cout << "dense 2" << std::endl;
     deallocate_buffer(Buckets, sizeof(BucketT) * NumBuckets, alignof(BucketT));
+  std::cout << "dense 3" << std::endl;
     init(0);
+  std::cout << "dense 4" << std::endl;
     swap(other);
+  std::cout << "dense 5" << std::endl;
     return *this;
   }
 
