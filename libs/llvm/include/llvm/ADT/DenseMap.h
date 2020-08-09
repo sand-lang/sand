@@ -744,7 +744,17 @@ public:
   DenseMap& operator=(DenseMap &&other) {
   std::cout << "dense 1" << std::endl;
     this->destroyAll();
-  std::cout << "dense 2" << std::endl;
+  std::cout << "dense 2 - " << Buckets << std::endl;
+#ifdef __cpp_sized_deallocation
+  std::cout << "__cpp_sized_deallocation is on" << std::endl;
+#else
+  std::cout << "__cpp_sized_deallocation is off" << std::endl;
+#endif
+#ifdef __cpp_aligned_new
+  std::cout << "__cpp_aligned_new is on" << std::endl;
+#else
+  std::cout << "__cpp_aligned_new is off" << std::endl;
+#endif
     deallocate_buffer(Buckets, sizeof(BucketT) * NumBuckets, alignof(BucketT));
   std::cout << "dense 3" << std::endl;
     init(0);
