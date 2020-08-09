@@ -38,7 +38,7 @@ set(TARGET_Hexagon HexagonCodeGen HexagonAsmParser HexagonDesc HexagonInfo)
 set(TARGET_BPF BPFCodeGen BPFAsmParser BPFDesc BPFInfo) 
 set(TARGET_ARM ARMCodeGen ARMAsmParser ARMDesc ARMUtils ARMInfo) 
 set(TARGET_AMDGPU AMDGPUCodeGen AMDGPUAsmParser AMDGPUDesc AMDGPUUtils AMDGPUInfo)
-set(TARGET_X86 X86CodeGen X86AsmParser X86Desc X86Utils X86Info)
+set(TARGET_X86 X86CodeGen X86AsmParser X86Desc X86Info)
 set(TARGET_AArch64 AArch64CodeGen AArch64AsmParser AArch64Desc AArch64Utils AArch64Info)
 
 set(TARGETS_TO_BUILD "WebAssembly" "XCore" "SystemZ" "Sparc" "RISCV" "PowerPC" "NVPTX" "MSP430" "Mips" "Lanai" "Hexagon" "BPF" "ARM" "AMDGPU" "X86" "AArch64")

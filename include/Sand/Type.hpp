@@ -410,10 +410,10 @@ public:
             {
                 return Type::equals(left_ptr->getElementType(), right_ptr->getElementType());
             }
-            else if (auto right_sequential = llvm::dyn_cast<llvm::SequentialType>(right))
-            {
-                return Type::equals(left_ptr->getElementType(), right_sequential->getElementType());
-            }
+            // else if (auto right_sequential = llvm::dyn_cast<llvm::SequentialType>(right))
+            // {
+            //     return Type::equals(left_ptr->getElementType(), right_sequential->getElementType());
+            // }
 
             return false;
 
@@ -461,20 +461,19 @@ public:
         }
 
         case llvm::Type::ArrayTyID:
-        case llvm::Type::VectorTyID:
         {
-            auto left_sequential = llvm::cast<llvm::SequentialType>(left);
+            auto left_array = llvm::cast<llvm::ArrayType>(left);
 
-            if (auto right_sequential = llvm::dyn_cast<llvm::SequentialType>(right))
+            if (auto right_array = llvm::dyn_cast<llvm::ArrayType>(right))
             {
-                if (left_sequential->getNumElements() != right_sequential->getNumElements())
+                if (left_array->getNumElements() != right_array->getNumElements())
                     return false;
 
-                return Type::equals(left_sequential->getElementType(), right_sequential->getElementType());
+                return Type::equals(left_array->getElementType(), right_array->getElementType());
             }
             else if (auto right_pointer = llvm::dyn_cast<llvm::PointerType>(right))
             {
-                return Type::equals(left_sequential->getElementType(), right_pointer->getElementType());
+                return Type::equals(left_array->getElementType(), right_pointer->getElementType());
             }
 
             return false;

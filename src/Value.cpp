@@ -61,14 +61,14 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &mo
 
         llvm_args.insert(llvm_args.begin(), tmp->get_ref());
 
-        auto call = builder.CreateCall(this->get_ref(), llvm_args);
+        auto call = builder.CreateCall(type->get_ref(), this->get_ref(), llvm_args);
         call->addAttribute(1, llvm::Attribute::StructRet);
 
         return tmp;
     }
     else
     {
-        auto ret = builder.CreateCall(this->get_ref(), llvm_args);
+        auto ret = builder.CreateCall(type->get_ref(), this->get_ref(), llvm_args);
         return new Value("call", type->return_type, static_cast<llvm::Value *>(ret));
     }
 }
