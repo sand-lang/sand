@@ -28,6 +28,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace llvm {
 
@@ -159,10 +160,15 @@ protected:
   }
 
   ArgList &operator=(ArgList &&RHS) {
+  std::cout << "list2 1" << std::endl;
     Args = std::move(RHS.Args);
+  std::cout << "list2 2" << std::endl;
     RHS.Args.clear();
+  std::cout << "list2 3" << std::endl;
     OptRanges = std::move(RHS.OptRanges);
+  std::cout << "list2 4" << std::endl;
     RHS.OptRanges.clear();
+  std::cout << "list2 5" << std::endl;
     return *this;
   }
 
@@ -398,11 +404,17 @@ public:
         NumInputArgStrings(RHS.NumInputArgStrings) {}
 
   InputArgList &operator=(InputArgList &&RHS) {
+  std::cout << "list 1" << std::endl;
     releaseMemory();
+  std::cout << "list 2" << std::endl;
     ArgList::operator=(std::move(RHS));
+  std::cout << "list 3" << std::endl;
     ArgStrings = std::move(RHS.ArgStrings);
+  std::cout << "list 4" << std::endl;
     SynthesizedStrings = std::move(RHS.SynthesizedStrings);
+  std::cout << "list 5" << std::endl;
     NumInputArgStrings = RHS.NumInputArgStrings;
+  std::cout << "list 6" << std::endl;
     return *this;
   }
 
