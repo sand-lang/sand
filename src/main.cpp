@@ -258,8 +258,8 @@ int main(int argc, char **argv)
     build->add_option("--arch", options.arch, "Target architecture", true);
     build->add_option("--os", options.os, "Target operating system", true);
     build->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
-    build->add_option("--cpu", options.os, "Target CPU", true);
-    build->add_option("--features", options.os, "CPU features", true);
+    build->add_option("--cpu", options.cpu, "Target CPU", true);
+    build->add_option("--features", options.features, "CPU features", true);
 
     build->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
@@ -288,8 +288,8 @@ int main(int argc, char **argv)
     run->add_option("--arch", options.arch, "Target architecture", true);
     run->add_option("--os", options.os, "Target operating system", true);
     run->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
-    run->add_option("--cpu", options.os, "Target CPU", true);
-    run->add_option("--features", options.os, "CPU features", true);
+    run->add_option("--cpu", options.cpu, "Target CPU", true);
+    run->add_option("--features", options.features, "CPU features", true);
 
     run->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
