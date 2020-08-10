@@ -62,6 +62,7 @@
 #include <limits>
 #include <regex>
 #include <tuple>
+#include <cstdint>
 
 namespace Sand
 {
@@ -3322,14 +3323,14 @@ public:
             str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
             str.erase(std::remove(str.begin(), str.end(), '\''), str.end());
 
-            unsigned long integer = 0;
+            uint64_t integer = 0;
             std::string name = "";
             Type *type = nullptr;
             bool is_signed = true;
 
             try
             {
-                integer = std::stoul(str, nullptr, base);
+                integer = std::stoull(str, nullptr, base);
             }
             catch (std::out_of_range &)
             {
