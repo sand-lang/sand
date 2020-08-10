@@ -12,7 +12,7 @@ class GlobalVariable : public Variable
 public:
     GlobalVariable(const std::string &name, Type *type, llvm::Value *ref) : Variable(name, type, ref) {}
 
-    static GlobalVariable *create(const std::string &name, std::unique_ptr<llvm::Module> &module, Type *type, Constant *value = nullptr, const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::PrivateLinkage)
+    static GlobalVariable *create(const std::string &name, std::unique_ptr<llvm::Module> &module, Type *type, Constant *value = nullptr, const llvm::GlobalValue::LinkageTypes &linkage = llvm::GlobalValue::LinkageTypes::ExternalLinkage)
     {
         auto global = new llvm::GlobalVariable(*module, type->get_ref(), false, linkage, value ? value->get_ref() : type->default_value(), name);
         return new GlobalVariable(name, type, global);
