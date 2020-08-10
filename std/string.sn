@@ -73,7 +73,7 @@ namespace std {
     }
 
     fn to_string(n: f64) : i8* {
-        return to_string(n, 1000000000000000);
+        return to_string(n, 1000000000);
     }
 
     fn to_string(n: f32) : i8* {
