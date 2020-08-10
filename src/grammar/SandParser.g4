@@ -290,7 +290,7 @@ attributes: attribute*;
 attribute: '#[' VariableName ('=' StringLiteral)? ']';
 
 alias:
-	'alias' VariableName classGenerics? '=' (
+	attributes 'alias' VariableName classGenerics? '=' (
 		scopedName
 		| type
 		| literal

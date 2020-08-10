@@ -3788,6 +3788,11 @@ public:
     {
         auto scope = this->scopes.top();
 
+        auto attributes = this->visitAttributes(context->attributes());
+
+        if (!attributes.accept_current_target())
+            return nullptr;
+
         auto name = context->VariableName()->getText();
 
         if (auto generics_context = context->classGenerics())

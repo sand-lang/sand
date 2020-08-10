@@ -1589,6 +1589,7 @@ public:
   public:
     AliasContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    AttributesContext *attributes();
     antlr4::tree::TerminalNode *Alias();
     antlr4::tree::TerminalNode *VariableName();
     antlr4::tree::TerminalNode *Equal();
