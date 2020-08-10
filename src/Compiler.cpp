@@ -1,5 +1,7 @@
 #include <Sand/Compiler.hpp>
 
+#include <Sand/Helpers.hpp>
+
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/PassManager.h>
 #include <llvm/Passes/PassBuilder.h>
@@ -28,7 +30,7 @@ std::vector<std::string> Sand::Compiler::generate_objects(const std::string &os,
         std::cout << "Target triple: " << this->module->getTargetTriple() << std::endl;
     }
 
-    std::string output_path = std::tmpnam(nullptr);
+    auto output_path = Helpers::temporary_filename();
     std::error_code error_code;
     llvm::raw_fd_ostream dest(output_path, error_code, llvm::sys::fs::OF_None);
 

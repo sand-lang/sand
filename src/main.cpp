@@ -7,6 +7,8 @@
 #include <Sand/Debugger.hpp>
 #include <Sand/Linker.hpp>
 
+#include <Sand/Helpers.hpp>
+
 #include <Sand/Exceptions/CompilationException.hpp>
 #include <Sand/Exceptions/TargetLookupFailedException.hpp>
 
@@ -297,7 +299,7 @@ int main(int argc, char **argv)
     run->add_flag("--verbose", options.verbose, "Verbose mode");
 
     run->callback([&]() {
-        options.output_file = std::tmpnam(nullptr);
+        options.output_file = Sand::Helpers::temporary_filename();
 
         if (!compile(options, debug))
         {
