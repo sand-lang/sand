@@ -21,24 +21,24 @@
 #include <map>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define CURRENT_OS "windows"
-#define OUTPUT_FILENAME "out.exe"
+    #define CURRENT_OS      "windows"
+    #define OUTPUT_FILENAME "out.exe"
 #elif __APPLE__
-#define CURRENT_OS "darwin"
+    #define CURRENT_OS "darwin"
 #elif __linux__
-#define CURRENT_OS "linux"
+    #define CURRENT_OS "linux"
 #else
-#define CURRENT_OS "unknown"
+    #define CURRENT_OS "unknown"
 #endif
 
 #ifndef OUTPUT_FILENAME
-#define OUTPUT_FILENAME "out"
+    #define OUTPUT_FILENAME "out"
 #endif
 
 #if __x86_64 || __x86_64__ || _M_X64 || _M_AMD64
-#define CURRENT_ARCH "x86_64"
+    #define CURRENT_ARCH "x86_64"
 #elif i386 || __i386 || __i386__ || __i386 || __IA32__ || _M_I86 || _M_IX86 || __X86__ || _X86_ || __THW_INTEL__ || __I86__ || __INTEL__ || __386
-#define CURRENT_ARCH "i386"
+    #define CURRENT_ARCH "i386"
 #endif
 
 std::map<std::string_view, std::vector<std::string_view>> available_architectures = {
@@ -145,6 +145,16 @@ bool compile(const Options &options, Sand::Debugger &debug)
     catch (Sand::CompilationException &e)
     {
         debug.err << e.what() << std::endl;
+        return false;
+    }
+    catch (std::exception &e)
+    {
+        debug.err << e.what() << std::endl;
+        return false;
+    }
+    catch (...)
+    {
+        debug.err << "An error occured." << std::endl;
         return false;
     }
 
