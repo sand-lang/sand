@@ -59,10 +59,10 @@
 
 #include <Sand/filesystem.hpp>
 
+#include <cstdint>
 #include <limits>
 #include <regex>
 #include <tuple>
-#include <cstdint>
 
 namespace Sand
 {
@@ -3350,21 +3350,21 @@ public:
             };
 
             static const std::vector<TypeRules> types = {
-                {"i8", 2, Type::i8, true, std::numeric_limits<char>::max()},
-                {"i16", 3, Type::i16, true, std::numeric_limits<short>::max()},
-                {"i32", 3, Type::i32, true, std::numeric_limits<int>::max()},
-                {"i64", 3, Type::i64, true, std::numeric_limits<long>::max()},
-                {"u8", 2, Type::i8, false, std::numeric_limits<unsigned char>::max()},
-                {"u16", 3, Type::i16, false, std::numeric_limits<unsigned short>::max()},
-                {"u32", 3, Type::i32, false, std::numeric_limits<unsigned int>::max()},
-                {"u64", 3, Type::i64, false, std::numeric_limits<unsigned long>::max()},
+                {"i8", 2, Type::i8, true, std::numeric_limits<int8_t>::max()},
+                {"i16", 3, Type::i16, true, std::numeric_limits<int16_t>::max()},
+                {"i32", 3, Type::i32, true, std::numeric_limits<int32_t>::max()},
+                {"i64", 3, Type::i64, true, std::numeric_limits<int64_t>::max()},
+                {"u8", 2, Type::i8, false, std::numeric_limits<uint8_t>::max()},
+                {"u16", 3, Type::i16, false, std::numeric_limits<uint16_t>::max()},
+                {"u32", 3, Type::i32, false, std::numeric_limits<uint32_t>::max()},
+                {"u64", 3, Type::i64, false, std::numeric_limits<uint64_t>::max()},
             };
 
             static const std::vector<TypeRules> automatic_types = {
-                {"i32", 3, Type::i32, true, std::numeric_limits<int>::max()},
-                {"i64", 3, Type::i64, true, std::numeric_limits<long>::max()},
-                {"u32", 3, Type::i32, false, std::numeric_limits<unsigned int>::max()},
-                {"u64", 3, Type::i64, false, std::numeric_limits<unsigned long>::max()},
+                {"i32", 3, Type::i32, true, std::numeric_limits<int32_t>::max()},
+                {"i64", 3, Type::i64, true, std::numeric_limits<int64_t>::max()},
+                {"u32", 3, Type::i32, false, std::numeric_limits<uint32_t>::max()},
+                {"u64", 3, Type::i64, false, std::numeric_limits<uint64_t>::max()},
             };
 
             for (const auto &rule : types)
@@ -3401,6 +3401,7 @@ public:
 
             if (type == nullptr)
             {
+                std::cout << "Number too big." << std::endl;
                 throw NumberOutOfRangeException(this->files.top(), context->getStart(), str);
             }
 
