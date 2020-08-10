@@ -126,22 +126,33 @@ CharLiteral: '\'' CharChar+ '\'';
 fragment StringChar: ~ ["\r\n] | Escape;
 fragment CharChar: ~ ['\r\n] | Escape;
 
-DecimalLiteral: NONZERODIGIT (DIGITSEPARATOR? DIGIT)*;
+DecimalLiteral:
+	NONZERODIGIT (DIGITSEPARATOR? DIGIT)* IntegerType?;
 
 FloatingLiteral:
 	(DecimalLiteral | ZeroLiteral)? '.' DIGIT (
 		DIGITSEPARATOR? DIGIT
 	)*;
 
-ZeroLiteral: '0';
+ZeroLiteral: '0' IntegerType?;
 
 HexadecimalLiteral: ('0x' | '0X') HEXADECIMALDIGIT (
 		DIGITSEPARATOR? HEXADECIMALDIGIT
-	)*;
+	)* IntegerType?;
 
 BinaryLiteral: ('0b' | '0B') BINARYDIGIT (
 		DIGITSEPARATOR? BINARYDIGIT
-	)*;
+	)* IntegerType?;
+
+fragment IntegerType:
+	'i8'
+	| 'i16'
+	| 'i32'
+	| 'i64'
+	| 'u8'
+	| 'u16'
+	| 'u32'
+	| 'u64';
 
 // Comments
 Comment: '//' CommentLine* -> skip;

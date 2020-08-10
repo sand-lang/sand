@@ -7414,7 +7414,7 @@ std::vector<std::string> SandParser::_literalNames = {
   "'union'", "'enum'", "'@destructor'", "'namespace'", "'::'", "'let'", 
   "'if'", "'else'", "'while'", "'break'", "'for'", "'in'", "'fn'", "'extern'", 
   "'return'", "'cast'", "'alias'", "','", "':'", "'#['", "'asm'", "'import'", 
-  "'true'", "'false'", "'null'", "", "", "", "", "", "", "'0'"
+  "'true'", "'false'", "'null'"
 };
 
 std::vector<std::string> SandParser::_symbolicNames = {

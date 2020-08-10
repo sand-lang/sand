@@ -47,6 +47,7 @@
 #include <Sand/Exceptions/NotAClassOrNamespaceException.hpp>
 #include <Sand/Exceptions/NotAGenericException.hpp>
 #include <Sand/Exceptions/NotAPointerException.hpp>
+#include <Sand/Exceptions/NumberOutOfRangeException.hpp>
 #include <Sand/Exceptions/OpaqueTypeNotAllowedException.hpp>
 #include <Sand/Exceptions/PropertyNotFoundException.hpp>
 #include <Sand/Exceptions/ReturnOutsideOfFunctionException.hpp>
@@ -58,7 +59,9 @@
 
 #include <Sand/filesystem.hpp>
 
+#include <limits>
 #include <regex>
+#include <tuple>
 
 namespace Sand
 {
@@ -3315,53 +3318,115 @@ public:
     {
         auto scope = this->scopes.top();
 
-        const auto remove_digit_separators = [](std::string &str) {
+        const auto parse_integer = [&](std::string str, int base = 10) -> Values::Constant * {
             str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
             str.erase(std::remove(str.begin(), str.end(), '\''), str.end());
+
+            unsigned long integer = 0;
+            std::string name = "";
+            Type *type = nullptr;
+            bool is_signed = true;
+
+            try
+            {
+                integer = std::stoul(str, nullptr, base);
+            }
+            catch (std::out_of_range &)
+            {
+                throw NumberOutOfRangeException(this->files.top(), context->getStart(), str);
+            }
+
+            typedef Type *(*TypeFunction)(llvm::LLVMContext &, const bool &);
+
+            struct TypeRules
+            {
+                const char *name;
+                int name_length;
+                TypeFunction function;
+                bool is_signed;
+
+                unsigned long max;
+            };
+
+            static const std::vector<TypeRules> types = {
+                {"i8", 2, Type::i8, true, std::numeric_limits<char>::max()},
+                {"i16", 3, Type::i16, true, std::numeric_limits<short>::max()},
+                {"i32", 3, Type::i32, true, std::numeric_limits<int>::max()},
+                {"i64", 3, Type::i64, true, std::numeric_limits<long>::max()},
+                {"u8", 2, Type::i8, false, std::numeric_limits<unsigned char>::max()},
+                {"u16", 3, Type::i16, false, std::numeric_limits<unsigned short>::max()},
+                {"u32", 3, Type::i32, false, std::numeric_limits<unsigned int>::max()},
+                {"u64", 3, Type::i64, false, std::numeric_limits<unsigned long>::max()},
+            };
+
+            static const std::vector<TypeRules> automatic_types = {
+                {"i32", 3, Type::i32, true, std::numeric_limits<int>::max()},
+                {"i64", 3, Type::i64, true, std::numeric_limits<long>::max()},
+                {"u32", 3, Type::i32, false, std::numeric_limits<unsigned int>::max()},
+                {"u64", 3, Type::i64, false, std::numeric_limits<unsigned long>::max()},
+            };
+
+            for (const auto &rule : types)
+            {
+                if (Helpers::ends_with(str, rule.name))
+                {
+                    str = str.erase(str.size() - rule.name_length);
+                    name = rule.name;
+                    type = rule.function(scope->context(), rule.is_signed);
+                    is_signed = rule.is_signed;
+
+                    if (integer >= rule.max)
+                    {
+                        throw NumberOutOfRangeException(this->files.top(), context->getStart(), str, rule.name);
+                    }
+
+                    break;
+                }
+            }
+
+            if (type == nullptr)
+            {
+                for (const auto &rule : automatic_types)
+                {
+                    if (integer <= rule.max)
+                    {
+                        name = rule.name;
+                        type = rule.function(scope->context(), rule.is_signed);
+                        is_signed = rule.is_signed;
+                        break;
+                    }
+                }
+            }
+
+            if (type == nullptr)
+            {
+                throw NumberOutOfRangeException(this->files.top(), context->getStart(), str);
+            }
+
+            auto value = llvm::ConstantInt::get(llvm::cast<llvm::IntegerType>(type->get_ref()), integer, is_signed);
+            return new Values::Constant("literal_" + name, type, value);
         };
 
         if (auto literal = context->DecimalLiteral())
         {
-            auto str = literal->toString();
-            remove_digit_separators(str);
-
-            auto integer = std::stol(str);
-
-            auto type = Type::i64(scope->context());
-            auto value = llvm::ConstantInt::get(type->get_ref(), integer, true);
-
-            return new Values::Constant("literal_i64", type, value);
+            return parse_integer(literal->toString(), 10);
         }
         else if (context->ZeroLiteral())
         {
-            auto type = Type::i64(scope->context());
+            auto type = Type::i32(scope->context());
             auto value = llvm::ConstantInt::get(type->get_ref(), 0, true);
 
-            return new Values::Constant("literal_i64", type, value);
+            return new Values::Constant("literal_i32", type, value);
         }
         else if (auto literal = context->HexadecimalLiteral())
         {
             auto str = literal->toString();
-            remove_digit_separators(str);
-
-            auto integer = std::stol(str, nullptr, 16);
-
-            auto type = Type::i64(scope->context());
-            auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
-
-            return new Values::Constant("literal_i64", type, value);
+            return parse_integer(literal->toString(), 16);
         }
         else if (auto literal = context->BinaryLiteral())
         {
             auto str = literal->toString().substr(2);
-            remove_digit_separators(str);
-
-            auto integer = std::stol(str, nullptr, 2);
-
-            auto type = Type::i64(scope->context());
-            auto value = llvm::ConstantInt::get(type->get_ref(), integer, false);
-
-            return new Values::Constant("literal_i64", type, value);
+            return parse_integer(literal->toString(), 2);
         }
 
         return nullptr;

@@ -293,27 +293,27 @@ public:
         return llvm::Type::getVoidTy(context);
     }
 
-    static llvm::Type *llvm_i1(llvm::LLVMContext &context)
+    static llvm::IntegerType *llvm_i1(llvm::LLVMContext &context)
     {
         return llvm::Type::getInt1Ty(context);
     }
 
-    static llvm::Type *llvm_i8(llvm::LLVMContext &context)
+    static llvm::IntegerType *llvm_i8(llvm::LLVMContext &context)
     {
         return llvm::Type::getInt8Ty(context);
     }
 
-    static llvm::Type *llvm_i16(llvm::LLVMContext &context)
+    static llvm::IntegerType *llvm_i16(llvm::LLVMContext &context)
     {
         return llvm::Type::getInt16Ty(context);
     }
 
-    static llvm::Type *llvm_i32(llvm::LLVMContext &context)
+    static llvm::IntegerType *llvm_i32(llvm::LLVMContext &context)
     {
         return llvm::Type::getInt32Ty(context);
     }
 
-    static llvm::Type *llvm_i64(llvm::LLVMContext &context)
+    static llvm::IntegerType *llvm_i64(llvm::LLVMContext &context)
     {
         return llvm::Type::getInt64Ty(context);
     }
