@@ -8,6 +8,7 @@
 #include <Sand/Linker.hpp>
 
 #include <Sand/Exceptions/CompilationException.hpp>
+#include <Sand/Exceptions/TargetLookupFailedException.hpp>
 
 #include "grammar/runtime/SandLexer.h"
 #include "grammar/runtime/SandParser.h"
@@ -17,18 +18,26 @@
 #include <CLI/CLI.hpp>
 
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/TargetSelect.h>
 
 #include <map>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #define CURRENT_OS      "windows"
+    #define CURRENT_MODE    "coff"
     #define OUTPUT_FILENAME "out.exe"
 #elif __APPLE__
-    #define CURRENT_OS "darwin"
+    #define CURRENT_OS   "darwin"
+    #define CURRENT_OS   "darwin"
+    #define CURRENT_MODE "macho"
 #elif __linux__
-    #define CURRENT_OS "linux"
+    #define CURRENT_OS   "linux"
+    #define CURRENT_OS   "linux"
+    #define CURRENT_MODE "elf"
 #else
-    #define CURRENT_OS "unknown"
+    #define CURRENT_OS   "unknown"
+    #define CURRENT_OS   "unknown"
+    #define CURRENT_MODE "unknown"
 #endif
 
 #ifndef OUTPUT_FILENAME
@@ -99,6 +108,12 @@ struct Options
 
     std::string os = CURRENT_OS;
     std::string arch = CURRENT_ARCH;
+    std::string mode = CURRENT_MODE;
+    std::string cpu = "generic";
+
+    std::string features = "";
+
+    bool disable_internal = false;
 
     std::vector<std::string> libraries;
     std::string args;
@@ -134,7 +149,13 @@ bool compile(const Options &options, Sand::Debugger &debug)
         return false;
     }
 
-    Sand::Visitor visitor(options.os, options.arch, options.include_paths);
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
+
+    Sand::Visitor visitor(options.os, options.arch, options.cpu, options.features, options.include_paths);
 
     debug.start_timer("bytecode");
 
@@ -143,6 +164,11 @@ bool compile(const Options &options, Sand::Debugger &debug)
         visitor.from_file(options.entry_file);
     }
     catch (Sand::CompilationException &e)
+    {
+        debug.err << e.what() << std::endl;
+        return false;
+    }
+    catch (Sand::TargetLookupFailedException &e)
     {
         debug.err << e.what() << std::endl;
         return false;
@@ -183,8 +209,8 @@ bool compile(const Options &options, Sand::Debugger &debug)
 
     debug.start_timer("objects");
 
-    Sand::Compiler compiler(visitor.env.module);
-    auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level);
+    Sand::Compiler compiler(visitor.env.module, visitor.env.target_machine);
+    auto objects = compiler.generate_objects(options.os, options.arch, llvm_optimization_level, options.verbose);
 
     auto elapsed_objects = debug.end_timer("objects");
 
@@ -193,7 +219,7 @@ bool compile(const Options &options, Sand::Debugger &debug)
 
     debug.start_timer("linking");
 
-    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.verbose);
+    Sand::Linker::link(objects, options.os, options.arch, options.libraries, options.args, options.output_file, options.mode, options.disable_internal, options.verbose);
 
     auto elapsed_linking = debug.end_timer("linking");
 
@@ -229,6 +255,11 @@ int main(int argc, char **argv)
 
     build->add_option("--arch", options.arch, "Target architecture", true);
     build->add_option("--os", options.os, "Target operating system", true);
+    build->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
+    build->add_option("--cpu", options.os, "Target CPU", true);
+    build->add_option("--features", options.os, "CPU features", true);
+
+    build->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     build->add_option("-l", options.libraries, "Libraries to link with");
     build->add_option("--args", options.args, "Custom linker arguments");
@@ -254,6 +285,11 @@ int main(int argc, char **argv)
 
     run->add_option("--arch", options.arch, "Target architecture", true);
     run->add_option("--os", options.os, "Target operating system", true);
+    run->add_option("-m,--mode", options.mode, "Executable/Object files format", true);
+    run->add_option("--cpu", options.os, "Target CPU", true);
+    run->add_option("--features", options.os, "CPU features", true);
+
+    run->add_flag("--disable-internal", options.disable_internal, "Disable internal linked libraries");
 
     run->add_option("-l", options.libraries, "Libraries to link with");
     run->add_option("--args", options.args, "Custom linker arguments");
