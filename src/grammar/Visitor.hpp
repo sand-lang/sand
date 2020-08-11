@@ -71,6 +71,7 @@ class Visitor
 public:
     Environment env;
     std::vector<std::string> include_paths;
+    std::string builtins_path;
 
     ScopeStack scopes;
     std::stack<fs::path> files;
@@ -82,18 +83,38 @@ public:
             const std::string &target_arch,
             const std::string &target_cpu,
             const std::string &target_features,
+            const std::string &builtins_path_,
             const std::vector<std::string> &include_paths_ = {}) : env("output", target_os, target_arch, target_cpu, target_features),
                                                                    include_paths(include_paths_),
+                                                                   builtins_path(builtins_path_),
                                                                    scopes(this->env)
     {
-        this->include_paths.push_back(Environment::get_std_directory().u8string());
+        auto std_directory = Environment::get_std_directory();
+
+        if (this->builtins_path.empty())
+        {
+            this->builtins_path = (std_directory / "builtins").u8string();
+        }
+
+        this->include_paths.push_back(std_directory.u8string());
+    }
+
+    void load_builtins()
+    {
+        for (const auto &p : fs::recursive_directory_iterator(this->builtins_path, fs::directory_options::follow_directory_symlink | fs::directory_options::skip_permission_denied))
+        {
+            if (!p.is_directory())
+            {
+                this->from_file(p.path());
+            }
+        }
     }
 
     void from_file(std::string path)
     {
         if (!this->files.empty())
         {
-            if (Helpers::starts_with(path, "./"))
+            if (Helpers::starts_with(path, "./") || Helpers::starts_with(path, "../"))
             {
                 auto from = this->files.top();
                 path = from.replace_filename(path).u8string();
@@ -143,7 +164,7 @@ public:
         std::ifstream stream;
         stream.open(fullpath);
 
-        files.push(fullpath);
+        this->files.push(fullpath);
 
         auto input = new ANTLRInputStream(stream);
         auto lexer = new SandLexer(input);

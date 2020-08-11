@@ -108,6 +108,8 @@ struct Options
     std::string output_file = OUTPUT_FILENAME;
     std::vector<std::string> include_paths;
 
+    std::string builtins_path = "";
+
     std::string os = CURRENT_OS;
     std::string arch = CURRENT_ARCH;
     std::string mode = CURRENT_MODE;
@@ -157,12 +159,13 @@ bool compile(const Options &options, Sand::Debugger &debug)
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllAsmPrinters();
 
-    Sand::Visitor visitor(options.os, options.arch, options.cpu, options.features, options.include_paths);
+    Sand::Visitor visitor(options.os, options.arch, options.cpu, options.features, options.builtins_path, options.include_paths);
 
     debug.start_timer("bytecode");
 
     try
     {
+        visitor.load_builtins();
         visitor.from_file(options.entry_file);
     }
     catch (Sand::CompilationException &e)
@@ -254,6 +257,7 @@ int main(int argc, char **argv)
 
     build->add_option("-O", options.optimization_level, "Optimization level", true);
     build->add_option("-I", options.include_paths, "Include paths", true);
+    build->add_option("-B,--builtins", options.builtins_path, "Builtins path", true);
 
     build->add_option("--arch", options.arch, "Target architecture", true);
     build->add_option("--os", options.os, "Target operating system", true);
@@ -282,8 +286,9 @@ int main(int argc, char **argv)
     CLI::App *run = app.add_subcommand("run", "Run sources");
     run->add_option("ENTRY", options.entry_file, "Entry file")->required()->check(CLI::ExistingFile);
 
-    run->add_option("-O", options.optimization_level, "Optimization level");
-    run->add_option("-I", options.include_paths, "Include paths");
+    run->add_option("-O", options.optimization_level, "Optimization level", true);
+    run->add_option("-I", options.include_paths, "Include paths", true);
+    run->add_option("-B,--builtins", options.builtins_path, "Builtins path", true);
 
     run->add_option("--arch", options.arch, "Target architecture", true);
     run->add_option("--os", options.os, "Target operating system", true);

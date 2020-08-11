@@ -1,4 +1,4 @@
-import "./syscalls"
+import "../linux/syscalls"
 
 #[target_os = "linux"]
 #[target_arch = "x86_64"]
