@@ -3348,7 +3348,7 @@ public:
                 TypeFunction function;
                 bool is_signed;
 
-                unsigned long max;
+                uint64_t max;
             };
 
             static const std::vector<TypeRules> types = {
