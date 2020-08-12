@@ -3938,19 +3938,23 @@ public:
         auto name = context->VariableName()->getText();
         NameArray *names = nullptr;
 
-        if (auto scoped_name_context = context->scopedName())
+        if (auto expression_context = context->expression())
         {
-            names = this->visitScopedName(scoped_name_context);
+            auto expression = this->visitExpression(expression_context);
+
+            if (auto array = dynamic_cast<NameArray *>(expression))
+            {
+                names = array;
+            }
+            else
+            {
+                names = new NameArray({expression});
+            }
         }
         else if (auto type_context = context->type())
         {
             auto type = this->visitType(type_context);
             names = new NameArray({type});
-        }
-        else if (auto literal_context = context->literal())
-        {
-            auto literal = this->visitLiteral(literal_context);
-            names = new NameArray({literal});
         }
 
         return new Alias(name, names);

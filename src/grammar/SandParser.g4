@@ -291,9 +291,8 @@ attribute: '#[' VariableName ('=' StringLiteral)? ']';
 
 alias:
 	attributes 'alias' VariableName classGenerics? '=' (
-		scopedName
+		expression
 		| type
-		| literal
 	);
 
 assemblyStatement:
