@@ -268,6 +268,15 @@ Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
 
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getSDiv(constant_lvalue, constant_rvalue);
+            return new Values::Constant("div", lvalue->type, value);
+        }
+
         auto value = builder.CreateSDiv(lvalue->get_ref(), rvalue->get_ref());
         return new Value("div", lvalue->type, value);
     }
@@ -275,6 +284,15 @@ Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
+
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getFDiv(constant_lvalue, constant_rvalue);
+            return new Values::Constant("div", lvalue->type, value);
+        }
 
         auto value = builder.CreateFDiv(lvalue->get_ref(), rvalue->get_ref());
         return new Value("div", lvalue->type, value);
