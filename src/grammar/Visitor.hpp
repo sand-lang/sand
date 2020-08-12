@@ -103,9 +103,11 @@ public:
     {
         for (const auto &p : fs::recursive_directory_iterator(this->builtins_path, fs::directory_options::follow_directory_symlink | fs::directory_options::skip_permission_denied))
         {
-            if (!p.is_directory())
+            const auto &path = p.path();
+
+            if (!fs::is_directory(path))
             {
-                this->from_file(p.path());
+                this->from_file(path.u8string());
             }
         }
     }
