@@ -413,6 +413,15 @@ Value *Value::bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalu
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
 
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getOr(constant_lvalue, constant_rvalue);
+            return new Values::Constant("or", lvalue->type, value);
+        }
+
         auto value = builder.CreateOr(lvalue->get_ref(), rvalue->get_ref());
         return new Value("or", lvalue->type, value);
     }
