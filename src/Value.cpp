@@ -561,8 +561,17 @@ Value *Value::lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
 
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getShl(constant_lvalue, constant_rvalue);
+            return new Values::Constant("lshift", lvalue->type, value);
+        }
+
         auto value = builder.CreateShl(lvalue->get_ref(), rvalue->get_ref());
-        return new Value("rshift", lvalue->type, value);
+        return new Value("lshift", lvalue->type, value);
     }
 
     return nullptr;
