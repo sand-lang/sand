@@ -322,6 +322,15 @@ Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
 
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getSRem(constant_lvalue, constant_rvalue);
+            return new Values::Constant("mod", lvalue->type, value);
+        }
+
         auto value = builder.CreateSRem(lvalue->get_ref(), rvalue->get_ref());
         return new Value("mod", lvalue->type, value);
     }
@@ -329,6 +338,15 @@ Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
+
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getFRem(constant_lvalue, constant_rvalue);
+            return new Values::Constant("mod", lvalue->type, value);
+        }
 
         auto value = builder.CreateFRem(lvalue->get_ref(), rvalue->get_ref());
         return new Value("mod", lvalue->type, value);
