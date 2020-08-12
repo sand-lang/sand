@@ -214,6 +214,15 @@ Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
 
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getNSWMul(constant_lvalue, constant_rvalue);
+            return new Values::Constant("mul", lvalue->type, value);
+        }
+
         auto value = builder.CreateNSWMul(lvalue->get_ref(), rvalue->get_ref());
         return new Value("mul", lvalue->type, value);
     }
@@ -221,6 +230,15 @@ Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->cast(lvalue->type, builder);
+
+        if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
+        {
+            auto constant_lvalue = static_cast<Values::Constant *>(lvalue)->get_ref();
+            auto constant_rvalue = static_cast<Values::Constant *>(rvalue)->get_ref();
+
+            auto value = llvm::ConstantExpr::getFMul(constant_lvalue, constant_rvalue);
+            return new Values::Constant("mul", lvalue->type, value);
+        }
 
         auto value = builder.CreateFMul(lvalue->get_ref(), rvalue->get_ref());
         return new Value("mul", lvalue->type, value);
