@@ -21,7 +21,7 @@ public:
 
     GenericUnionType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SandParser::UnionStatementContext *context_, const Attributes &attributes_) : GenericType(name, generics), context(context_), scope(scope_), attributes(attributes_) {}
 
-    UnionType *get_child(const std::vector<Type *> generics)
+    UnionType *get_child(const std::vector<Name *> generics)
     {
         for (auto it = this->children.rbegin(); it != this->children.rend(); it++)
         {

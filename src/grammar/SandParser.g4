@@ -242,7 +242,13 @@ classStatement:
 		Extends classExtends
 	)? classBody;
 
-classGenerics: '<' VariableName (',' VariableName)* '>';
+classGenerics: '<' classGeneric (',' classGeneric)* '>';
+
+classGeneric: classGenericType | classGenericValue;
+
+classGenericType: VariableName ('=' type)?;
+
+classGenericValue: VariableName ':' type ('=' expression)?;
 
 classExtends: classTypeName (',' classTypeName)*;
 
@@ -279,7 +285,9 @@ functionType:
 
 classTypeName: scopedName;
 
-classTypeNameGenerics: '<' type (',' type)* '>';
+classTypeNameGenerics:
+	'<' classTypeNameGeneric (',' classTypeNameGeneric)* '>';
+classTypeNameGeneric: type | expression;
 
 namespaceStatement:
 	attributes Namespace VariableName '{' statement* '}';

@@ -175,6 +175,12 @@ public:
 
     virtual antlrcpp::Any visitClassGenerics(SandParser::ClassGenericsContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassGeneric(SandParser::ClassGenericContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassGenericType(SandParser::ClassGenericTypeContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassGenericValue(SandParser::ClassGenericValueContext *context) = 0;
+
     virtual antlrcpp::Any visitClassExtends(SandParser::ClassExtendsContext *context) = 0;
 
     virtual antlrcpp::Any visitClassBody(SandParser::ClassBodyContext *context) = 0;
@@ -202,6 +208,8 @@ public:
     virtual antlrcpp::Any visitClassTypeName(SandParser::ClassTypeNameContext *context) = 0;
 
     virtual antlrcpp::Any visitClassTypeNameGenerics(SandParser::ClassTypeNameGenericsContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassTypeNameGeneric(SandParser::ClassTypeNameGenericContext *context) = 0;
 
     virtual antlrcpp::Any visitNamespaceStatement(SandParser::NamespaceStatementContext *context) = 0;
 

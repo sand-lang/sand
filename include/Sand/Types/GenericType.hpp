@@ -1,19 +1,13 @@
 #pragma once
 
+#include <Sand/Generic.hpp>
 #include <Sand/Type.hpp>
+#include <Sand/Values/Constant.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
 namespace Sand::Types
 {
-struct Generic
-{
-    std::string name;
-    Type *default_type;
-
-    Generic(const std::string &name_, Type *default_type_) : name(name_), default_type(default_type_) {}
-};
-
 class GenericType : public Name
 {
 public:
@@ -23,16 +17,41 @@ public:
     {
     }
 
-    static bool are_same_generics(const std::vector<Type *> a, const std::vector<Type *> b)
+    static bool are_same_generics(const std::vector<Name *> a, const std::vector<Name *> b)
     {
         if (a.size() != b.size())
             return false;
 
         for (size_t i = 0; i < a.size(); i++)
         {
-            if (!a[i]->equals(b[i]))
+            if (auto type_a = dynamic_cast<Type *>(a[i]))
             {
-                return false;
+                if (auto type_b = dynamic_cast<Type *>(b[i]))
+                {
+                    if (!type_a->equals(type_b))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (auto value_a = dynamic_cast<Values::Constant *>(a[i]))
+            {
+                if (auto value_b = dynamic_cast<Values::Constant *>(b[i]))
+                {
+                    if (Values::Constant::fold_not_equal(value_a, value_b)->get_ref()->getUniqueInteger().getBoolValue())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

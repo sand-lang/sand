@@ -23,7 +23,7 @@ public:
     std::shared_ptr<Scope> static_scope = nullptr;
     std::shared_ptr<Scope> scope = nullptr;
 
-    std::vector<Type *> generics;
+    std::vector<Name *> generics;
 
     std::vector<UnionProperty *> properties;
     Type *main_type = nullptr;
@@ -33,7 +33,7 @@ public:
     UnionType(const std::string &name,
               llvm::StructType *ref,
               std::shared_ptr<Scope> static_scope_,
-              const std::vector<Type *> &generics_ = {})
+              const std::vector<Name *> &generics_ = {})
         : Type(name, ref),
           static_scope(static_scope_),
           scope(Scope::create(static_scope_->env)),
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    static UnionType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Type *> &generics = {})
+    static UnionType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Name *> &generics = {})
     {
         auto ref = llvm::StructType::create(scope->context(), name + ".union");
         return new UnionType(name, ref, scope, generics);

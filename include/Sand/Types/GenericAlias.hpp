@@ -10,10 +10,10 @@ namespace Sand::Types
 {
 struct GenericAliasChild
 {
-    std::vector<Type *> generics;
+    std::vector<Name *> generics;
     Alias *alias;
 
-    GenericAliasChild(const std::vector<Type *> &generics_, Alias *alias_) : generics(generics_), alias(alias_) {}
+    GenericAliasChild(const std::vector<Name *> &generics_, Alias *alias_) : generics(generics_), alias(alias_) {}
 };
 
 class GenericAlias : public GenericType
@@ -26,7 +26,7 @@ public:
 
     GenericAlias(std::shared_ptr<Scope> scope_, const std::string &name, const std::vector<Generic *> &generics, SandParser::AliasContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
 
-    Alias *get_child(const std::vector<Type *> generics)
+    Alias *get_child(const std::vector<Name *> &generics)
     {
         for (auto child = this->children.rbegin(); child != this->children.rend(); child++)
         {

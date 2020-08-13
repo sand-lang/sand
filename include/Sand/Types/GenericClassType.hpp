@@ -5,6 +5,7 @@
 #include <Sand/Types/ClassType.hpp>
 #include <Sand/Types/GenericType.hpp>
 
+#include <Sand/Generic.hpp>
 #include <Sand/Attributes.hpp>
 
 namespace Sand::Types
@@ -23,7 +24,7 @@ public:
     {
     }
 
-    ClassType *get_child(const std::vector<Type *> generics)
+    ClassType *get_child(const std::vector<Name *> &generics)
     {
         for (auto it = this->children.rbegin(); it != this->children.rend(); it++)
         {

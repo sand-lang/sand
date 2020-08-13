@@ -15,6 +15,7 @@
 #include <Sand/Alias.hpp>
 #include <Sand/AssemblyOperand.hpp>
 #include <Sand/Attributes.hpp>
+#include <Sand/Generic.hpp>
 #include <Sand/NameArray.hpp>
 #include <Sand/Namespace.hpp>
 #include <Sand/Scope.hpp>
@@ -514,7 +515,7 @@ public:
         return Types::FunctionArgument(name, type);
     }
 
-    Values::Function *generateGenericFunction(Types::GenericFunctionType *generic, const std::vector<Type *> &generics)
+    Values::Function *generateGenericFunction(Types::GenericFunctionType *generic, const std::vector<Name *> &generics)
     {
         Position position;
 
@@ -1264,7 +1265,7 @@ public:
         }
     }
 
-    Types::ClassType *generateGenericClassType(Types::GenericClassType *generic, const std::vector<Type *> &generics)
+    Types::ClassType *generateGenericClassType(Types::GenericClassType *generic, const std::vector<Name *> &generics)
     {
         Position position;
 
@@ -1299,7 +1300,7 @@ public:
         return type;
     }
 
-    Types::UnionType *generateGenericUnionType(Types::GenericUnionType *generic, const std::vector<Type *> &generics)
+    Types::UnionType *generateGenericUnionType(Types::GenericUnionType *generic, const std::vector<Name *> &generics)
     {
         Position position;
 
@@ -1329,17 +1330,46 @@ public:
         return type;
     }
 
-    std::vector<Types::Generic *> visitClassGenerics(SandParser::ClassGenericsContext *context)
+    std::vector<Generic *> visitClassGenerics(SandParser::ClassGenericsContext *context)
     {
-        std::vector<Types::Generic *> generics;
+        std::vector<Generic *> generics;
 
-        for (const auto &name : context->VariableName())
+        for (const auto &generic_context : context->classGeneric())
         {
-            auto generic = new Types::Generic(name->getText(), nullptr);
+            auto generic = this->visitClassGeneric(generic_context);
             generics.push_back(generic);
         }
 
         return generics;
+    }
+
+    Generic *visitClassGeneric(SandParser::ClassGenericContext *context)
+    {
+        if (auto generic_type_context = context->classGenericType())
+        {
+            return this->visitClassGenericType(generic_type_context);
+        }
+        else if (auto generic_value_context = context->classGenericValue())
+        {
+            return this->visitClassGenericValue(generic_value_context);
+        }
+
+        return nullptr;
+    }
+
+    Generic *visitClassGenericType(SandParser::ClassGenericTypeContext *context)
+    {
+        auto name = context->VariableName()->getText();
+
+        return new Generic(name, this->scopes.top(), context->type());
+    }
+
+    Generic *visitClassGenericValue(SandParser::ClassGenericValueContext *context)
+    {
+        auto name = context->VariableName()->getText();
+        Type *type = this->visitType(context->type());
+
+        return new Generic(name, this->scopes.top(), type, context->expression());
     }
 
     std::vector<Types::ClassType *> visitClassExtends(SandParser::ClassExtendsContext *context)
@@ -1438,13 +1468,16 @@ public:
 
         for (auto &generic : type->generics)
         {
-            if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::get_base(generic))))
+            if (auto generic_type = dynamic_cast<Type *>(generic))
             {
-                if (!class_type->pending_methods.empty())
+                if (auto class_type = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::get_base(generic_type))))
                 {
-                    this->scopes.push(class_type->static_scope);
-                    this->generatePendingMethods(class_type);
-                    this->scopes.pop();
+                    if (!class_type->pending_methods.empty())
+                    {
+                        this->scopes.push(class_type->static_scope);
+                        this->generatePendingMethods(class_type);
+                        this->scopes.pop();
+                    }
                 }
             }
         }
@@ -3634,19 +3667,33 @@ public:
         throw NotAClassException(this->files.top(), context->getStart());
     }
 
-    std::vector<Type *> visitClassTypeNameGenerics(SandParser::ClassTypeNameGenericsContext *context)
+    std::vector<Name *> visitClassTypeNameGenerics(SandParser::ClassTypeNameGenericsContext *context)
     {
         auto scope = this->scopes.top();
 
-        std::vector<Type *> types;
+        std::vector<Name *> names;
 
-        for (auto &type_context : context->type())
+        for (auto &class_generic_context : context->classTypeNameGeneric())
         {
-            auto type = this->visitType(type_context, false);
-            types.push_back(type);
+            auto name = this->visitClassTypeNameGeneric(class_generic_context);
+            names.push_back(name);
         }
 
-        return types;
+        return names;
+    }
+
+    Name *visitClassTypeNameGeneric(SandParser::ClassTypeNameGenericContext *context)
+    {
+        if (auto type_context = context->type())
+        {
+            return this->visitType(type_context, false);
+        }
+        else if (auto expression_context = context->expression())
+        {
+            return this->valueFromExpression(expression_context);
+        }
+
+        return nullptr;
     }
 
     Attributes visitAttributes(SandParser::AttributesContext *context)
@@ -3904,7 +3951,7 @@ public:
         return alias;
     }
 
-    Alias *generateGenericAlias(Types::GenericAlias *generic, const std::vector<Type *> &generics)
+    Alias *generateGenericAlias(Types::GenericAlias *generic, const std::vector<Name *> &generics)
     {
         Position position;
 

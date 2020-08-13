@@ -160,5 +160,9 @@ public:
 
         return this;
     }
+
+    static Constant *fold_equal(Constant *lvalue, Constant *rvalue);
+
+    static Constant *fold_not_equal(Constant *lvalue, Constant *rvalue);
 };
 } // namespace Sand::Values

@@ -27,7 +27,7 @@ public:
     bool is_sret = false;
     bool is_method = false;
 
-    std::vector<Type *> generics;
+    std::vector<Name *> generics;
 
     FunctionType(const std::string &name,
                  llvm::FunctionType *ref,

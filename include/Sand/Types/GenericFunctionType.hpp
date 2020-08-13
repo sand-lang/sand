@@ -24,7 +24,7 @@ public:
           scope(scope_),
           parent(parent_) {}
 
-    Values::Function *get_child(const std::vector<Type *> generics)
+    Values::Function *get_child(const std::vector<Name *> generics)
     {
         for (auto it = this->children.rbegin(); it != this->children.rend(); it++)
         {

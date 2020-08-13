@@ -35,7 +35,7 @@ public:
     std::shared_ptr<Scope> static_scope = nullptr;
     std::shared_ptr<Scope> scope = nullptr;
 
-    std::vector<Type *> generics;
+    std::vector<Name *> generics;
 
     std::vector<ClassType *> parents;
     std::vector<ClassProperty *> properties;
@@ -46,7 +46,7 @@ public:
     ClassType(const std::string &name,
               llvm::StructType *ref,
               std::shared_ptr<Scope> static_scope_,
-              const std::vector<Type *> &generics_ = {})
+              const std::vector<Name *> &generics_ = {})
         : Type(name, ref),
           static_scope(static_scope_),
           scope(Scope::create(static_scope_->env)),
@@ -94,7 +94,7 @@ public:
         return Scope::from(this->static_scope->env, scopes);
     }
 
-    static ClassType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Type *> &generics = {})
+    static ClassType *create(std::shared_ptr<Scope> scope, const std::string &name = "", const std::vector<Name *> &generics = {})
     {
         auto ref = llvm::StructType::create(scope->context(), name + ".class");
         return new ClassType(name, ref, scope, generics);
