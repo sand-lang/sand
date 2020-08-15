@@ -13,13 +13,12 @@ class GenericUnionType : public GenericType
 {
 public:
     SandParser::UnionStatementContext *context = nullptr;
-    std::shared_ptr<Scope> scope = nullptr;
 
     std::vector<UnionType *> children;
 
     Attributes attributes;
 
-    GenericUnionType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics, SandParser::UnionStatementContext *context_, const Attributes &attributes_) : GenericType(name, generics), context(context_), scope(scope_), attributes(attributes_) {}
+    GenericUnionType(const std::shared_ptr<Scope> &scope, const std::string &name, const std::vector<Generic *> &generics, SandParser::UnionStatementContext *context_, const Attributes &attributes_) : GenericType(scope, name, generics), context(context_), attributes(attributes_) {}
 
     UnionType *get_child(const std::vector<Name *> generics)
     {

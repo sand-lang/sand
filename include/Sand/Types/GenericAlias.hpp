@@ -20,11 +20,10 @@ class GenericAlias : public GenericType
 {
 public:
     SandParser::AliasContext *context = nullptr;
-    std::shared_ptr<Scope> scope = nullptr;
 
     std::vector<GenericAliasChild> children;
 
-    GenericAlias(std::shared_ptr<Scope> scope_, const std::string &name, const std::vector<Generic *> &generics, SandParser::AliasContext *context_) : GenericType(name, generics), context(context_), scope(scope_) {}
+    GenericAlias(const std::shared_ptr<Scope> &scope, const std::string &name, const std::vector<Generic *> &generics, SandParser::AliasContext *context_) : GenericType(scope, name, generics), context(context_) {}
 
     Alias *get_child(const std::vector<Name *> &generics)
     {

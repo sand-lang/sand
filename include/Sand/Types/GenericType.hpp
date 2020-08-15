@@ -11,9 +11,10 @@ namespace Sand::Types
 class GenericType : public Name
 {
 public:
+    std::shared_ptr<Scope> scope = nullptr;
     std::vector<Generic *> generics;
 
-    GenericType(const std::string &name, const std::vector<Generic *> &generics_) : Name(name), generics(generics_)
+    GenericType(const std::shared_ptr<Scope> &scope_, const std::string &name, const std::vector<Generic *> &generics_) : Name(name), scope(scope_), generics(generics_)
     {
     }
 

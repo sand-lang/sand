@@ -3320,7 +3320,7 @@ public:
             return true;
         }
 
-        this->scopes.create();
+        this->scopes.create(type->scope);
 
         for (size_t i = 0; i < type->generics.size(); i++)
         {
