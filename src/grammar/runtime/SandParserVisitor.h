@@ -209,6 +209,8 @@ public:
 
     virtual antlrcpp::Any visitClassTypeNameGenerics(SandParser::ClassTypeNameGenericsContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassTypeNameGenericsOther(SandParser::ClassTypeNameGenericsOtherContext *context) = 0;
+
     virtual antlrcpp::Any visitClassTypeNameGeneric(SandParser::ClassTypeNameGenericContext *context) = 0;
 
     virtual antlrcpp::Any visitNamespaceStatement(SandParser::NamespaceStatementContext *context) = 0;

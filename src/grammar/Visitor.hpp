@@ -44,6 +44,7 @@
 #include <Sand/Exceptions/InvalidValueException.hpp>
 #include <Sand/Exceptions/MultipleInstancesException.hpp>
 #include <Sand/Exceptions/NoFunctionMatchException.hpp>
+#include <Sand/Exceptions/NoGenericMatchException.hpp>
 #include <Sand/Exceptions/NotAClassException.hpp>
 #include <Sand/Exceptions/NotAClassOrNamespaceException.hpp>
 #include <Sand/Exceptions/NotAGenericException.hpp>
@@ -3220,7 +3221,11 @@ public:
             else if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
-                this->generateDefaultGenerics(generic_class, generics);
+
+                if (this->generateDefaultGenerics(generic_class, generics))
+                {
+                    continue;
+                }
 
                 if (auto type = generic_class->get_child(generics))
                 {
@@ -3235,7 +3240,11 @@ public:
             else if (auto generic_union = dynamic_cast<Types::GenericUnionType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
-                this->generateDefaultGenerics(generic_union, generics);
+
+                if (this->generateDefaultGenerics(generic_union, generics))
+                {
+                    continue;
+                }
 
                 if (auto type = generic_union->get_child(generics))
                 {
@@ -3250,7 +3259,11 @@ public:
             else if (auto generic_function = dynamic_cast<Types::GenericFunctionType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
-                this->generateDefaultGenerics(generic_function, generics);
+
+                if (this->generateDefaultGenerics(generic_function, generics))
+                {
+                    continue;
+                }
 
                 if (auto type = generic_function->get_child(generics))
                 {
@@ -3265,7 +3278,11 @@ public:
             else if (auto generic_alias = dynamic_cast<Types::GenericAlias *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
-                this->generateDefaultGenerics(generic_alias, generics);
+
+                if (this->generateDefaultGenerics(generic_alias, generics))
+                {
+                    continue;
+                }
 
                 if (auto alias = generic_alias->get_child(generics))
                 {
@@ -3284,35 +3301,64 @@ public:
             }
         }
 
+        if (array->empty())
+        {
+            throw NoGenericMatchException(this->files.top(), context->getStart());
+        }
+
         return array;
     }
 
-    void generateDefaultGenerics(Types::GenericType *type, std::vector<Name *> &generics)
+    bool generateDefaultGenerics(Types::GenericType *type, std::vector<Name *> &generics)
     {
+        auto has_failed = false;
+
+        if (generics.size() > type->generics.size())
+        {
+            return true;
+        }
+
         this->scopes.create();
 
-        for (size_t i = generics.size(); i < type->generics.size(); i++)
+        for (size_t i = 0; i < type->generics.size(); i++)
         {
             const auto &generic = type->generics[i];
 
+            if (generics.size() > i && generics[i] != nullptr)
+            {
+                continue;
+            }
+
             if (generic->default_value_context == nullptr)
             {
+                has_failed = true;
                 break;
             }
 
+            Name *default_value = nullptr;
+
             if (auto type_context = generic->default_type_context())
             {
-                auto type = this->visitType(type_context);
-                generics.push_back(type);
+                default_value = this->visitType(type_context);
             }
             else if (auto expression_context = generic->default_expression_context())
             {
-                auto value = this->valueFromExpression(expression_context);
-                generics.push_back(value);
+                default_value = this->valueFromExpression(expression_context);
+            }
+
+            if (generics.size() > i)
+            {
+                generics[i] = default_value;
+            }
+            else
+            {
+                generics.push_back(default_value);
             }
         }
 
         this->scopes.pop();
+
+        return has_failed;
     }
 
     Values::Constant *visitLiteralDeclaration(SandParser::LiteralDeclarationContext *context)
@@ -3705,13 +3751,33 @@ public:
 
         std::vector<Name *> names;
 
-        for (auto &class_generic_context : context->classTypeNameGeneric())
+        if (auto class_generic_context = context->classTypeNameGeneric())
         {
             auto name = this->visitClassTypeNameGeneric(class_generic_context);
             names.push_back(name);
         }
+        else
+        {
+            names.push_back(nullptr);
+        }
+
+        for (auto &other_context : context->classTypeNameGenericsOther())
+        {
+            auto name = this->visitClassTypeNameGenericsOther(other_context);
+            names.push_back(name);
+        }
 
         return names;
+    }
+
+    Name *visitClassTypeNameGenericsOther(SandParser::ClassTypeNameGenericsOtherContext *context)
+    {
+        if (auto class_generic_context = context->classTypeNameGeneric())
+        {
+            return this->visitClassTypeNameGeneric(class_generic_context);
+        }
+
+        return nullptr;
     }
 
     Name *visitClassTypeNameGeneric(SandParser::ClassTypeNameGenericContext *context)

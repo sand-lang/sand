@@ -395,6 +395,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitClassTypeNameGenericsOther(SandParser::ClassTypeNameGenericsOtherContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitClassTypeNameGeneric(SandParser::ClassTypeNameGenericContext *ctx) override {
     return visitChildren(ctx);
   }

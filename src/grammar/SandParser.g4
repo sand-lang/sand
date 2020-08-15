@@ -286,7 +286,10 @@ functionType:
 classTypeName: scopedName;
 
 classTypeNameGenerics:
-	'<' classTypeNameGeneric (',' classTypeNameGeneric)* '>';
+	'<' classTypeNameGeneric? classTypeNameGenericsOther* '>';
+
+classTypeNameGenericsOther: Comma classTypeNameGeneric?;
+
 classTypeNameGeneric: type | expression;
 
 namespaceStatement:
