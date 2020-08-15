@@ -19,12 +19,12 @@ public:
     Type *type = nullptr;
     antlr4::ParserRuleContext *default_value_context = nullptr;
 
-    inline SandParser::ExpressionContext *get_expression_context()
+    inline SandParser::ExpressionContext *default_expression_context()
     {
         return dynamic_cast<SandParser::ExpressionContext *>(default_value_context);
     }
 
-    inline SandParser::TypeContext *get_type_context()
+    inline SandParser::TypeContext *default_type_context()
     {
         return dynamic_cast<SandParser::TypeContext *>(default_value_context);
     }

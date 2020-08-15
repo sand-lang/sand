@@ -3220,6 +3220,7 @@ public:
             else if (auto generic_class = dynamic_cast<Types::GenericClassType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
+                this->generateDefaultGenerics(generic_class, generics);
 
                 if (auto type = generic_class->get_child(generics))
                 {
@@ -3234,6 +3235,7 @@ public:
             else if (auto generic_union = dynamic_cast<Types::GenericUnionType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
+                this->generateDefaultGenerics(generic_union, generics);
 
                 if (auto type = generic_union->get_child(generics))
                 {
@@ -3248,6 +3250,7 @@ public:
             else if (auto generic_function = dynamic_cast<Types::GenericFunctionType *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
+                this->generateDefaultGenerics(generic_function, generics);
 
                 if (auto type = generic_function->get_child(generics))
                 {
@@ -3262,6 +3265,7 @@ public:
             else if (auto generic_alias = dynamic_cast<Types::GenericAlias *>(name))
             {
                 auto generics = this->visitClassTypeNameGenerics(context);
+                this->generateDefaultGenerics(generic_alias, generics);
 
                 if (auto alias = generic_alias->get_child(generics))
                 {
@@ -3281,6 +3285,34 @@ public:
         }
 
         return array;
+    }
+
+    void generateDefaultGenerics(Types::GenericType *type, std::vector<Name *> &generics)
+    {
+        this->scopes.create();
+
+        for (size_t i = generics.size(); i < type->generics.size(); i++)
+        {
+            const auto &generic = type->generics[i];
+
+            if (generic->default_value_context == nullptr)
+            {
+                break;
+            }
+
+            if (auto type_context = generic->default_type_context())
+            {
+                auto type = this->visitType(type_context);
+                generics.push_back(type);
+            }
+            else if (auto expression_context = generic->default_expression_context())
+            {
+                auto value = this->valueFromExpression(expression_context);
+                generics.push_back(value);
+            }
+        }
+
+        this->scopes.pop();
     }
 
     Values::Constant *visitLiteralDeclaration(SandParser::LiteralDeclarationContext *context)
