@@ -1244,6 +1244,8 @@ public:
 
             scope->add_name(name, type);
 
+            this->scopes.create();
+
             return type;
         }
         else
