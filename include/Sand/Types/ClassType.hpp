@@ -1,5 +1,7 @@
 #pragma once
 
+#include <grammar/runtime/SandParser.h>
+
 #include <Sand/Scope.hpp>
 #include <Sand/Type.hpp>
 #include <Sand/Values/Function.hpp>

@@ -28,10 +28,12 @@
 #include <Sand/Types/GenericFunctionType.hpp>
 #include <Sand/Types/GenericUnionType.hpp>
 #include <Sand/Types/UnionType.hpp>
+#include <Sand/Types/VariadicType.hpp>
 #include <Sand/Values/Function.hpp>
 #include <Sand/Values/GlobalConstant.hpp>
 #include <Sand/Values/GlobalVariable.hpp>
 #include <Sand/Values/Variable.hpp>
+#include <Sand/Values/VariadicValue.hpp>
 
 #include <Sand/Exceptions/ExpressionHasNotClassTypeException.hpp>
 #include <Sand/Exceptions/ImportException.hpp>
@@ -768,7 +770,7 @@ public:
 
             if (auto constant = dynamic_cast<Values::Constant *>(rvalue))
             {
-                auto casted_constant = constant->cast(type, scope->builder());
+                auto casted_constant = constant->cast(type, scope->builder(), scope->module());
                 auto global = Values::GlobalVariable::create(name, scope->module(), type, casted_constant);
                 scope->add_name(name, global);
 
@@ -832,7 +834,7 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
+                value = Value::not_equal(scope->builder(), scope->module(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
             }
 
             if_then->conditional_br(scope->builder(), value, if_next);
@@ -843,7 +845,7 @@ public:
 
             if (!value->type->is_boolean())
             {
-                value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
+                value = Value::not_equal(scope->builder(), scope->module(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
             }
 
             if_then->conditional_br(scope->builder(), value, if_next);
@@ -905,7 +907,7 @@ public:
 
         if (!value->type->is_boolean())
         {
-            value = Value::not_equal(scope->builder(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
+            value = Value::not_equal(scope->builder(), scope->module(), value, Values::Constant::null_value(Type::behind_reference(value->type)));
         }
 
         while_body->conditional_br(scope->builder(), value, while_end);
@@ -972,7 +974,7 @@ public:
                     for_cond->insert_point(scope->builder());
 
                     auto end_value = end->call(scope->builder(), scope->module());
-                    auto condition = Value::not_equal(scope->builder(), iterator, end_value);
+                    auto condition = Value::not_equal(scope->builder(), scope->module(), iterator, end_value);
 
                     for_body->conditional_br(scope->builder(), condition, for_end);
 
@@ -1215,7 +1217,7 @@ public:
 
             if (auto constant = dynamic_cast<Values::Constant *>(value))
             {
-                return Types::EnumValue(name, constant->cast(type, scope->builder()));
+                return Types::EnumValue(name, constant->cast(type, scope->builder(), scope->module()));
             }
 
             throw InvalidRightValueException(this->files.top(), expression->getStart(), "Enum's value should be a constant");
@@ -1343,6 +1345,12 @@ public:
             generics.push_back(generic);
         }
 
+        if (auto variadic_generic_context = context->classVariadicGeneric())
+        {
+            auto generic = this->visitVariadicClassGeneric(variadic_generic_context);
+            generics.push_back(generic);
+        }
+
         return generics;
     }
 
@@ -1363,8 +1371,9 @@ public:
     Generic *visitClassGenericType(SandParser::ClassGenericTypeContext *context)
     {
         auto name = context->VariableName()->getText();
+        auto default_value = context->type();
 
-        return new Generic(name, this->scopes.top(), context->type());
+        return new Generic(name, this->scopes.top(), default_value);
     }
 
     Generic *visitClassGenericValue(SandParser::ClassGenericValueContext *context)
@@ -1372,7 +1381,41 @@ public:
         auto name = context->VariableName()->getText();
         Type *type = this->visitType(context->type());
 
-        return new Generic(name, this->scopes.top(), type, context->expression());
+        auto default_value = context->expression();
+
+        return new Generic(name, this->scopes.top(), type, default_value);
+    }
+
+    VariadicGeneric *visitVariadicClassGeneric(SandParser::ClassVariadicGenericContext *context)
+    {
+        if (auto variadic_generic_type_context = context->classVariadicGenericType())
+        {
+            return this->visitClassVariadicGenericType(variadic_generic_type_context);
+        }
+        else if (auto variadic_generic_value_context = context->classVariadicGenericValue())
+        {
+            return this->visitClassVariadicGenericValue(variadic_generic_value_context);
+        }
+
+        return nullptr;
+    }
+
+    VariadicGeneric *visitClassVariadicGenericType(SandParser::ClassVariadicGenericTypeContext *context)
+    {
+        auto name = context->VariableName()->getText();
+        auto default_values = context->type();
+
+        return new VariadicGeneric(name, this->scopes.top(), default_values);
+    }
+
+    VariadicGeneric *visitClassVariadicGenericValue(SandParser::ClassVariadicGenericValueContext *context)
+    {
+        auto name = context->VariableName()->getText();
+        Type *type = this->visitType(context->type());
+
+        auto default_values = context->expression();
+
+        return new VariadicGeneric(name, this->scopes.top(), type, default_values);
     }
 
     std::vector<Types::ClassType *> visitClassExtends(SandParser::ClassExtendsContext *context)
@@ -1960,7 +2003,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::add(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::add(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -1973,7 +2016,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::sub(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::sub(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2004,7 +2047,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::mul(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::mul(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2017,7 +2060,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::div(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::div(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2030,7 +2073,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::mod(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::mod(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2061,7 +2104,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::boolean_xor(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::boolean_xor(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2074,7 +2117,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::bitwise_or(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::bitwise_or(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2087,7 +2130,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::bitwise_and(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::bitwise_and(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2125,7 +2168,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::rshift(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::rshift(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2138,7 +2181,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::lrshift(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::lrshift(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2151,7 +2194,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::lshift(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::lshift(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2270,7 +2313,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::equal(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::equal(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2283,7 +2326,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::not_equal(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::not_equal(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2296,7 +2339,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::less_than(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::less_than(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2309,7 +2352,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::less_than_or_equal(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::less_than_or_equal(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2322,7 +2365,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::greater_than(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::greater_than(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2337,7 +2380,7 @@ public:
                 return overload->call(scope->builder(), scope->module(), args);
             }
 
-            if (auto value = Value::greater_than_or_equal(scope->builder(), lvalue, rvalue))
+            if (auto value = Value::greater_than_or_equal(scope->builder(), scope->module(), lvalue, rvalue))
             {
                 return value;
             }
@@ -2365,7 +2408,7 @@ public:
             auto variable = Values::Variable::create(lexpr->name, lexpr->type, scope->builder());
             variable->store(lexpr, scope->builder(), scope->module());
 
-            lexpr = Value::not_equal(scope->builder(), variable->load(scope->builder()), Values::Constant::null_value(Type::behind_reference(lexpr->type)));
+            lexpr = Value::not_equal(scope->builder(), scope->module(), variable->load(scope->builder()), Values::Constant::null_value(Type::behind_reference(lexpr->type)));
         }
 
         if (opt->ConditionalOr())
@@ -2398,7 +2441,7 @@ public:
             auto variable = Values::Variable::create(rexpr->name, rexpr->type, scope->builder());
             variable->store(rexpr, scope->builder(), scope->module());
 
-            rexpr = Value::not_equal(scope->builder(), variable, Values::Constant::null_value(Type::behind_reference(rexpr->type)));
+            rexpr = Value::not_equal(scope->builder(), scope->module(), variable, Values::Constant::null_value(Type::behind_reference(rexpr->type)));
         }
 
         cond_end->br(scope->builder());
@@ -2426,7 +2469,7 @@ public:
 
         if (!condition->type->is_boolean())
         {
-            condition = Value::not_equal(scope->builder(), condition, null_value);
+            condition = Value::not_equal(scope->builder(), scope->module(), condition, null_value);
         }
 
         if_then->conditional_br(scope->builder(), condition, if_else);
@@ -2450,7 +2493,7 @@ public:
             throw TypesNotCompatibleException(this->files.top(), context->getStart(), false_value->type, true_value->type);
         }
 
-        false_value = false_value->cast(true_value->type, scope->builder());
+        false_value = false_value->cast(true_value->type, scope->builder(), scope->module());
 
         if_end->br(scope->builder());
 
@@ -2751,7 +2794,7 @@ public:
         }
 
         auto one = new Values::Constant("literal_" + expression->type->name, expression->type, one_llvm);
-        if (auto value = Value::sub(scope->builder(), one, expression))
+        if (auto value = Value::sub(scope->builder(), scope->module(), one, expression))
         {
             return value;
         }
@@ -2780,7 +2823,7 @@ public:
         }
 
         auto one = new Values::Constant("literal_negative_one", expression->type, one_llvm);
-        if (auto value = Value::boolean_xor(scope->builder(), expression, one))
+        if (auto value = Value::boolean_xor(scope->builder(), scope->module(), expression, one))
         {
             value->get_ref()->setName("neg");
             return value;
@@ -2833,7 +2876,7 @@ public:
             }
             else if (type->is_integer() || type->is_floating_point() || type->is_pointer())
             {
-                expression = Value::not_equal(scope->builder(), expression, Values::Constant::null_value(Type::behind_reference(expression->type)));
+                expression = Value::not_equal(scope->builder(), scope->module(), expression, Values::Constant::null_value(Type::behind_reference(expression->type)));
             }
             else
             {
@@ -2841,7 +2884,7 @@ public:
             }
         }
 
-        return Value::boolean_xor(scope->builder(), expression, Values::Constant::boolean_value(true, scope->context()));
+        return Value::boolean_xor(scope->builder(), scope->module(), expression, Values::Constant::boolean_value(true, scope->context()));
     }
 
     Value *visitSuffixUnaryNegationExpression(SandParser::SuffixUnaryNegationExpressionContext *context)
@@ -2895,7 +2938,7 @@ public:
         if (type->is_array() || type->is_pointer())
         {
             constexpr size_t index = 0UL;
-            return expression->gep(index, scope->builder());
+            return expression->gep(index, scope->builder(), scope->module());
         }
 
         std::vector<Value *> args = {expression};
@@ -2918,7 +2961,7 @@ public:
 
         if (type->is_array() || type->is_pointer())
         {
-            return expression->gep(index, scope->builder());
+            return expression->gep(index, scope->builder(), scope->module());
         }
 
         std::vector<Value *> args = {expression, index};
@@ -2941,7 +2984,7 @@ public:
             return function->call(scope->builder(), scope->module(), {expr});
         }
 
-        return expr->cast(type, scope->builder(), true);
+        return expr->cast(type, scope->builder(), scope->module(), true);
     }
 
     Name *visitPropertyExpression(SandParser::PropertyExpressionContext *context)
@@ -2974,8 +3017,8 @@ public:
             }
 
             auto index = 0UL;
-            // expr = expr->load(scope->builder())->gep(index, scope->builder());
-            expr = expr->gep(index, scope->builder());
+            // expr = expr->load(scope->builder())->gep(index, scope->builder(), scope->module());
+            expr = expr->gep(index, scope->builder(), scope->module());
         }
         else if (expr->is_alloca)
         {
@@ -3314,11 +3357,8 @@ public:
     bool generateDefaultGenerics(Types::GenericType *type, std::vector<Name *> &generics)
     {
         auto has_failed = false;
-
-        if (generics.size() > type->generics.size())
-        {
-            return true;
-        }
+        auto last_is_variadic = false;
+        size_t variadic_start = 0;
 
         this->scopes.create(type->scope);
 
@@ -3326,8 +3366,26 @@ public:
         {
             const auto &generic = type->generics[i];
 
-            if (generics.size() > i && generics[i] != nullptr)
+            if (dynamic_cast<VariadicGeneric *>(generic))
             {
+                last_is_variadic = true;
+                variadic_start = i;
+                break;
+            }
+
+            if (i < generics.size() && generics[i] != nullptr)
+            {
+                if (dynamic_cast<Type *>(generics[i]) && generic->is_expression)
+                {
+                    has_failed = true;
+                    break;
+                }
+                else if (dynamic_cast<Value *>(generics[i]) && generic->is_type)
+                {
+                    has_failed = true;
+                    break;
+                }
+
                 continue;
             }
 
@@ -3348,7 +3406,7 @@ public:
                 default_value = this->valueFromExpression(expression_context);
             }
 
-            if (generics.size() > i)
+            if (i < generics.size())
             {
                 generics[i] = default_value;
             }
@@ -3356,6 +3414,107 @@ public:
             {
                 generics.push_back(default_value);
             }
+        }
+
+        if (!has_failed && last_is_variadic)
+        {
+            auto last = type->generics[type->generics.size() - 1];
+            auto generic = dynamic_cast<VariadicGeneric *>(last);
+
+            for (auto i = variadic_start; i < generics.size() || (i - variadic_start) < generic->default_value_context.size(); i++)
+            {
+                if (i < generics.size() && generics[i] != nullptr)
+                {
+                    if (dynamic_cast<Type *>(generics[i]) && generic->is_expression)
+                    {
+                        has_failed = true;
+                        break;
+                    }
+                    else if (dynamic_cast<Value *>(generics[i]) && generic->is_type)
+                    {
+                        has_failed = true;
+                        break;
+                    }
+
+                    continue;
+                }
+
+                if ((i - variadic_start) >= generic->default_value_context.size())
+                {
+                    has_failed = true;
+                    break;
+                }
+
+                Name *default_value = nullptr;
+                auto default_value_context = generic->default_value_context[i - variadic_start];
+
+                if (generic->is_type)
+                {
+                    auto type_context = dynamic_cast<SandParser::TypeContext *>(default_value_context);
+                    default_value = this->visitType(type_context);
+                }
+                else if (generic->is_expression)
+                {
+                    auto expression_context = dynamic_cast<SandParser::ExpressionContext *>(default_value_context);
+                    default_value = this->valueFromExpression(expression_context);
+                }
+
+                if (i < generics.size())
+                {
+                    generics[i] = default_value;
+                }
+                else
+                {
+                    generics.push_back(default_value);
+                }
+            }
+
+            if (generic->is_expression)
+            {
+                std::vector<Value *> values;
+
+                for (auto it = generics.begin() + variadic_start; it != generics.end(); it++)
+                {
+                    if (auto value = dynamic_cast<Value *>(*it))
+                    {
+                        values.push_back(value);
+                    }
+                    else
+                    {
+                        std::cerr << "Generic should be a value (this shouldn't happen)" << std::endl;
+                    }
+                }
+
+                auto variadic = new Values::VariadicValue(generic->name, values);
+                generics.erase(generics.begin() + variadic_start, generics.end());
+
+                generics.push_back(variadic);
+            }
+            else if (generic->is_type)
+            {
+                std::vector<Type *> types;
+
+                for (auto it = generics.begin() + variadic_start; it != generics.end(); it++)
+                {
+                    if (auto type = dynamic_cast<Type *>(*it))
+                    {
+                        types.push_back(type);
+                    }
+                    else
+                    {
+                        std::cerr << "Generic should be a type (this shouldn't happen)" << std::endl;
+                    }
+                }
+
+                auto variadic = new Types::VariadicType(generic->name, types);
+                generics.erase(generics.begin() + variadic_start, generics.end());
+
+                generics.push_back(variadic);
+            }
+        }
+        else if (!has_failed && (type->generics.size() != generics.size()))
+        {
+            has_failed = true;
         }
 
         this->scopes.pop();
@@ -3756,7 +3915,15 @@ public:
         if (auto class_generic_context = context->classTypeNameGeneric())
         {
             auto name = this->visitClassTypeNameGeneric(class_generic_context);
-            names.push_back(name);
+
+            if (auto array = dynamic_cast<NameArray *>(name))
+            {
+                names.insert(names.end(), array->names.begin(), array->names.end());
+            }
+            else
+            {
+                names.push_back(name);
+            }
         }
         else
         {
@@ -3766,7 +3933,15 @@ public:
         for (auto &other_context : context->classTypeNameGenericsOther())
         {
             auto name = this->visitClassTypeNameGenericsOther(other_context);
-            names.push_back(name);
+
+            if (auto array = dynamic_cast<NameArray *>(name))
+            {
+                names.insert(names.end(), array->names.begin(), array->names.end());
+            }
+            else
+            {
+                names.push_back(name);
+            }
         }
 
         return names;
@@ -3786,11 +3961,31 @@ public:
     {
         if (auto type_context = context->type())
         {
-            return this->visitType(type_context, false);
+            auto type = this->visitType(type_context, false);
+
+            if (auto variadic = dynamic_cast<Types::VariadicType *>(type))
+            {
+                if (context->Variadic())
+                {
+                    return new NameArray(variadic->types);
+                }
+            }
+
+            return type;
         }
         else if (auto expression_context = context->expression())
         {
-            return this->valueFromExpression(expression_context);
+            auto value = this->valueFromExpression(expression_context);
+
+            if (auto variadic = dynamic_cast<Values::VariadicValue *>(value))
+            {
+                if (context->Variadic())
+                {
+                    return new NameArray(variadic->values);
+                }
+            }
+
+            return value;
         }
 
         return nullptr;

@@ -242,13 +242,33 @@ classStatement:
 		Extends classExtends
 	)? classBody;
 
-classGenerics: '<' classGeneric (',' classGeneric)* '>';
+classGenerics:
+	'<' (
+		(
+			classGeneric (',' classGeneric)* (
+				',' classVariadicGeneric
+			)?
+		)
+		| classVariadicGeneric
+	) '>';
 
 classGeneric: classGenericType | classGenericValue;
 
 classGenericType: VariableName ('=' type)?;
 
 classGenericValue: VariableName ':' type ('=' expression)?;
+
+classVariadicGeneric:
+	classVariadicGenericType
+	| classVariadicGenericValue;
+
+classVariadicGenericType:
+	'...' VariableName ('=' '[' type (',' type)* ']')?;
+
+classVariadicGenericValue:
+	'...' VariableName ':' type (
+		'=' '[' expression (',' expression)* ']'
+	)?;
 
 classExtends: classTypeName (',' classTypeName)*;
 
@@ -290,7 +310,7 @@ classTypeNameGenerics:
 
 classTypeNameGenericsOther: Comma classTypeNameGeneric?;
 
-classTypeNameGeneric: type | expression;
+classTypeNameGeneric: (Variadic? type) | expression;
 
 namespaceStatement:
 	attributes Namespace VariableName '{' statement* '}';

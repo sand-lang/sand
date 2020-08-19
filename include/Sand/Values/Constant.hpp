@@ -34,7 +34,7 @@ public:
         return llvm::cast<llvm::Constant>(this->ref);
     }
 
-    Constant *cast(Type *dest, llvm::IRBuilder<> &builder, const bool &load = true) override
+    Constant *cast(Type *dest, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &load = true) override
     {
         auto ref = this->get_ref();
 

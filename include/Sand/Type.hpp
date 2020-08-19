@@ -19,11 +19,12 @@ public:
     static constexpr size_t KIND_OF_COMPATIBLE = std::numeric_limits<size_t>::max() / 1000000UL;
 
 public:
+    bool is_variadic = false;
     bool is_constant = false;
     bool is_signed = true;
     bool is_reference = false;
 
-    llvm::Type *ref;
+    llvm::Type *ref = nullptr;
     Type *base = nullptr;
     Type *origin = nullptr;
 
@@ -40,6 +41,8 @@ public:
                                               base(base_)
     {
     }
+
+    Type(const std::string &name, const bool &is_variadic_) : Name(name), is_variadic(is_variadic_) {}
 
     virtual llvm::Type *get_ref() const
     {

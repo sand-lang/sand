@@ -3,6 +3,7 @@
 #include <Sand/Values/Constant.hpp>
 #include <Sand/Values/Variable.hpp>
 
+#include <Sand/Types/ClassType.hpp>
 #include <Sand/Types/FunctionType.hpp>
 
 using namespace Sand;
@@ -44,7 +45,7 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &mo
                 arg = reference;
             }
 
-            auto casted = arg->cast(function_arg.type, builder);
+            auto casted = arg->cast(function_arg.type, builder, module);
             llvm_args.push_back(casted->get_ref());
         }
         else
@@ -74,7 +75,7 @@ Value *Value::call(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &mo
     }
 }
 
-Value *Value::add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::add(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -82,7 +83,7 @@ Value *Value::add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (ltype->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -99,7 +100,7 @@ Value *Value::add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -118,7 +119,7 @@ Value *Value::add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->load_alloca_and_reference(builder);
 
-        auto value = lvalue->gep(rvalue, builder);
+        auto value = lvalue->gep(rvalue, builder, module);
         value->is_alloca = false;
         value->type = ltype;
 
@@ -130,7 +131,7 @@ Value *Value::add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::add(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::add(builder, this, rvalue))
+    if (auto result = Value::add(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -139,7 +140,7 @@ Value *Value::add(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &buil
     return nullptr;
 }
 
-Value *Value::sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::sub(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -147,7 +148,7 @@ Value *Value::sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (ltype->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -164,7 +165,7 @@ Value *Value::sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -183,7 +184,7 @@ Value *Value::sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
         lvalue = lvalue->load_alloca_and_reference(builder);
         rvalue = rvalue->load_alloca_and_reference(builder);
 
-        auto value = lvalue->gep(rvalue, builder);
+        auto value = lvalue->gep(rvalue, builder, module);
         value->is_alloca = false;
         value->type = ltype;
 
@@ -195,7 +196,7 @@ Value *Value::sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::sub(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::sub(builder, this, rvalue))
+    if (auto result = Value::sub(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -204,7 +205,7 @@ Value *Value::sub(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &buil
     return nullptr;
 }
 
-Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::mul(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -212,7 +213,7 @@ Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -229,7 +230,7 @@ Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (lvalue->type->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -249,7 +250,7 @@ Value *Value::mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::mul(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::mul(builder, this, rvalue))
+    if (auto result = Value::mul(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -258,7 +259,7 @@ Value *Value::mul(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &buil
     return nullptr;
 }
 
-Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::div(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -266,7 +267,7 @@ Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -283,7 +284,7 @@ Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (lvalue->type->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -303,7 +304,7 @@ Value *Value::div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::div(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::div(builder, this, rvalue))
+    if (auto result = Value::div(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -312,7 +313,7 @@ Value *Value::div(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &buil
     return nullptr;
 }
 
-Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::mod(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -320,7 +321,7 @@ Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -337,7 +338,7 @@ Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (lvalue->type->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -357,7 +358,7 @@ Value *Value::mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::mod(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::mod(builder, this, rvalue))
+    if (auto result = Value::mod(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -366,7 +367,7 @@ Value *Value::mod(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &buil
     return nullptr;
 }
 
-Value *Value::boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::boolean_xor(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -374,7 +375,7 @@ Value *Value::boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rval
     if (ltype->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -394,7 +395,7 @@ Value *Value::boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rval
 
 Value *Value::boolean_xor(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::boolean_xor(builder, this, rvalue))
+    if (auto result = Value::boolean_xor(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -403,7 +404,7 @@ Value *Value::boolean_xor(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder
     return nullptr;
 }
 
-Value *Value::bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::bitwise_or(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -411,7 +412,7 @@ Value *Value::bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalu
     if (ltype->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -431,7 +432,7 @@ Value *Value::bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalu
 
 Value *Value::bitwise_or(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::bitwise_or(builder, this, rvalue))
+    if (auto result = Value::bitwise_or(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -440,7 +441,7 @@ Value *Value::bitwise_or(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<
     return nullptr;
 }
 
-Value *Value::bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::bitwise_and(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -448,7 +449,7 @@ Value *Value::bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rval
     if (ltype->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -468,7 +469,7 @@ Value *Value::bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rval
 
 Value *Value::bitwise_and(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::bitwise_and(builder, this, rvalue))
+    if (auto result = Value::bitwise_and(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -477,7 +478,7 @@ Value *Value::bitwise_and(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder
     return nullptr;
 }
 
-Value *Value::rshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::rshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -485,7 +486,7 @@ Value *Value::rshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer() && rvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -505,7 +506,7 @@ Value *Value::rshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::rshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::rshift(builder, this, rvalue))
+    if (auto result = Value::rshift(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -514,7 +515,7 @@ Value *Value::rshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &b
     return nullptr;
 }
 
-Value *Value::lrshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::lrshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -522,7 +523,7 @@ Value *Value::lrshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer() && rvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -542,7 +543,7 @@ Value *Value::lrshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::lrshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::lrshift(builder, this, rvalue))
+    if (auto result = Value::lrshift(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -551,7 +552,7 @@ Value *Value::lrshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &
     return nullptr;
 }
 
-Value *Value::lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::lshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -559,7 +560,7 @@ Value *Value::lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (lvalue->type->is_integer() && rvalue->type->is_integer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         if (dynamic_cast<Values::Constant *>(lvalue) && dynamic_cast<Values::Constant *>(rvalue))
         {
@@ -579,7 +580,7 @@ Value *Value::lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
 
 Value *Value::lshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue)
 {
-    if (auto result = Value::lshift(builder, this, rvalue))
+    if (auto result = Value::lshift(builder, module, this, rvalue))
     {
         this->store(result, builder, module);
         return this;
@@ -588,7 +589,7 @@ Value *Value::lshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &b
     return nullptr;
 }
 
-Value *Value::equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -598,7 +599,7 @@ Value *Value::equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpEQ(lvalue->get_ref(), rvalue->get_ref());
         return new Value("eq", type, value, false);
@@ -606,7 +607,7 @@ Value *Value::equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpOEQ(lvalue->get_ref(), rvalue->get_ref());
         return new Value("eq", type, value, false);
@@ -615,7 +616,7 @@ Value *Value::equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
     return nullptr;
 }
 
-Value *Value::not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::not_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -625,7 +626,7 @@ Value *Value::not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpNE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("ne", type, value);
@@ -633,7 +634,7 @@ Value *Value::not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpUNE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("ne", type, value);
@@ -642,7 +643,7 @@ Value *Value::not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     return nullptr;
 }
 
-Value *Value::less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::less_than(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -652,7 +653,7 @@ Value *Value::less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpSLT(lvalue->get_ref(), rvalue->get_ref());
         return new Value("lt", type, value);
@@ -660,7 +661,7 @@ Value *Value::less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpOLT(lvalue->get_ref(), rvalue->get_ref());
         return new Value("lt", type, value);
@@ -669,7 +670,7 @@ Value *Value::less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue
     return nullptr;
 }
 
-Value *Value::less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::less_than_or_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -679,7 +680,7 @@ Value *Value::less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Valu
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpSLE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("lte", type, value);
@@ -687,7 +688,7 @@ Value *Value::less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Valu
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpOLE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("lte", type, value);
@@ -696,7 +697,7 @@ Value *Value::less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Valu
     return nullptr;
 }
 
-Value *Value::greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::greater_than(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -706,7 +707,7 @@ Value *Value::greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rva
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpSGT(lvalue->get_ref(), rvalue->get_ref());
         return new Value("gt", type, value);
@@ -714,7 +715,7 @@ Value *Value::greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rva
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpOGT(lvalue->get_ref(), rvalue->get_ref());
         return new Value("gt", type, value);
@@ -723,7 +724,7 @@ Value *Value::greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rva
     return nullptr;
 }
 
-Value *Value::greater_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue)
+Value *Value::greater_than_or_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue)
 {
     auto ltype = Type::behind_reference(lvalue->type);
     auto rtype = Type::behind_reference(rvalue->type);
@@ -733,7 +734,7 @@ Value *Value::greater_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, V
     if (ltype->is_integer() || ltype->is_pointer())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateICmpSGE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("gte", type, value);
@@ -741,11 +742,174 @@ Value *Value::greater_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, V
     else if (ltype->is_floating_point())
     {
         lvalue = lvalue->load_alloca_and_reference(builder);
-        rvalue = rvalue->cast(lvalue->type, builder);
+        rvalue = rvalue->cast(lvalue->type, builder, module);
 
         auto value = builder.CreateFCmpOGE(lvalue->get_ref(), rvalue->get_ref());
         return new Value("gte", type, value);
     }
 
     return nullptr;
+}
+
+Value *Value::cast(Type *dest, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &load)
+{
+    auto value = this;
+    auto type = value->type;
+
+    if (type->is_reference)
+    {
+        if (!dest->is_reference)
+        {
+            value = value->load(builder, true);
+        }
+    }
+    else if (dest->is_reference)
+    {
+        dest = dest->base;
+    }
+    else if (load)
+    {
+        value = value->load_alloca_and_reference(builder);
+    }
+
+    if (value->is_alloca && value->type->is_reference)
+    {
+        value = value->load(builder, false);
+    }
+
+    auto ref = value->get_ref();
+    type = value->type;
+
+    if (type->is_integer())
+    {
+        if (dest->is_integer())
+        {
+            auto lbits = dest->ref->getIntegerBitWidth();
+            auto rbits = type->ref->getIntegerBitWidth();
+
+            if (lbits != rbits)
+            {
+                if (dest->is_boolean())
+                {
+                    ref = builder.CreateICmpNE(ref, llvm::ConstantInt::get(ref->getType(), 0));
+                }
+                else
+                {
+                    bool is_signed = type->is_signed;
+
+                    if (is_signed)
+                    {
+                        ref = builder.CreateSExtOrTrunc(ref, dest->ref);
+                    }
+                    else
+                    {
+                        ref = builder.CreateZExtOrTrunc(ref, dest->ref);
+                    }
+                }
+            }
+        }
+        else if (dest->is_floating_point())
+        {
+            if (type->is_signed)
+            {
+                ref = builder.CreateSIToFP(ref, dest->ref);
+            }
+            else
+            {
+                ref = builder.CreateUIToFP(ref, dest->ref);
+            }
+        }
+        else if (dest->is_pointer())
+        {
+            ref = builder.CreateIntToPtr(ref, dest->ref);
+        }
+
+        return new Value(this->name, dest, ref);
+    }
+    else if (type->is_double())
+    {
+        if (dest->is_float())
+        {
+            ref = builder.CreateFPTrunc(ref, dest->ref);
+        }
+        else if (dest->is_integer())
+        {
+            if (dest->is_signed)
+            {
+                ref = builder.CreateFPToSI(ref, dest->ref);
+            }
+            else
+            {
+                ref = builder.CreateFPToUI(ref, dest->ref);
+            }
+        }
+
+        return new Value(this->name, dest, ref);
+    }
+    else if (type->is_float())
+    {
+        if (dest->is_double())
+        {
+            ref = builder.CreateFPExt(ref, dest->ref);
+        }
+        else if (dest->is_integer())
+        {
+            if (dest->is_signed)
+            {
+                ref = builder.CreateFPToSI(ref, dest->ref);
+            }
+            else
+            {
+                ref = builder.CreateFPToUI(ref, dest->ref);
+            }
+        }
+
+        return new Value(this->name, dest, ref);
+    }
+    else if (type->is_pointer())
+    {
+        if (dest->is_boolean())
+        {
+            auto pointer_type = reinterpret_cast<llvm::PointerType *>(type->ref);
+            ref = builder.CreateICmpNE(ref, llvm::ConstantPointerNull::get(pointer_type));
+        }
+        else if (dest->is_integer())
+        {
+            ref = builder.CreatePtrToInt(ref, dest->ref);
+        }
+        else if (dest->is_pointer() && !type->equals(dest))
+        {
+            ref = builder.CreateBitCast(ref, dest->ref);
+        }
+
+        return new Value(this->name, dest, ref);
+    }
+    else if (type->is_struct())
+    {
+        if (dest->is_struct())
+        {
+            auto base = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::behind_reference(type)));
+            auto target = dynamic_cast<Types::ClassType *>(Type::get_origin(Type::behind_reference(dest)));
+
+            if (!base || !target)
+            {
+                // Fallback that should not happen
+                return value;
+            }
+
+            size_t padding = 0;
+
+            for (auto parent : base->parents)
+            {
+                if (parent == target)
+                {
+                    return struct_cast(target, padding, builder);
+                }
+
+                padding += parent->size(module);
+            }
+        }
+    }
+
+    return value;
 }

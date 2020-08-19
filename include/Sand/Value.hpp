@@ -8,17 +8,20 @@ namespace Sand
 class Value : public Name
 {
 public:
-    Type *type;
-    llvm::Value *ref;
+    Type *type = nullptr;
+    llvm::Value *ref = nullptr;
 
     Value *calling_variable = nullptr;
 
+    bool is_variadic = false;
     bool is_alloca = false;
     bool is_temporary = false;
 
-    Value(const std::string &name_, Type *type_, llvm::Value *ref_, const bool &is_alloca_ = false) : Name(name_), type(type_), ref(ref_), is_alloca(is_alloca_)
+    Value(const std::string &name, Type *type_, llvm::Value *ref_, const bool &is_alloca_ = false) : Name(name), type(type_), ref(ref_), is_alloca(is_alloca_)
     {
     }
+
+    Value(const std::string &name, const bool &is_variadic_) : Name(name), is_variadic(is_variadic_) {}
 
     virtual llvm::Value *get_ref() const
     {
@@ -56,8 +59,8 @@ public:
         {
             auto i8ptr = Type::pointer(Type::i8(builder.getContext()));
 
-            auto rvalue = value->cast(i8ptr, builder, false);
-            lvalue = lvalue->cast(i8ptr, builder, false);
+            auto rvalue = value->cast(i8ptr, builder, module, false);
+            lvalue = lvalue->cast(i8ptr, builder, module, false);
 
             auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), Type::get_origin(lvalue->type)->size(module));
 
@@ -67,8 +70,8 @@ public:
         {
             auto i8ptr = Type::pointer(Type::i8(builder.getContext()));
 
-            auto rvalue = value->cast(i8ptr, builder, false);
-            lvalue = lvalue->cast(i8ptr, builder, false);
+            auto rvalue = value->cast(i8ptr, builder, module, false);
+            lvalue = lvalue->cast(i8ptr, builder, module, false);
 
             auto size = llvm::ConstantInt::get(llvm::Type::getInt64Ty(builder.getContext()), Type::get_origin(lvalue->type)->size(module));
 
@@ -85,7 +88,7 @@ public:
                 value = value->load(builder, false);
             }
 
-            auto rvalue = value->cast(lvalue_type, builder, value->is_alloca);
+            auto rvalue = value->cast(lvalue_type, builder, module, value->is_alloca);
             builder.CreateStore(rvalue->get_ref(), lvalue->get_ref());
         }
     }
@@ -180,19 +183,19 @@ public:
         return value->load_reference(builder);
     }
 
-    Value *gep(Value *index, llvm::IRBuilder<> &builder)
+    Value *gep(Value *index, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
     {
-        auto index_value = index->cast(Type::i64(builder.getContext()), builder);
-        return this->gep(index_value->get_ref(), builder);
+        auto index_value = index->cast(Type::i64(builder.getContext()), builder, module);
+        return this->gep(index_value->get_ref(), builder, module);
     }
 
-    Value *gep(const size_t &index, llvm::IRBuilder<> &builder)
+    Value *gep(const size_t &index, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
     {
         auto index_value = llvm::ConstantInt::get(Type::llvm_i64(builder.getContext()), index);
-        return this->gep(index_value, builder);
+        return this->gep(index_value, builder, module);
     }
 
-    Value *gep(llvm::Value *index, llvm::IRBuilder<> &builder)
+    Value *gep(llvm::Value *index, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module)
     {
         auto &context = builder.getContext();
 
@@ -255,186 +258,51 @@ public:
         return new Value(this->name, dest, value, true);
     }
 
-    virtual Value *cast(Type *dest, llvm::IRBuilder<> &builder, const bool &load = true)
-    {
-        auto value = this;
-        auto type = value->type;
+    virtual Value *cast(Type *dest, llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, const bool &load = true);
 
-        if (type->is_reference)
-        {
-            if (!dest->is_reference)
-            {
-                value = value->load(builder, true);
-            }
-        }
-        else if (dest->is_reference)
-        {
-            dest = dest->base;
-        }
-        else if (load)
-        {
-            value = value->load_alloca_and_reference(builder);
-        }
-
-        if (value->is_alloca && value->type->is_reference)
-        {
-            value = value->load(builder, false);
-        }
-
-        auto ref = value->get_ref();
-        type = value->type;
-
-        if (type->is_integer())
-        {
-            if (dest->is_integer())
-            {
-                auto lbits = dest->ref->getIntegerBitWidth();
-                auto rbits = type->ref->getIntegerBitWidth();
-
-                if (lbits != rbits)
-                {
-                    if (dest->is_boolean())
-                    {
-                        ref = builder.CreateICmpNE(ref, llvm::ConstantInt::get(ref->getType(), 0));
-                    }
-                    else
-                    {
-                        bool is_signed = type->is_signed;
-
-                        if (is_signed)
-                        {
-                            ref = builder.CreateSExtOrTrunc(ref, dest->ref);
-                        }
-                        else
-                        {
-                            ref = builder.CreateZExtOrTrunc(ref, dest->ref);
-                        }
-                    }
-                }
-            }
-            else if (dest->is_floating_point())
-            {
-                if (type->is_signed)
-                {
-                    ref = builder.CreateSIToFP(ref, dest->ref);
-                }
-                else
-                {
-                    ref = builder.CreateUIToFP(ref, dest->ref);
-                }
-            }
-            else if (dest->is_pointer())
-            {
-                ref = builder.CreateIntToPtr(ref, dest->ref);
-            }
-
-            return new Value(this->name, dest, ref);
-        }
-        else if (type->is_double())
-        {
-            if (dest->is_float())
-            {
-                ref = builder.CreateFPTrunc(ref, dest->ref);
-            }
-            else if (dest->is_integer())
-            {
-                if (dest->is_signed)
-                {
-                    ref = builder.CreateFPToSI(ref, dest->ref);
-                }
-                else
-                {
-                    ref = builder.CreateFPToUI(ref, dest->ref);
-                }
-            }
-
-            return new Value(this->name, dest, ref);
-        }
-        else if (type->is_float())
-        {
-            if (dest->is_double())
-            {
-                ref = builder.CreateFPExt(ref, dest->ref);
-            }
-            else if (dest->is_integer())
-            {
-                if (dest->is_signed)
-                {
-                    ref = builder.CreateFPToSI(ref, dest->ref);
-                }
-                else
-                {
-                    ref = builder.CreateFPToUI(ref, dest->ref);
-                }
-            }
-
-            return new Value(this->name, dest, ref);
-        }
-        else if (type->is_pointer())
-        {
-            if (dest->is_boolean())
-            {
-                auto pointer_type = reinterpret_cast<llvm::PointerType *>(type->ref);
-                ref = builder.CreateICmpNE(ref, llvm::ConstantPointerNull::get(pointer_type));
-            }
-            else if (dest->is_integer())
-            {
-                ref = builder.CreatePtrToInt(ref, dest->ref);
-            }
-            else if (dest->is_pointer() && !type->equals(dest))
-            {
-                ref = builder.CreateBitCast(ref, dest->ref);
-            }
-
-            return new Value(this->name, dest, ref);
-        }
-
-        return value;
-    }
-
-    static Value *add(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *add(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *add(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *sub(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *sub(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *sub(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *mul(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *mul(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *mul(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *div(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *div(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *div(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *mod(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *mod(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *mod(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *boolean_xor(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *boolean_xor(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *boolean_xor(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *bitwise_or(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *bitwise_or(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *bitwise_or(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *bitwise_and(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *bitwise_and(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *bitwise_and(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *rshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *rshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *rshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *lrshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *lrshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *lrshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *lshift(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *lshift(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
     Value *lshift(std::unique_ptr<llvm::Module> &module, llvm::IRBuilder<> &builder, Value *rvalue);
 
-    static Value *equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 
-    static Value *not_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *not_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 
-    static Value *less_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *less_than(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 
-    static Value *less_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *less_than_or_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 
-    static Value *greater_than(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *greater_than(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 
-    static Value *greater_than_or_equal(llvm::IRBuilder<> &builder, Value *lvalue, Value *rvalue);
+    static Value *greater_than_or_equal(llvm::IRBuilder<> &builder, std::unique_ptr<llvm::Module> &module, Value *lvalue, Value *rvalue);
 };
 } // namespace Sand

@@ -181,6 +181,12 @@ public:
 
     virtual antlrcpp::Any visitClassGenericValue(SandParser::ClassGenericValueContext *context) = 0;
 
+    virtual antlrcpp::Any visitClassVariadicGeneric(SandParser::ClassVariadicGenericContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassVariadicGenericType(SandParser::ClassVariadicGenericTypeContext *context) = 0;
+
+    virtual antlrcpp::Any visitClassVariadicGenericValue(SandParser::ClassVariadicGenericValueContext *context) = 0;
+
     virtual antlrcpp::Any visitClassExtends(SandParser::ClassExtendsContext *context) = 0;
 
     virtual antlrcpp::Any visitClassBody(SandParser::ClassBodyContext *context) = 0;

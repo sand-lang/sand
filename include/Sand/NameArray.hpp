@@ -6,6 +6,8 @@
 #include <Sand/Values/Variable.hpp>
 
 #include <algorithm>
+#include <iterator>
+#include <type_traits>
 
 namespace Sand
 {
@@ -15,6 +17,12 @@ public:
     std::vector<Name *> names;
 
     NameArray(const std::vector<Name *> &names_ = {}) : Name("name_array"), names(names_) {}
+
+    template <typename T, typename = std::enable_if_t<std::is_base_of_v<Name, T>>>
+    NameArray(const std::vector<T *> &names_ = {}) : Name("name_array")
+    {
+        std::copy(names_.begin(), names_.end(), std::back_inserter(this->names));
+    }
 
     inline auto vector() -> decltype(this->names) &
     {
@@ -95,7 +103,7 @@ public:
 
             if (auto value = dynamic_cast<Value *>(name))
             {
-                auto value_type =Type::behind_reference( value->type);
+                auto value_type = Type::behind_reference(value->type);
 
                 if (value_type->is_pointer() && value_type->base->is_function())
                 {

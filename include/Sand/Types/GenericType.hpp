@@ -2,7 +2,9 @@
 
 #include <Sand/Generic.hpp>
 #include <Sand/Type.hpp>
+#include <Sand/Types/VariadicType.hpp>
 #include <Sand/Values/Constant.hpp>
+#include <Sand/Values/VariadicValue.hpp>
 
 #include <llvm/IR/IRBuilder.h>
 
@@ -18,10 +20,30 @@ public:
     {
     }
 
-    static bool are_same_generics(const std::vector<Name *> a, const std::vector<Name *> b)
+    static void flatten_variadics(std::vector<Name *> &target)
+    {
+        for (size_t i = 0; i < target.size(); i++)
+        {
+            if (auto variadic = dynamic_cast<VariadicType *>(target[i]))
+            {
+                target.erase(target.begin() + i);
+                target.insert(target.begin() + i, variadic->types.begin(), variadic->types.end());
+            }
+            else if (auto variadic = dynamic_cast<Values::VariadicValue *>(target[i]))
+            {
+                target.erase(target.begin() + i);
+                target.insert(target.begin() + i, variadic->values.begin(), variadic->values.end());
+            }
+        }
+    }
+
+    static bool are_same_generics(std::vector<Name *> a, std::vector<Name *> b)
     {
         if (a.size() != b.size())
             return false;
+
+        flatten_variadics(a);
+        flatten_variadics(b);
 
         for (size_t i = 0; i < a.size(); i++)
         {

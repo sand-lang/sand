@@ -50,14 +50,15 @@ public:
     RuleUnionProperty = 47, RuleEnumStatement = 48, RuleEnumBody = 49, RuleEnumProperty = 50, 
     RuleSpecialClassStatement = 51, RuleClassStatement = 52, RuleClassGenerics = 53, 
     RuleClassGeneric = 54, RuleClassGenericType = 55, RuleClassGenericValue = 56, 
-    RuleClassExtends = 57, RuleClassBody = 58, RuleClassBodyElement = 59, 
-    RuleClassProperty = 60, RuleClassMethod = 61, RuleClassInstantiationProperties = 62, 
-    RuleClassInstantiationProperty = 63, RuleType = 64, RuleFunctionType = 65, 
-    RuleClassTypeName = 66, RuleClassTypeNameGenerics = 67, RuleClassTypeNameGenericsOther = 68, 
-    RuleClassTypeNameGeneric = 69, RuleNamespaceStatement = 70, RuleImportStatement = 71, 
-    RuleAttributes = 72, RuleAttribute = 73, RuleAlias = 74, RuleAssemblyStatement = 75, 
-    RuleAssemblyTemplate = 76, RuleAssemblyOutput = 77, RuleAssemblyInput = 78, 
-    RuleAssemblyClobber = 79, RuleEos = 80
+    RuleClassVariadicGeneric = 57, RuleClassVariadicGenericType = 58, RuleClassVariadicGenericValue = 59, 
+    RuleClassExtends = 60, RuleClassBody = 61, RuleClassBodyElement = 62, 
+    RuleClassProperty = 63, RuleClassMethod = 64, RuleClassInstantiationProperties = 65, 
+    RuleClassInstantiationProperty = 66, RuleType = 67, RuleFunctionType = 68, 
+    RuleClassTypeName = 69, RuleClassTypeNameGenerics = 70, RuleClassTypeNameGenericsOther = 71, 
+    RuleClassTypeNameGeneric = 72, RuleNamespaceStatement = 73, RuleImportStatement = 74, 
+    RuleAttributes = 75, RuleAttribute = 76, RuleAlias = 77, RuleAssemblyStatement = 78, 
+    RuleAssemblyTemplate = 79, RuleAssemblyOutput = 80, RuleAssemblyInput = 81, 
+    RuleAssemblyClobber = 82, RuleEos = 83
   };
 
   SandParser(antlr4::TokenStream *input);
@@ -127,6 +128,9 @@ public:
   class ClassGenericContext;
   class ClassGenericTypeContext;
   class ClassGenericValueContext;
+  class ClassVariadicGenericContext;
+  class ClassVariadicGenericTypeContext;
+  class ClassVariadicGenericValueContext;
   class ClassExtendsContext;
   class ClassBodyContext;
   class ClassBodyElementContext;
@@ -1291,9 +1295,10 @@ public:
     ClassGenericsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LessThan();
+    antlr4::tree::TerminalNode *GreaterThan();
+    ClassVariadicGenericContext *classVariadicGeneric();
     std::vector<ClassGenericContext *> classGeneric();
     ClassGenericContext* classGeneric(size_t i);
-    antlr4::tree::TerminalNode *GreaterThan();
     std::vector<antlr4::tree::TerminalNode *> Comma();
     antlr4::tree::TerminalNode* Comma(size_t i);
 
@@ -1349,6 +1354,64 @@ public:
   };
 
   ClassGenericValueContext* classGenericValue();
+
+  class  ClassVariadicGenericContext : public antlr4::ParserRuleContext {
+  public:
+    ClassVariadicGenericContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ClassVariadicGenericTypeContext *classVariadicGenericType();
+    ClassVariadicGenericValueContext *classVariadicGenericValue();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassVariadicGenericContext* classVariadicGeneric();
+
+  class  ClassVariadicGenericTypeContext : public antlr4::ParserRuleContext {
+  public:
+    ClassVariadicGenericTypeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Variadic();
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Equal();
+    antlr4::tree::TerminalNode *OpeningBracket();
+    std::vector<TypeContext *> type();
+    TypeContext* type(size_t i);
+    antlr4::tree::TerminalNode *ClosingBracket();
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassVariadicGenericTypeContext* classVariadicGenericType();
+
+  class  ClassVariadicGenericValueContext : public antlr4::ParserRuleContext {
+  public:
+    ClassVariadicGenericValueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Variadic();
+    antlr4::tree::TerminalNode *VariableName();
+    antlr4::tree::TerminalNode *Colon();
+    TypeContext *type();
+    antlr4::tree::TerminalNode *Equal();
+    antlr4::tree::TerminalNode *OpeningBracket();
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *ClosingBracket();
+    std::vector<antlr4::tree::TerminalNode *> Comma();
+    antlr4::tree::TerminalNode* Comma(size_t i);
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ClassVariadicGenericValueContext* classVariadicGenericValue();
 
   class  ClassExtendsContext : public antlr4::ParserRuleContext {
   public:
@@ -1592,6 +1655,7 @@ public:
     ClassTypeNameGenericContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     TypeContext *type();
+    antlr4::tree::TerminalNode *Variadic();
     ExpressionContext *expression();
 
 
