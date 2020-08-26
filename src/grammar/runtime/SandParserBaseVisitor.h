@@ -387,7 +387,15 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitTypeOfExpression(SandParser::TypeOfExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitTypePointer(SandParser::TypePointerContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitTypeOfType(SandParser::TypeOfTypeContext *ctx) override {
     return visitChildren(ctx);
   }
 

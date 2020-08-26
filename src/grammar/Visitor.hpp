@@ -3787,6 +3787,14 @@ public:
         {
             type = this->visitTypeName(child);
         }
+        else if (auto child = dynamic_cast<SandParser::TypeOfTypeContext *>(context))
+        {
+            type = this->visitTypeOfType(child);
+        }
+        else if (auto child = dynamic_cast<SandParser::TypeOfExpressionContext *>(context))
+        {
+            type = this->visitTypeOfExpression(child);
+        }
 
         if (check_opaque && type->is_opaque())
         {
@@ -3891,6 +3899,50 @@ public:
         auto type = Types::FunctionType::create(scope->builder(), scope->module(), "", return_type, args, is_variadic, false);
 
         return Type::pointer(type);
+    }
+
+    Type *visitTypeOfType(SandParser::TypeOfTypeContext *context)
+    {
+        return this->visitType(context->type());
+    }
+
+    Type *visitTypeOfExpression(SandParser::TypeOfExpressionContext *context)
+    {
+        // TODO: Don't resolve the expression, just the type
+        auto name = this->visitExpression(context->expression());
+
+        if (auto array = dynamic_cast<NameArray *>(name))
+        {
+            while (auto alias = dynamic_cast<Alias *>(array->last()))
+            {
+                array = alias->names;
+            }
+
+            if (array->size() > 1 && !dynamic_cast<Values::Variable *>(array->get(0)))
+            {
+                throw MultipleInstancesException(this->files.top(), context->getStart());
+            }
+
+            name = array->last();
+        }
+
+        if (auto value = dynamic_cast<Value *>(name))
+        {
+            auto type = value->type;
+
+            if (type->is_function() && !type->is_pointer())
+            {
+                return Type::pointer(type);
+            }
+
+            return type;
+        }
+        else if (auto type = dynamic_cast<Type *>(name))
+        {
+            return type;
+        }
+
+        throw InvalidValueException(this->files.top(), context->getStart());
     }
 
     Types::ClassType *visitClassTypeName(SandParser::ClassTypeNameContext *context)

@@ -205,7 +205,11 @@ public:
 
     virtual antlrcpp::Any visitTypeName(SandParser::TypeNameContext *context) = 0;
 
+    virtual antlrcpp::Any visitTypeOfExpression(SandParser::TypeOfExpressionContext *context) = 0;
+
     virtual antlrcpp::Any visitTypePointer(SandParser::TypePointerContext *context) = 0;
+
+    virtual antlrcpp::Any visitTypeOfType(SandParser::TypeOfTypeContext *context) = 0;
 
     virtual antlrcpp::Any visitTypeReference(SandParser::TypeReferenceContext *context) = 0;
 

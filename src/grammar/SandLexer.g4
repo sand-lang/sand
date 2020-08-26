@@ -55,6 +55,9 @@ As: 'as';
 // Sizeof
 SizeOf: 'sizeof';
 
+// Typeof
+TypeOf: 'typeof';
+
 // Qualifiers
 Const: 'const';
 

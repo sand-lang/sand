@@ -295,7 +295,9 @@ type:
 	type '[' expression ']'					# TypeArray
 	| type Const? '*'						# TypePointer
 	| type Const? '&'						# TypeReference
-	| Const? (scopedName | functionType)	# TypeName;
+	| Const? (scopedName | functionType)	# TypeName
+	| 'typeof' '(' expression ')'			# TypeOfExpression
+	| 'typeof' '(' type ')'					# TypeOfType;
 
 functionType:
 	'fn' '(' (
