@@ -1,0 +1,12 @@
+import "io"
+
+fn main() {
+    std::print("Enter the first number: ", false);         // , false for new_line override.. doesnt automatically add a "\n" when new_line == false
+    let firstNum = std::scan() ;                           // Gets User Input from the command line
+    std::print("Enter the second number: ", false);      // Question for second number
+    let secondNum = std::scan();                        // Gets the second number
+// ------------------------------------------------------------------------------------------------------------ 
+    let sum = firstNum+secondNum;                     // Adds both firstNum and secondNum up                     
+    std::print(sum);                                 // Prints out the sum
+
+}
