@@ -1,0 +1,18 @@
+import "io"
+
+fn main() {
+    std::print("What is your name: ", false);
+    let name = std::scan();
+
+    std::print("Age: ", false);
+    let age = std::scan();
+
+    std::print("\n");
+
+    std::print("Your Name is ", false);
+    std::print(name);
+
+    std::print("and you are ", false);
+    std::print(age);
+    
+}
